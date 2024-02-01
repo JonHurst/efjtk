@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import sys
 import datetime as dt
 
 from efj_parser import Parser
@@ -245,7 +244,7 @@ def build_logbook(in_: str) -> str:
             cells.extend(["", "✓", ""])
         cells.append(duration)
         cells.append(s.captain)
-        cells.extend([str(s.landings.day), str(s.landings.night)])
+        cells.extend([str(s.landings.day or ""), str(s.landings.night or "")])
         night, ifr = "", ""
         if s.conditions.night:
             night = f"{s.conditions.night // 60}:{s.conditions.night % 60:02}"
