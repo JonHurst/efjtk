@@ -7,10 +7,12 @@ import efj_parser as ep
 import nightflight.night as night  # type:ignore
 from nightflight.airport_nvecs import airfields as af  # type:ignore
 
+
 def add_night_data(in_: str) -> tuple[str, str]:
     out = []
     messages = []
-    re_sec = re.compile(r"\A(\w*/\w*)(.*)\Z")
+    re_sec = re.compile(r"\A(\w*/\w* \d{4}/\d{4})(.*)\Z")
+
     def callback(line, line_num, type_, ret):
         if type_ != "sector" or ret.conditions.night > 0:
             out.append(line)
@@ -33,7 +35,7 @@ def add_night_data(in_: str) -> tuple[str, str]:
         else:
             flags = f" n:{round(dur)}{ldg}"
         mo = re_sec.match(line)
-        assert(mo)
+        assert mo
         out.append(f"{mo.group(1)}{flags}{mo.group(2)}")
     ep.Parser().parse(in_, callback)
     return "\n".join(out), "\n".join(messages)
