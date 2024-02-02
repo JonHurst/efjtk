@@ -26,6 +26,7 @@ setuptools.setup(
         "efj_parser"
     ],
     package_data={
+        "efj_convert": ["summary-template.html"]
     },
     entry_points={
         "console_scripts": [

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+   <meta charset='UTF-8'/>
+    <title>Summary</title>
+    <style>
+      :root {
+          --thin-border: 0.0625rem solid black;
+          --thick-border: 0.125rem solid black;
+          --stripe: #E0FFE0;
+          background-color: white;
+          color: black;
+          font-family: arial, sans-serif;
+      }
+      body {
+          max-width:40rem;
+          margin: auto;
+      }
+      table {
+          width: 100%;
+          border: var(--thick-border);
+          border-collapse: collapse;
+      }
+      thead {
+          border: var(--thick-border);
+      }
+      td, th {
+          text-align: center;
+          border: var(--thin-border);
+      }
+      td:first-child, th:first-child {
+          border-right: var(--thick-border);
+      }
+      .roles td:last-child, .roles th:last-child {
+          border-left: var(--thick-border);
+      }
+      .conditions td:nth-child(4), .conditions th:nth-child(4) {
+          border-left: var(--thick-border);
+      }
+      tbody tr:nth-child(even) {
+          background-color: var(--stripe);
+      }
+      .col_total {
+          border-top: var(--thick-border);
+      }
+      .total {
+          font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Roles</h1>
+    <table class="roles">
+      <thead>
+        <tr><th>Type</th><th>p1</th><th>p1s</th><th>p2</th><th>put</th>
+          <th>Total</th></tr>
+      </thead>
+      <tbody>
+<!--{roles_body}-->
+      </tbody>
+      <tfoot>
+<!--{roles_totals}-->
+      </tfoot>
+    </table>
+    <h1>Conditions</h1>
+    <table class="conditions">
+      <thead>
+        <tr><th>Type</th><th>VFR</th><th>IFR</th><th>Day</th><th>Night</th></tr>
+      </thead>
+      <tbody>
+<!--{cond_body}-->
+      </tbody>
+      <tfoot>
+<!--{cond_totals}-->
+      </tfoot>
+    </table>
+    <h1>Landings</h1>
+    <table class="landings">
+      <thead>
+        <tr><th>Type</th><th>Day</th><th>Night</th><th>Total</th></tr>
+      </thead>
+      <tbody>
+<!--{ldg_body}-->
+      </tbody>
+      <tfoot>
+<!--{ldg_totals}-->
+      </tfoot>
+    </table>
+  </body>
+</html>
