@@ -12,6 +12,7 @@ import efj_convert.summary as summary
 from efj_convert.night import add_night_data
 from efj_convert.config import build_config, aircraft_classes
 
+
 def _args():
     parser = argparse.ArgumentParser(
         description=(
@@ -54,7 +55,9 @@ def main() -> int:
         elif args.format == "summary":
             print(summary.build(sys.stdin.read()))
         elif args.format == "config":
-            sys.stdout.write(build_config(sys.stdin.read(), _config(args.config)))
+            sys.stdout.write(
+                build_config(sys.stdin.read(),
+                             _config(args.config)))
         else:
             return -1
         return 0
