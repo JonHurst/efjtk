@@ -48,9 +48,7 @@ def main() -> int:
         elif args.format == "expand":
             print(expand_efj(sys.stdin.read()))
         elif args.format == "night":
-            output, messages = add_night_data(sys.stdin.read())
-            print(output)
-            print(messages, file=sys.stderr)
+            print(add_night_data(sys.stdin.read()))
         elif args.format == "summary":
             print(summary.build(sys.stdin.read()))
         elif args.format == "config":
