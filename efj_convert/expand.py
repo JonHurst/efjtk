@@ -1,11 +1,16 @@
-#!/usr/bin/env python3
-
 import re
 
 import efj_parser as ep
 
 
-def expand_efj(in_: str) -> tuple[str, str]:
+def expand_efj(in_: str) -> str:
+    """Expand short dates (e.g. ++) and omitted airports, leaving all other
+    lines intact.
+
+    :param in_: An eFJ text file as a string
+    :return: An eFJ text file as a string with short dates and omitted airports
+        expanded to full form.
+    """
     out = []
     re_sec = re.compile(r"\A\w*/\w*\s*(.*)\Z")
 
@@ -21,4 +26,4 @@ def expand_efj(in_: str) -> tuple[str, str]:
         else:
             out.append(line)
     ep.Parser().parse(in_, callback)
-    return "\n".join(out), ""
+    return "\n".join(out)

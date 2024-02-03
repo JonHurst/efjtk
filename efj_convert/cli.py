@@ -45,9 +45,7 @@ def main() -> int:
             ac_classes = aircraft_classes(_config(args.config))
             print(build_logbook(sys.stdin.read(), ac_classes))
         elif args.format == "expand":
-            output, messages = expand_efj(sys.stdin.read())
-            print(output)
-            print(messages, file=sys.stderr)
+            print(expand_efj(sys.stdin.read()))
         elif args.format == "night":
             output, messages = add_night_data(sys.stdin.read())
             print(output)
