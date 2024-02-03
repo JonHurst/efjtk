@@ -17,11 +17,15 @@ from efj_convert.vfr import add_vfr_flag
 def _args():
     parser = argparse.ArgumentParser(
         description=(
-            'Process an Electronic Flight Journal file into various'
-            'useful formats.'))
+            """Process an electronic Flight Journal (eFJ) file.  Tools to aid
+            in manual creation of eFJ files (expand, night, vfr)  and tools
+            to convert to useful formats (logbook, summary) are  included.
+            Also included is a tool to help create a config file,  which is
+            required for generation of the FCL.050 logbook."""))
     parser.add_argument('format',
-                        choices=['logbook', 'expand', 'night', 'summary',
-                                 'config', 'vfr'])
+                        choices=['expand', 'night', 'vfr',
+                                 'logbook',  'summary',
+                                 'config'])
     parser.add_argument('-c', '--config', default=None)
     return parser.parse_args()
 
