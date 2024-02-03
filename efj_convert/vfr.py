@@ -10,7 +10,7 @@ def add_vfr_flag(in_: str) -> str:
     re_sec = re.compile(r"\A(\w*/\w* \d{4}/\d{4})\s*(.*)\Z")
 
     def callback(line, line_num, type_, ret):
-        if type_ != "sector":
+        if type_ != "sector" or ret.conditions.ifr < ret.total:
             out.append(line)
         else:
             mo = re_sec.match(line)
