@@ -1,5 +1,6 @@
 import importlib.resources as res
 import datetime as dt
+import configparser as cp
 
 from efj_parser import Parser
 
@@ -14,23 +15,7 @@ def _get_template():
     return template
 
 
-SESP, MESP, MP = range(3)
-
-ac_class = {
-    "737": MP,
-    "A319": MP,
-    "A320": MP,
-    "A321": MP,
-    "C310": MESP,
-    "C402": MESP,
-    "C404": MESP,
-    "C406": MESP,
-    "C47": MP,
-    "L188": MP
-}
-
-
-def build_logbook(in_: str) -> str:
+def build_logbook(in_: str, ac_classes: cp.SectionProxy) -> str:
     _, sectors = Parser().parse(in_)
     rows = []
     for c, s in enumerate(sectors):
@@ -40,10 +25,16 @@ def build_logbook(in_: str) -> str:
                  f"{s.start + dt.timedelta(minutes=s.total):%H%M}",
                  s.aircraft.type_, s.aircraft.reg]
         duration = f"{s.total // 60}:{s.total % 60:02}"
-        aircraft_class = ac_class.get(s.aircraft.type_, SESP)
-        if aircraft_class == MP:
+        if s.aircraft.class_:
+            aircraft_class = s.aircraft.class_
+        else:
+            try:
+                aircraft_class = ac_classes[s.aircraft.type_]
+            except KeyError as e:
+                raise e
+        if aircraft_class == "mc":
             cells.extend(["", "", duration])
-        elif aircraft_class == SESP:
+        elif aircraft_class == "spse":
             cells.extend(["✓", "", ""])
         else:
             cells.extend(["", "✓", ""])

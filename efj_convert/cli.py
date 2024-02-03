@@ -41,7 +41,8 @@ def main() -> int:
     args = _args()
     try:
         if args.format == "logbook":
-            print(build_logbook(sys.stdin.read()))
+            ac_classes = aircraft_classes(_config(args.config))
+            print(build_logbook(sys.stdin.read(), ac_classes))
         elif args.format == "expand":
             output, messages = expand_efj(sys.stdin.read())
             print(output)
