@@ -2,13 +2,15 @@
 
 import sys
 import argparse
+from typing import Optional
+import os.path
 
 import efj_parser
 from efj_convert.logbook import build_logbook
 from efj_convert.expand import expand_efj
 import efj_convert.summary as summary
 from efj_convert.night import add_night_data
-
+from efj_convert.config import build_config, aircraft_classes
 
 def _args():
     parser = argparse.ArgumentParser(
@@ -16,8 +18,23 @@ def _args():
             'Process an Electronic Flight Journal file into various'
             'useful formats.'))
     parser.add_argument('format',
-                        choices=['logbook', 'expand', 'night', 'summary'])
+                        choices=['logbook', 'expand', 'night', 'summary',
+                                 'config'])
+    parser.add_argument('-c', '--config', default=None)
     return parser.parse_args()
+
+
+def _config(filename: Optional[str]) -> str:
+    if filename and os.path.exists(filename):
+        with open(filename) as f:
+            return f.read()
+    else:
+        for filename in (os.path.expanduser("~/.efjconvert"),
+                         os.path.expanduser("~/.config/efjconvert")):
+            if os.path.exists(filename):
+                with open(filename) as f:
+                    return f.read()
+    return ""
 
 
 def main() -> int:
@@ -35,6 +52,8 @@ def main() -> int:
             print(messages, file=sys.stderr)
         elif args.format == "summary":
             print(summary.build(sys.stdin.read()))
+        elif args.format == "config":
+            sys.stdout.write(build_config(sys.stdin.read(), _config(args.config)))
         else:
             return -1
         return 0
