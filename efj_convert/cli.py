@@ -11,6 +11,7 @@ from efj_convert.expand import expand_efj
 import efj_convert.summary as summary
 from efj_convert.night import add_night_data
 from efj_convert.config import build_config, aircraft_classes
+from efj_convert.vfr import add_vfr_flag
 
 
 def _args():
@@ -20,7 +21,7 @@ def _args():
             'useful formats.'))
     parser.add_argument('format',
                         choices=['logbook', 'expand', 'night', 'summary',
-                                 'config'])
+                                 'config', 'vfr'])
     parser.add_argument('-c', '--config', default=None)
     return parser.parse_args()
 
@@ -56,6 +57,8 @@ def main() -> int:
             sys.stdout.write(
                 build_config(sys.stdin.read(),
                              _config(args.config)))
+        elif args.format == "vfr":
+            print(add_vfr_flag(sys.stdin.read()))
         else:
             return -1
         return 0
