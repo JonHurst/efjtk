@@ -5,6 +5,13 @@ import configparser as cp
 from efj_parser import Parser
 
 
+class UnknownAircraftClass(Exception):
+    """Aircraft type with no matching class encountered"""
+
+    def __init__(self, type_):
+        self.missing_type = type_
+
+
 def _get_template():
     template = (res.files("efj_convert")
                 .joinpath("logbook-template.html")
@@ -30,8 +37,8 @@ def build_logbook(in_: str, ac_classes: cp.SectionProxy) -> str:
         else:
             try:
                 aircraft_class = ac_classes[s.aircraft.type_]
-            except KeyError as e:
-                raise e
+            except KeyError:
+                raise UnknownAircraftClass(s.aircraft.type_)
         if aircraft_class == "mc":
             cells.extend(["", "", duration])
         elif aircraft_class == "spse":

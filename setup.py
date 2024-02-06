@@ -20,10 +20,10 @@ setuptools.setup(
          "GNU General Public License v3 or later (GPLv3+)"),
         "Operating System :: OS Independent",
     ],
-    python_requires='>=3.10',
+    python_requires='>=3.11',
     install_requires=[
         "nightflight",
-        "efj_parser"
+        "efj_parser @ git+ssh://git@github.com/JonHurst/efj_parser.git"
     ],
     package_data={
         "efj_convert": ["summary-template.html",
