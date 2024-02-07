@@ -28,7 +28,7 @@ def logbook(in_, config):
         out = build_config(in_, config)
         status = "config"
     except Exception as e:
-        print(repr(e))
+        out = str(e)
     return out, status
 
 
