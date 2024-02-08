@@ -37,22 +37,22 @@ PMI/CDG 1200/0100"""
                 exp.expand_efj("++")
             self.assertEqual(
                 str(ve.exception),
-                "Line 0: [Short date without preceding Date entry] ++")
+                "Line 1: [Short date without preceding Date entry] ++")
         with self.subTest("No aircraft"):
             with self.assertRaises(ValidationError) as ve:
                 exp.expand_efj("2024-01-29\nBRS/KEF 1600/1900\n/ 2000/2300")
             self.assertEqual(
                 str(ve.exception),
-                "Line 1: [Sector with no preceding Aircraft entry] "
+                "Line 2: [Sector with no preceding Aircraft entry] "
                 "BRS/KEF 1600/1900")
         with self.subTest("No previous airports"):
             with self.assertRaises(ValidationError) as ve:
                 exp.expand_efj("2024-01-29\nG-ABCD:A320\n/ 1600/1900")
             self.assertEqual(
                 str(ve.exception),
-                "Line 2: [Blank From without previous To] / 1600/1900")
+                "Line 3: [Blank From without previous To] / 1600/1900")
             with self.assertRaises(ValidationError) as ve:
                 exp.expand_efj("2024-01-29\nG-ABCD:A320\nBRS/ 1600/1900")
             self.assertEqual(
                 str(ve.exception),
-                "Line 2: [Blank To without previous From] BRS/ 1600/1900")
+                "Line 3: [Blank To without previous From] BRS/ 1600/1900")

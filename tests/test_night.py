@@ -27,4 +27,4 @@ BRS/BRS 1600/1700 n:18 ln
             add_night_data(data)
         self.assertEqual(
             str(ve.exception),
-            "Line 2: [Airport(s) not in database] XXXX/XXXX 1300/1400")
+            "Line 3: [Airport(s) not in database] XXXX/XXXX 1300/1400")

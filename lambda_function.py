@@ -7,6 +7,7 @@ from efj_convert.expand import expand_efj
 from efj_convert.night import add_night_data
 from efj_convert.vfr import add_vfr_flag
 from efj_convert.summary import build as build_summary
+from efj_parser import ValidationError
 
 
 def logbook(in_, config):
@@ -27,8 +28,6 @@ def logbook(in_, config):
     except UnknownAircraftClass:
         out = build_config(in_, config)
         status = "config"
-    except Exception as e:
-        out = str(e)
     return out, status
 
 
@@ -54,6 +53,8 @@ def lambda_handler(event, context):
             status = "success"
         else:
             out = "Not implemented"
+    except ValidationError as ve:
+        out = f"efj_parser : {ve.line_number} : {ve.message} : {ve.problem_string}"
     except Exception as e:
         out = str(e)
     return {
