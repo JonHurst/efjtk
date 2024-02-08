@@ -39,6 +39,8 @@ def build_logbook(in_: str, ac_classes: cp.SectionProxy) -> str:
                 aircraft_class = ac_classes[s.aircraft.type_]
             except KeyError:
                 raise UnknownAircraftClass(s.aircraft.type_)
+        if aircraft_class not in {"mc", "spse", "spme"}:
+            raise UnknownAircraftClass(s.aircraft.type_)
         if aircraft_class == "mc":
             cells.extend(["", "", duration])
         elif aircraft_class == "spse":
