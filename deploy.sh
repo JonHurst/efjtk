@@ -8,9 +8,11 @@ cd $PROJ_DIR
 source venv/bin/activate
 mkdir package
 pip install --target package .
+chmod -R a+rX package
 cd package
 zip -r ../$ZIPFILE .
 cd ..
+chmod a+r *.py
 zip $ZIPFILE lambda_function.py
 aws lambda update-function-code \
     --region "eu-west-2" \
