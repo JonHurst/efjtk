@@ -48,9 +48,9 @@ def build_logbook(in_: str, ac_classes: cp.SectionProxy) -> str:
     rows = []
     for c, s in enumerate(sectors):
         cells = [f"{s.start:%d/%m/%Y}",
-                 s.airports.origin, f"{s.start:%H%M}",
+                 s.airports.origin, f"{s.start:%H:%M}",
                  s.airports.dest,
-                 f"{s.start + dt.timedelta(minutes=s.total):%H%M}",
+                 f"{s.start + dt.timedelta(minutes=s.total):%H:%M}",
                  s.aircraft.type_, s.aircraft.reg]
         duration = f"{s.total // 60}:{s.total % 60:02}"
         cells.extend(_aircraft_class_cells(s, ac_classes, duration))
