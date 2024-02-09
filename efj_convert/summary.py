@@ -3,6 +3,12 @@ import importlib.resources as res
 import efj_parser as ep
 
 
+def _duration(minutes):
+    if minutes:
+        return f"{minutes // 60}:{minutes % 60:02}"
+    return ""
+
+
 def _get_template():
     template = (res.files("efj_convert")
                 .joinpath("summary-template.html")
@@ -27,12 +33,13 @@ def _build_roles(sectors):
     for type_ in sorted(rpt.keys()):
         role_total = [X + Y for X, Y in zip(role_total, rpt[type_])]
         total = sum(rpt[type_])
-        data = '</td><td>'.join([str(X // 60) for X in rpt[type_]])
+        data = '</td><td>'.join([_duration(X) for X in rpt[type_]])
         rows.append(f"<tr><th>{type_}</th><td>{data}</td>"
-                    f"<td class='total'>{total // 60}</td></tr>")
-    data = '</td><td class="total">'.join([str(X // 60) for X in role_total])
+                    f"<td class='total'>{_duration(total)}</td></tr>")
+    data = '</td><td class="total">'.join([_duration(X) for X in role_total])
     rows.append(f"<tr class='col_total'><th>Total</th><td class='total'>{data}"
-                f"</td><td class='total'>{sum(role_total) // 60}</td></tr>")
+                f"</td><td class='total'>{_duration(sum(role_total))}"
+                f"</td></tr>")
     return rows
 
 
@@ -51,9 +58,9 @@ def _build_conditions(sectors):
     cond_total = [0, 0, 0, 0]
     for type_ in sorted(cond_pt.keys()):
         cond_total = [X + Y for X, Y in zip(cond_total, cond_pt[type_])]
-        data = '</td><td>'.join([str(X // 60) for X in cond_pt[type_]])
+        data = '</td><td>'.join([_duration(X) for X in cond_pt[type_]])
         rows.append(f"<tr><th>{type_}</th><td>{data}</td></tr>")
-    data = '</td><td class="total">'.join([str(X // 60) for X in cond_total])
+    data = '</td><td class="total">'.join([_duration(X) for X in cond_total])
     rows.append(f"<tr class='col_total'><th>Total</th>"
                 f"<td class='total'>{data}</td></tr>")
     return rows
