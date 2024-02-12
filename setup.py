@@ -23,7 +23,7 @@ setuptools.setup(
     python_requires='>=3.11',
     install_requires=[
         "nightflight",
-        "efj_parser @ git+ssh://git@github.com/JonHurst/efj_parser.git"
+        "efj_parser"
     ],
     package_data={
         "efj_convert": ["summary-template.html",
