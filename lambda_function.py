@@ -6,6 +6,8 @@ from efj_convert.config import build_config
 from efj_convert.expand import expand_efj
 from efj_convert.night import add_night_data
 from efj_convert.vfr import add_vfr_flag
+from efj_convert.ins import add_ins_flag
+from efj_convert.fo import add_fo_role_flag
 from efj_convert.summary import build as build_summary
 from efj_parser import ValidationError
 
@@ -31,6 +33,15 @@ def logbook(in_, config):
     return out, status
 
 
+_func_map = {
+    "expand": expand_efj,
+    "night": add_night_data,
+    "vfr": add_vfr_flag,
+    "fo": add_fo_role_flag,
+    "ins": add_ins_flag,
+}
+
+
 def lambda_handler(event, context):
     data = json.loads(event["body"])
     in_ = data["efj"]
@@ -42,19 +53,14 @@ def lambda_handler(event, context):
         elif action == "summary":
             out = build_summary(in_)
             status = "success"
-        elif action == "expand":
-            out = expand_efj(in_)
-            status = "success"
-        elif action == "night":
-            out = add_night_data(in_)
-            status = "success"
-        elif action == "vfr":
-            out = add_vfr_flag(in_)
+        elif action in _func_map:
+            out = _func_map[action](in_)
             status = "success"
         else:
             out = "Not implemented"
     except ValidationError as ve:
-        out = f"efj_parser : {ve.line_number} : {ve.message} : {ve.problem_string}"
+        out = (f"efj_parser : {ve.line_number} : {ve.message}"
+               f": {ve.problem_string}")
     except Exception as e:
         out = str(e)
     return {

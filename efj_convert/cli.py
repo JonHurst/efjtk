@@ -13,18 +13,19 @@ from efj_convert.night import add_night_data
 from efj_convert.config import build_config, aircraft_classes
 from efj_convert.vfr import add_vfr_flag
 from efj_convert.fo import add_fo_role_flag
+from efj_convert.ins import add_ins_flag
 
 
 def _args():
     parser = argparse.ArgumentParser(
         description=(
-            """Process an electronic Flight Journal (eFJ) file.  Tools to aid
-            in manual creation of eFJ files (expand, night, vfr, fo) and tools
-            to convert to useful formats (logbook, summary) are  included.
-            Also included is a tool to help create a config file,  which is
+            """Process an electronic Flight Journal (eFJ) file. Tools to aid in
+            manual creation of eFJ files (expand, night, vfr, ins, fo) and
+            tools to convert to useful formats (logbook, summary) are included.
+            Also included is a tool to help create a config file, which is
             required for generation of the FCL.050 logbook."""))
     parser.add_argument('format',
-                        choices=['expand', 'night', 'vfr', 'fo',
+                        choices=['expand', 'night', 'vfr', 'ins', 'fo',
                                  'logbook',  'summary',
                                  'config'])
     parser.add_argument('-c', '--config', default=None)
@@ -50,6 +51,7 @@ _func_map = {
     "summary": summary.build,
     "vfr": add_vfr_flag,
     "fo": add_fo_role_flag,
+    "ins": add_ins_flag,
 }
 
 
