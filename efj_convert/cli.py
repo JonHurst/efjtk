@@ -37,8 +37,8 @@ def _config(filename: Optional[str]) -> str:
         with open(filename) as f:
             return f.read()
     else:
-        for filename in (os.path.expanduser("~/.efjconvert"),
-                         os.path.expanduser("~/.config/efjconvert")):
+        for filename in (os.path.expanduser("~/.efjrc"),
+                         os.path.expanduser("~/.config/efjrc")):
             if os.path.exists(filename):
                 with open(filename) as f:
                     return f.read()
