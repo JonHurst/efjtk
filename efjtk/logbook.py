@@ -13,7 +13,7 @@ class UnknownAircraftClass(Exception):
 
 
 def _get_template():
-    template = (res.files("efj_convert")
+    template = (res.files("efjtk")
                 .joinpath("logbook-template.html")
                 .open().read())
     for old, new in (("{", "{{"), ("}", "}}"),
