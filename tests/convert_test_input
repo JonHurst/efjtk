@@ -1,0 +1,11 @@
+2024-01-01
+G-ABCD:A320
+BRS/BFS 1000/1100
+/ 1200/1300 m
+# Comment
+++
+G-EFGH:C152
+BRS/BRS 1000/1100 ins ld:6 v  # Bloggs, circuits
+{CP:Smith}
+/CWL 1200/1230 put v
+/ 2000/2030 n v
