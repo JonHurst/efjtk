@@ -13,9 +13,9 @@ class UnknownAircraftClass(Exception):
 
 
 def _get_template(filename):
-    template = (res.files("efjtk")
-                .joinpath(filename)
-                .open().read())
+    template_file = res.files("efjtk").joinpath(filename)
+    with template_file.open() as f:
+        template = f.read()
     for old, new in (("{", "{{"), ("}", "}}"),
                      ("<!--{{", "{"), ("}}-->", "}")):
         template = template.replace(old, new)
