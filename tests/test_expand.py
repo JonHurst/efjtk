@@ -1,7 +1,7 @@
 import unittest
 
 from efj_parser import ValidationError
-import efjtk.expand as exp
+import efjtk.modify
 
 
 class TestExpand(unittest.TestCase):
@@ -29,30 +29,32 @@ BRS/CDG 1300/1400
 CDG/BRS 1500/1600
 2024-02-01
 PMI/CDG 1200/0100"""
-        self.assertEqual(exp.expand_efj(data), expected)
+        self.assertEqual(efjtk.modify.expand_efj(data), expected)
 
     def test_bad(self):
         with self.subTest("No preceding date"):
             with self.assertRaises(ValidationError) as ve:
-                exp.expand_efj("++")
+                efjtk.modify.expand_efj("++")
             self.assertEqual(
                 str(ve.exception),
                 "Line 1: [Short date without preceding Date entry] ++")
         with self.subTest("No aircraft"):
             with self.assertRaises(ValidationError) as ve:
-                exp.expand_efj("2024-01-29\nBRS/KEF 1600/1900\n/ 2000/2300")
+                efjtk.modify.expand_efj(
+                    "2024-01-29\nBRS/KEF 1600/1900\n/ 2000/2300")
             self.assertEqual(
                 str(ve.exception),
                 "Line 2: [Sector with no preceding Aircraft entry] "
                 "BRS/KEF 1600/1900")
         with self.subTest("No previous airports"):
             with self.assertRaises(ValidationError) as ve:
-                exp.expand_efj("2024-01-29\nG-ABCD:A320\n/ 1600/1900")
+                efjtk.modify.expand_efj("2024-01-29\nG-ABCD:A320\n/ 1600/1900")
             self.assertEqual(
                 str(ve.exception),
                 "Line 3: [Blank From without previous To] / 1600/1900")
             with self.assertRaises(ValidationError) as ve:
-                exp.expand_efj("2024-01-29\nG-ABCD:A320\nBRS/ 1600/1900")
+                efjtk.modify.expand_efj(
+                    "2024-01-29\nG-ABCD:A320\nBRS/ 1600/1900")
             self.assertEqual(
                 str(ve.exception),
                 "Line 3: [Blank To without previous From] BRS/ 1600/1900")

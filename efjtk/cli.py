@@ -7,13 +7,14 @@ import os.path
 
 import efj_parser
 from efjtk.logbook import build_logbook
-from efjtk.expand import expand_efj
+# from efjtk.expand import expand_efj
 import efjtk.summary as summary
-from efjtk.night import add_night_data
+# from efjtk.night import add_night_data
 from efjtk.config import build_config, aircraft_classes
-from efjtk.vfr import add_vfr_flag
-from efjtk.fo import add_fo_role_flag
-from efjtk.ins import add_ins_flag
+# from efjtk.vfr import add_vfr_flag
+# from efjtk.fo import add_fo_role_flag
+# from efjtk.ins import add_ins_flag
+import efjtk.modify
 
 
 def _args():
@@ -46,12 +47,12 @@ def _config(filename: Optional[str]) -> str:
 
 
 _func_map = {
-    "expand": expand_efj,
-    "night": add_night_data,
+    "expand": efjtk.modify.expand_efj,
+    "night": efjtk.modify.add_night_data,
     "summary": summary.build,
-    "vfr": add_vfr_flag,
-    "fo": add_fo_role_flag,
-    "ins": add_ins_flag,
+    "vfr": efjtk.modify.add_vfr_flag,
+    "fo": efjtk.modify.add_fo_role_flag,
+    "ins": efjtk.modify.add_ins_flag,
 }
 
 

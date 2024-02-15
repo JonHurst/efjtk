@@ -3,13 +3,14 @@ import configparser as cp
 
 from efjtk.logbook import build_logbook, UnknownAircraftClass
 from efjtk.config import build_config
-from efjtk.expand import expand_efj
-from efjtk.night import add_night_data
-from efjtk.vfr import add_vfr_flag
-from efjtk.ins import add_ins_flag
-from efjtk.fo import add_fo_role_flag
+# from efjtk.expand import expand_efj
+# from efjtk.night import add_night_data
+# from efjtk.vfr import add_vfr_flag
+# from efjtk.ins import add_ins_flag
+# from efjtk.fo import add_fo_role_flag
 from efjtk.summary import build as build_summary
 from efj_parser import ValidationError
+import efjtk.modify
 
 
 def logbook(in_, config):
@@ -34,11 +35,11 @@ def logbook(in_, config):
 
 
 _func_map = {
-    "expand": expand_efj,
-    "night": add_night_data,
-    "vfr": add_vfr_flag,
-    "fo": add_fo_role_flag,
-    "ins": add_ins_flag,
+    "expand": efjtk.modify.expand_efj,
+    "night": efjtk.modify.add_night_data,
+    "vfr": efjtk.modify.add_vfr_flag,
+    "fo": efjtk.modify.add_fo_role_flag,
+    "ins": efjtk.modify.add_ins_flag,
 }
 
 
