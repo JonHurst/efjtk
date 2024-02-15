@@ -1,14 +1,8 @@
 import json
 import configparser as cp
 
-from efjtk.logbook import build_logbook, UnknownAircraftClass
+from efjtk.convert import build_logbook, UnknownAircraftClass, build_summary
 from efjtk.config import build_config
-# from efjtk.expand import expand_efj
-# from efjtk.night import add_night_data
-# from efjtk.vfr import add_vfr_flag
-# from efjtk.ins import add_ins_flag
-# from efjtk.fo import add_fo_role_flag
-from efjtk.summary import build as build_summary
 from efj_parser import ValidationError
 import efjtk.modify
 
