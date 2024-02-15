@@ -1,7 +1,7 @@
 import unittest
 
 from efj_parser import ValidationError
-from efj_convert.night import add_night_data
+from efjtk.night import add_night_data
 
 class TestNight(unittest.TestCase):
 

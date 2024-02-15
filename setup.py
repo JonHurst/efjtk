@@ -4,7 +4,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="efj_convert",
+    name="efjtk",
     version="0.1",
     author="Jon Hurst",
     author_email="jon.a@hursts.org.uk",
@@ -26,12 +26,12 @@ setuptools.setup(
         "efj_parser"
     ],
     package_data={
-        "efj_convert": ["summary-template.html",
+        "efjtk": ["summary-template.html",
                         "logbook-template.html"]
     },
     entry_points={
         "console_scripts": [
-            "efj = efj_convert.cli:main"
+            "efj = efjtk.cli:main"
         ]
     },
 )

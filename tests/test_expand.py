@@ -1,7 +1,7 @@
 import unittest
 
 from efj_parser import ValidationError
-import efj_convert.expand as exp
+import efjtk.expand as exp
 
 
 class TestExpand(unittest.TestCase):

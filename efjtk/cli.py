@@ -6,14 +6,14 @@ from typing import Optional
 import os.path
 
 import efj_parser
-from efj_convert.logbook import build_logbook
-from efj_convert.expand import expand_efj
-import efj_convert.summary as summary
-from efj_convert.night import add_night_data
-from efj_convert.config import build_config, aircraft_classes
-from efj_convert.vfr import add_vfr_flag
-from efj_convert.fo import add_fo_role_flag
-from efj_convert.ins import add_ins_flag
+from efjtk.logbook import build_logbook
+from efjtk.expand import expand_efj
+import efjtk.summary as summary
+from efjtk.night import add_night_data
+from efjtk.config import build_config, aircraft_classes
+from efjtk.vfr import add_vfr_flag
+from efjtk.fo import add_fo_role_flag
+from efjtk.ins import add_ins_flag
 
 
 def _args():

@@ -1,14 +1,14 @@
 import json
 import configparser as cp
 
-from efj_convert.logbook import build_logbook, UnknownAircraftClass
-from efj_convert.config import build_config
-from efj_convert.expand import expand_efj
-from efj_convert.night import add_night_data
-from efj_convert.vfr import add_vfr_flag
-from efj_convert.ins import add_ins_flag
-from efj_convert.fo import add_fo_role_flag
-from efj_convert.summary import build as build_summary
+from efjtk.logbook import build_logbook, UnknownAircraftClass
+from efjtk.config import build_config
+from efjtk.expand import expand_efj
+from efjtk.night import add_night_data
+from efjtk.vfr import add_vfr_flag
+from efjtk.ins import add_ins_flag
+from efjtk.fo import add_fo_role_flag
+from efjtk.summary import build as build_summary
 from efj_parser import ValidationError
 
 
@@ -60,7 +60,7 @@ def lambda_handler(event, context):
             out = "Not implemented"
     except ValidationError as ve:
         out = (f"efj_parser : {ve.line_number} : {ve.message}"
-               f": {ve.problem_string}")
+               f" : {ve.problem_string}")
     except Exception as e:
         out = str(e)
     return {
