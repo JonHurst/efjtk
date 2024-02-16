@@ -2,3 +2,4 @@ build
 efjtk.egg-info
 venv
 __pycache__
+docs/_build
