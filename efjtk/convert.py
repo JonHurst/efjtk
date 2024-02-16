@@ -52,7 +52,7 @@ def _aircraft_class_cells(
 def build_logbook(in_: str, ac_classes: cp.SectionProxy) -> str:
     _, sectors = ep.Parser().parse(in_)
     rows = []
-    for c, s in enumerate(sectors):
+    for s in sectors:
         cells = [f"{s.start:%d/%m/%Y}",
                  s.airports.origin, f"{s.start:%H:%M}",
                  s.airports.dest,
