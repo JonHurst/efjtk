@@ -85,3 +85,55 @@ gives the output: ::
   G-ABCD:A320
   BRS/BFS 1600/1700 v
   BFS/BRS 1800/1900 v
+
+
+FO
+--
+
+When no role flag is included, it is assumed that the role was p1. This means
+that First Officers must mark each sector as ``p1s``, ``p2`` or ``put``.
+Captains, on the other hand, just have to mark sectors where they were PM for
+the landing with ``m``. This tool allows First Officers to use ``m`` and then
+auto-fill the roles as ``p1s`` or ``p2``.
+
+::
+
+   efj fo < input > output
+
+The input: ::
+
+  2024-01-01
+  G-ABCD:A320
+  BRS/BFS 1600/1700 m
+  BFS/BRS 1800/1900
+
+gives the output: ::
+
+  2024-01-01
+  G-ABCD:A320
+  BRS/BFS 1600/1700 p2 m
+  BFS/BRS 1800/1900 p1s
+
+
+Instructor
+----------
+
+Adds the ``ins`` flag to any sector that does not already have it.
+
+::
+
+   efj ins < input > output
+
+The input: ::
+
+  2024-01-01
+  G-ABCD:A320
+  BRS/BFS 1600/1700
+  BFS/BRS 1800/1900
+
+gives the output: ::
+
+  2024-01-01
+  G-ABCD:A320
+  BRS/BFS 1600/1700 ins
+  BFS/BRS 1800/1900 ins

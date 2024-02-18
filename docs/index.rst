@@ -12,6 +12,7 @@ Welcome to efjtk's documentation!
 
    overview
    modify
+   convert
 
 
 Indices and tables

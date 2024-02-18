@@ -13,6 +13,6 @@ to generate an FCL.050 compliant logbook and summary tables as standalone HTML
 files.
 
 All the tools are filters, i.e. they acquire data from stdin, output results to
-stdout and send error messages to stdout. This is particularly useful when
+stdout and send error messages to stderr. This is particularly useful when
 using a reasonably competent text editor which can use such filters to process
 selected regions.
