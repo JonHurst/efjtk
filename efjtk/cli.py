@@ -32,8 +32,8 @@ def _config(filename: Optional[str]) -> str:
         with open(filename) as f:
             return f.read()
     else:
-        for filename in (os.path.expanduser("~/.efjrc"),
-                         os.path.expanduser("~/.config/efjrc")):
+        for filename in (os.path.expanduser("~/.efjtkrc"),
+                         os.path.expanduser("~/.config/efjtkrc")):
             if os.path.exists(filename):
                 with open(filename) as f:
                     return f.read()
