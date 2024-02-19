@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+   <meta charset='UTF-8'/>
+    <title>Summary</title>
+    <style>
+      :root {
+          --thin-border: 0.0625rem solid black;
+          --thick-border: 0.125rem solid black;
+          --stripe: #E0FFE0;
+          background-color: #404040;
+          color: black;
+          font-family: arial, sans-serif;
+      }
+      body {
+          max-width:50rem;
+          margin: 0 auto;
+          background-color: white;
+          padding: 1rem 2rem 2rem;
+          line-height: 1.5
+      }
+      h1 {
+          text-align: center;
+      }
+      table {
+          margin: auto;
+          border: var(--thick-border);
+          border-collapse: collapse;
+          table-layout: fixed;
+          width: 40rem;
+      }
+      thead {
+          border: var(--thick-border);
+      }
+      td, th {
+          text-align: center;
+          border: var(--thin-border);
+      }
+      td:first-child, th:first-child {
+          border-right: var(--thick-border);
+          width: 10rem;
+      }
+      .landings td:last-child, .landings th:last-child,
+      .roles td:last-child, .roles th:last-child {
+          border-left: var(--thick-border);
+      }
+      .conditions td:nth-child(4), .conditions th:nth-child(4) {
+          border-left: var(--thick-border);
+      }
+      tbody tr:nth-child(even) {
+          background-color: var(--stripe);
+      }
+      .col_total {
+          border-top: var(--thick-border);
+      }
+      .total {
+          font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Roles</h1>
+    <table class="roles">
+      <thead>
+        <tr><th>Type</th><th>p1</th><th>p1s</th><th>p2</th><th>put</th>
+          <th>Total</th></tr>
+      </thead>
+      <tbody>
+<tr><th>A320</th><td></td><td>1:00</td><td>1:00</td><td></td><td class='total'>2:00</td></tr>
+<tr><th>A321</th><td></td><td>1:00</td><td>1:00</td><td></td><td class='total'>2:00</td></tr>
+      </tbody>
+      <tfoot>
+<tr class='col_total'><th>Total</th><td class='total'></td><td class="total">2:00</td><td class="total">2:00</td><td class="total"></td><td class='total'>4:00</td></tr>
+      </tfoot>
+    </table>
+    <h1>Conditions</h1>
+    <table class="conditions">
+      <thead>
+        <tr><th>Type</th><th>VFR</th><th>IFR</th><th>Day</th><th>Night</th></tr>
+      </thead>
+      <tbody>
+<tr><th>A320</th><td></td><td>2:00</td><td>2:00</td><td></td></tr>
+<tr><th>A321</th><td></td><td>2:00</td><td>2:00</td><td></td></tr>
+      </tbody>
+      <tfoot>
+<tr class='col_total'><th>Total</th><td class='total'></td><td class="total">4:00</td><td class="total">4:00</td><td class="total"></td></tr>
+      </tfoot>
+    </table>
+    <h1>Landings</h1>
+    <table class="landings">
+      <thead>
+        <tr><th>Type</th><th>Day</th><th>Night</th><th>Total</th></tr>
+      </thead>
+      <tbody>
+<tr><th>A320</th><td>1</td><td>0</td><td class='total'>1</td></tr>
+<tr><th>A321</th><td>1</td><td>0</td><td class='total'>1</td></tr>
+      </tbody>
+      <tfoot>
+<tr class='col_total'><th>Total</th><td class='total'>2</td><td class="total">0</td><td class='total'>2</td></tr>
+      </tfoot>
+    </table>
+  </body>
+</html>

@@ -69,3 +69,38 @@ The input: ::
   BFS/BRS 1100/1200
 
 would `generate this output <_static/output.html>`_.
+
+
+Summary
+-------
+
+This tool summarises the eFJ data. It provides a standalone HTML file
+incorporating three tables:
+
+1. Hours flown by aircraft type and pilot role.
+2. Hours flown by aircraft type and conditions (VFR/IFR, Day/Night)
+   and pilot role.
+3. Landings by aircraft type and day/night.
+
+This file has no external dependencies, so it can safely be moved around and
+opened with any web browser. It also imports well into spreadsheets, word
+processors etc.
+
+::
+
+   efj summary < input > output.html
+
+The input: ::
+
+  2024-01-01
+  { CP:Bloggs }
+  G-ABCD:A320
+  BRS/BFS 1000/1100 p1s
+  BFS/BRS 1200/1300 p2 m
+
+  2024-01-02
+  G-EFGH:A321
+  BRS/BFS 0900/1000 p2 m
+  BFS/BRS 1100/1200 p1s
+
+would `generate this summary <_static/summary.html>`_.
