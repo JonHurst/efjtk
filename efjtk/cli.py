@@ -68,6 +68,12 @@ def main() -> int:
     except efj_parser.ValidationError as ve:
         print(str(ve), file=sys.stderr)
         return -1
+    except efjtk.convert.UnknownAircraftClass as ce:
+        print(f"Bad aircraft class entry: {ce}", file=sys.stderr)
+        return -2
+    except efjtk.convert.UnknownAircraftType as t:
+        print(f"No class for type: {t}", file=sys.stderr)
+        return -3
 
 
 if __name__ == "__main__":

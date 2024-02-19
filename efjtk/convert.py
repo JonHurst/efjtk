@@ -5,11 +5,18 @@ import datetime as dt
 import efj_parser as ep
 
 
-class UnknownAircraftClass(Exception):
+class UnknownAircraftType(Exception):
     """Aircraft type with no matching class encountered"""
 
     def __init__(self, type_):
         self.missing_type = type_
+
+
+class UnknownAircraftClass(Exception):
+    """Unknown aircraft class encountered"""
+
+    def __init__(self, bad_entry):
+        self.bad_entry = bad_entry
 
 
 def _get_template(filename):
@@ -39,14 +46,14 @@ def _aircraft_class_cells(
         try:
             aircraft_class = ac_classes[sector.aircraft.type_]
         except KeyError:
-            raise UnknownAircraftClass(sector.aircraft.type_)
+            raise UnknownAircraftType(sector.aircraft.type_)
     if aircraft_class == "mc":
         return ["", "", duration]
     if aircraft_class == "spse":
         return ["✓", "", ""]
     if aircraft_class == "spme":
         return ["", "✓", ""]
-    raise UnknownAircraftClass(sector.aircraft.type_)
+    raise UnknownAircraftClass(f"{sector.aircraft.type_} = {aircraft_class}")
 
 
 def build_logbook(in_: str, ac_classes: cp.SectionProxy) -> str:
