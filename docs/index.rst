@@ -13,6 +13,7 @@ Welcome to efjtk's documentation!
    overview
    modify
    convert
+   gui
 
 
 Indices and tables

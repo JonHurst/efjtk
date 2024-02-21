@@ -12,13 +12,6 @@ class UnknownAircraftType(Exception):
         self.missing_type = type_
 
 
-class UnknownAircraftClass(Exception):
-    """Unknown aircraft class encountered"""
-
-    def __init__(self, bad_entry):
-        self.bad_entry = bad_entry
-
-
 def _get_template(filename):
     template_file = res.files("efjtk").joinpath(filename)
     with template_file.open() as f:
@@ -51,9 +44,7 @@ def _aircraft_class_cells(
         return ["", "", duration]
     if aircraft_class == "spse":
         return ["✓", "", ""]
-    if aircraft_class == "spme":
-        return ["", "✓", ""]
-    raise UnknownAircraftClass(f"{sector.aircraft.type_} = {aircraft_class}")
+    return ["", "✓", ""]  # must be "spme"
 
 
 def build_logbook(in_: str, ac_classes: cp.SectionProxy) -> str:

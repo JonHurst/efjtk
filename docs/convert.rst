@@ -1,3 +1,5 @@
+.. _Convert:
+
 Conversion
 ==========
 
@@ -12,7 +14,7 @@ a sector by sector basis, but leaves it to tooling to determine defaults.
 The efjtk logbook tool uses an INI file to supply this knowledge. To help with
 creation of this INI file, a tool is provided to create a template: ::
 
-  efj config < my_efj > output
+  $ efj config < my_efj > output
 
 will give output something like this: ::
 
@@ -51,11 +53,11 @@ As described in the section above, this tool needs additional information about
 aircraft categorisation provided by an INI file. If this INI file is in one of
 the default locations, the command is simply: ::
 
-  efj logbook < input > output.html
+  $ efj logbook < input > output.html
 
 If the INI is in a non-default location, use: ::
 
-  efj logbook --config my.ini < input > output.html
+  $ efj logbook --config my.ini < input > output.html
 
 The input: ::
 
@@ -87,7 +89,7 @@ processors etc.
 
 ::
 
-   efj summary < input > output.html
+   $ efj summary < input > output.html
 
 The input: ::
 

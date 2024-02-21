@@ -1,3 +1,5 @@
+.. _Modification:
+
 Modification
 ============
 
@@ -11,7 +13,7 @@ out these short forms, which makes them more human legible.
 
 ::
 
-   efj expand < input > output
+   $ efj expand < input > output
 
 The input: ::
 
@@ -43,7 +45,7 @@ Updates eFJ with calculated night duration and, where necessary, night landing.
 
 ::
 
-   efj night < input > output
+   $ efj night < input > output
 
 The input: ::
 
@@ -70,7 +72,7 @@ Adds a flag to every sector to indicate that it was flown under visual flight ru
 
 ::
 
-   efj vfr < input > output
+   $ efj vfr < input > output
 
 The input: ::
 
@@ -98,7 +100,7 @@ auto-fill the roles as ``p1s`` or ``p2``.
 
 ::
 
-   efj fo < input > output
+   $ efj fo < input > output
 
 The input: ::
 
@@ -122,7 +124,7 @@ Adds the ``ins`` flag to any sector that does not already have it.
 
 ::
 
-   efj ins < input > output
+   $ efj ins < input > output
 
 The input: ::
 

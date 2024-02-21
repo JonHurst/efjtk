@@ -30,8 +30,7 @@ setuptools.setup(
                         "logbook-template.html"]
     },
     entry_points={
-        "console_scripts": [
-            "efj = efjtk.cli:main"
-        ]
+        "console_scripts": ["efj = efjtk.cli:main"],
+        "gui_scripts" : ["efjgui = efjtk.gui:main"]
     },
 )
