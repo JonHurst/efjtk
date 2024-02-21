@@ -53,16 +53,18 @@ class MainWindow(tk.Tk):
         self.__make_menu_section(top, "Export", (
             ('FCL.050 Logook', self.__not_implemented),
             ('Summary', self.__not_implemented),
-        ))
+        ), 1)
 
-    def __make_menu_section(self, top, label, entries):
+    def __make_menu_section(self, top, label, entries, underline=0):
         menu = tk.Menu(top, tearoff=0)
         for entry_label, callback in entries:
             if entry_label:
-                menu.add_command(label=entry_label, command=callback)
+                menu.add_command(label=entry_label,
+                                 command=callback,
+                                 underline=0)
             else:
                 menu.add_separator()
-        top.add_cascade(label=label, menu=menu)
+        top.add_cascade(label=label, menu=menu, underline=underline)
 
     def __not_implemented(self):
         pass
