@@ -4,6 +4,7 @@ from tkinter import ttk
 # from tkinter import filedialog
 import os.path
 import ctypes
+import json
 
 
 SETTINGS_FILE = os.path.expanduser("~/.efjtkguirc")
@@ -12,10 +13,20 @@ SETTINGS_FILE = os.path.expanduser("~/.efjtkguirc")
 class MainWindow(tk.Tk):
 
     def __init__(self):
+        try:
+            with open(SETTINGS_FILE) as f:
+                self.settings = json.load(f)
+        except Exception:
+            self.settings = {}
         tk.Tk.__init__(self)
         self.title("efjtk")
         self.__make_menu()
         self.__make_widgets()
+
+    def destroy(self):
+        with open(SETTINGS_FILE, "w") as f:
+            json.dump(self.settings, f, indent=4)
+        tk.Tk.destroy(self)
 
     def __make_widgets(self):
         sbx = ttk.Scrollbar(self, orient='horizontal')
