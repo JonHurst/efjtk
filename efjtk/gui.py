@@ -125,27 +125,27 @@ class MainWindow(tk.Tk):
         self.config(menu=top)
         self.__make_menu_section(top, "File", (
             ('Open', self.__open, "Ctrl+O", "<Control-Key-o>"),
-            ('Save', self.__not_implemented),
-            ('Save As', self.__save_as),
+            ('Save', self.__save, "Ctrl+S", "<Control-Key-s>"),
+            ('Save As', self.__save_as, "Ctrl+A", "<Control-Key-a>"),
             ("", None),
-            ('Quit', self.quit),
+            ('Quit', self.quit, "Ctrl+Q", "<Control-Key-q>"),
         ))
         self.__make_menu_section(top, "Edit", (
-            ('Undo', self.__undo),
-            ('Redo', self.__redo),
+            ('Undo', self.__undo, "Ctrl+Z", "<Control-Key-z>"),
+            ('Redo', self.__redo, "Ctrl-Shift+Z", "<Control-Shift-Key-z>"),
             ("", None),
-            ('Clear', self.__clear),
+            ('Clear', self.__clear, "Ctrl+Del", "<Control-Delete>"),
         ))
         self.__make_menu_section(top, "Modify", (
-            ('Expand', self.__expand),
-            ('Night', self.__night),
-            ('FO', self.__fo),
-            ('VFR', self.__vfr),
-            ('Instructor', self.__instructor),
+            ('Expand', self.__expand, "Ctrl+E", "<Control-Key-e>"),
+            ('Night', self.__night, "Ctrl+N", "<Control-Key-n>"),
+            ('FO', self.__fo, "Ctrl+F", "<Control-Key-f>"),
+            ('VFR', self.__vfr, "Ctrl+R", "<Control-Key-r>"),
+            ('Instructor', self.__instructor, "Ctrl+I", "<Control-Key-i>"),
         ))
         self.__make_menu_section(top, "Export", (
-            ('FCL.050 Logook', self.__not_implemented),
-            ('Summary', self.__not_implemented),
+            ('FCL.050 Logbook', self.__not_impl, "Ctrl-L", "<Control-Key-l>"),
+            ('Summary', self.__not_impl, "Ctrl-M", "<Control-Key-m>"),
         ), 1)
 
     def __make_accelerator(self, callback):
@@ -170,7 +170,7 @@ class MainWindow(tk.Tk):
                 menu.add_separator()
         top.add_cascade(label=label, menu=menu, underline=underline)
 
-    def __not_implemented(self):
+    def __not_impl(self):
         pass
 
     def __open(self):
@@ -190,6 +190,13 @@ class MainWindow(tk.Tk):
             self.txt.edit_modified(False)
             self.txt.edit_reset()
 
+    def __save(self):
+        if not self.filename:
+            return
+        with open(self.filename, "w") as f:
+            f.write(self.txt.get("1.0", tk.END))
+            self.txt.edit_modified(False)
+
     def __save_as(self):
         path = self.settings.get('savePath')
         fn = filedialog.asksaveasfilename(
@@ -200,6 +207,8 @@ class MainWindow(tk.Tk):
         self.settings['savePath'] = os.path.dirname(fn)
         with open(fn, "w") as f:
             f.write(self.txt.get("1.0", tk.END))
+            self.filename = fn
+            self.txt.edit_modified(False)
 
     def __expand(self):
         self.__modify(efjtk.modify.expand_efj)
