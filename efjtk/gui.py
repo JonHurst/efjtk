@@ -137,8 +137,8 @@ class MainWindow(tk.Tk):
             ('Expand', self.__expand),
             ('Night', self.__night),
             ('FO', self.__fo),
-            ('VFR', self.__not_implemented),
-            ('Instructor', self.__not_implemented),
+            ('VFR', self.__vfr),
+            ('Instructor', self.__instructor),
         ))
         self.__make_menu_section(top, "Export", (
             ('FCL.050 Logook', self.__not_implemented),
@@ -182,6 +182,12 @@ class MainWindow(tk.Tk):
 
     def __fo(self):
         self.__modify(efjtk.modify.add_fo_role_flag)
+
+    def __vfr(self):
+        self.__modify(efjtk.modify.add_vfr_flag)
+
+    def __instructor(self):
+        self.__modify(efjtk.modify.add_ins_flag)
 
     def __modify(self, fn):
         text = self.txt.get('1.0', 'end')
