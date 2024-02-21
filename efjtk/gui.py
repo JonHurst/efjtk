@@ -41,48 +41,22 @@ class TextWithSyntaxHighlighting(tk.Text):
         if self.highlight_mode == 'efj':
             self.highlight_efj()
 
-    def highlight_efj(self):
+    def __highlight(self, re, tag):
         count = tk.IntVar()
         start_idx = "1.0"
         while True:
-            new_idx = self.search(
-                r"\d{4}-\d{2}-\d{2}",
-                start_idx, count=count, regexp=True,
-                stopindex="end")
-            if not new_idx:
+            if not (new_idx := self.search(
+                    re, start_idx, count=count, regexp=True, stopindex="end")):
                 break
             start_idx = f"{new_idx} + {count.get()} chars"
-            self.tag_add("datetime", new_idx, start_idx)
-        start_idx = "1.0"
-        while True:
-            new_idx = self.search(
-                r"\d{4}/\d{4}",
-                start_idx, count=count, regexp=True,
-                stopindex="end")
-            if not new_idx:
-                break
-            start_idx = f"{new_idx} + {count.get()} chars"
-            self.tag_add("datetime", new_idx, start_idx)
-        start_idx = "1.0"
-        while True:
-            new_idx = self.search(
-                "CP:|FO:|PU:|FA:",
-                start_idx, count=count, regexp=True,
-                stopindex="end")
-            if not new_idx:
-                break
-            start_idx = f"{new_idx} + {count.get()} chars"
-            self.tag_add("keyword", new_idx, start_idx)
-        start_idx = "1.0"
-        while True:
-            new_idx = self.search(
-                r"#.*",
-                start_idx, count=count, regexp=True,
-                stopindex="end")
-            if not new_idx:
-                break
-            start_idx = f"{new_idx} + {count.get()} chars"
-            self.tag_add("grayed", new_idx, start_idx)
+            self.tag_add(tag, new_idx, start_idx)
+
+    def highlight_efj(self):
+        for re, tag in ((r"\d{4}-\d{2}-\d{2}", "datetime"),
+                        (r"\d{4}/\d{4}", "datetime"),
+                        ("CP:|FO:|PU:|FA:", "keyword"),
+                        (r"#.*", "grayed")):
+            self.__highlight(re, tag)
 
 
 class MainWindow(tk.Tk):
@@ -111,6 +85,8 @@ class MainWindow(tk.Tk):
         tk.Tk.destroy(self)
 
     def __make_widgets(self):
+        self.columnconfigure(0, weight=1)
+        self.rowconfigure(0, weight=1)
         sbx = ttk.Scrollbar(self, orient='horizontal')
         sby = ttk.Scrollbar(self, orient='vertical')
         sbx.grid(row=1, column=0, sticky=tk.EW)
@@ -128,29 +104,29 @@ class MainWindow(tk.Tk):
         self.menus["top"] = top
         self.config(menu=top)
         self.__make_menu_section(top, "File", (
-            ('Open', self.__open, "Ctrl+O", "<Control-Key-o>"),
-            ('Save', self.__save, "Ctrl+S", "<Control-Key-s>"),
-            ('Save As', self.__save_as, "Ctrl+A", "<Control-Key-a>"),
+            ('Open', self.__open, "Ctrl+O", "<Control-Key-o>", 0),
+            ('Save', self.__save, "Ctrl+S", "<Control-Key-s>", 0),
+            ('Save As', self.__save_as, "Ctrl+A", "<Control-Key-a>", 5),
             ("", None),
-            ('Quit', self.quit, "Ctrl+Q", "<Control-Key-q>"),
+            ('Quit', self.quit, "Ctrl+Q", "<Control-Key-q>", 0),
         ))
         self.__make_menu_section(top, "Edit", (
-            ('Undo', self.__undo, "Ctrl+Z", "<Control-Key-z>"),
-            ('Redo', self.__redo, "Ctrl-Shift+Z", "<Control-Shift-Key-z>"),
+            ('Undo', self.__undo, "Ctrl+Z", "<Control-Key-z>", 0),
+            ('Redo', self.__redo, "Ctrl-Shift+Z", "<Control-Shift-Key-z>", 0),
             ("", None),
-            ('Clear', self.__clear, "Ctrl+Del", "<Control-Delete>"),
+            ('Clear', self.__clear, "Ctrl+Del", "<Control-Delete>", 0),
         ))
         self.__make_menu_section(top, "Modify", (
-            ('Expand', self.__expand, "Ctrl+E", "<Control-Key-e>"),
-            ('Night', self.__night, "Ctrl+N", "<Control-Key-n>"),
-            ('FO', self.__fo, "Ctrl+F", "<Control-Key-f>"),
-            ('VFR', self.__vfr, "Ctrl+R", "<Control-Key-r>"),
-            ('Instructor', self.__instructor, "Ctrl+I", "<Control-Key-i>"),
+            ('Expand', self.__expand, "Ctrl+E", "<Control-Key-e>", 0),
+            ('Night', self.__night, "Ctrl+N", "<Control-Key-n>", 0),
+            ('FO', self.__fo, "Ctrl+F", "<Control-Key-f>", 0),
+            ('VFR', self.__vfr, "Ctrl+R", "<Control-Key-r>", 0),
+            ('Instructor', self.__instructor, "Ctrl+I", "<Control-Key-i>", 0),
         ))
         self.__make_menu_section(top, "Export", (
             ('FCL.050 Logbook', self.__export_logbook,
-             "Ctrl-L", "<Control-Key-l>"),
-            ('Summary', self.__not_impl, "Ctrl-M", "<Control-Key-m>"),
+             "Ctrl-L", "<Control-Key-l>", 8),
+            ('Summary', self.__not_impl, "Ctrl-M", "<Control-Key-m>", 2),
         ), 1)
 
     def __make_accelerator(self, callback):
@@ -163,11 +139,13 @@ class MainWindow(tk.Tk):
         self.menus[label.lower()] = menu
         for entry in entries:
             entry_label, callback = entry[:2]
-            accelerator, event = entry[2:] if len(entry) == 4 else (None, None)
+            accelerator, event, underline = None, None, 0
+            if len(entry) == 5:
+                accelerator, event, underline = entry[2:]
             if entry_label:
                 menu.add_command(label=entry_label,
                                  command=callback,
-                                 underline=0,
+                                 underline=underline,
                                  accelerator=accelerator)
                 if event:
                     self.bind(event, self.__make_accelerator(callback))
