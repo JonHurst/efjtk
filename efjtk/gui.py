@@ -7,8 +7,12 @@ import ctypes
 import json
 
 import efjtk.modify
+import efjtk.convert
+import efjtk.config
+
 
 SETTINGS_FILE = os.path.expanduser("~/.efjtkguirc")
+CONFIG_FILE = os.path.expanduser("~/.efjtkrc")
 
 
 class TextWithSyntaxHighlighting(tk.Text):
@@ -144,7 +148,8 @@ class MainWindow(tk.Tk):
             ('Instructor', self.__instructor, "Ctrl+I", "<Control-Key-i>"),
         ))
         self.__make_menu_section(top, "Export", (
-            ('FCL.050 Logbook', self.__not_impl, "Ctrl-L", "<Control-Key-l>"),
+            ('FCL.050 Logbook', self.__export_logbook,
+             "Ctrl-L", "<Control-Key-l>"),
             ('Summary', self.__not_impl, "Ctrl-M", "<Control-Key-m>"),
         ), 1)
 
@@ -275,6 +280,21 @@ class MainWindow(tk.Tk):
         else:
             self.menus["file"].entryconfigure("Save", state="disabled")
             self.title("efjtk")
+
+    def __export_logbook(self):
+        if not (text := self.txt.get("1.0", tk.END)):
+            return
+        with open(CONFIG_FILE) as f:
+            ac = efjtk.config.aircraft_classes(f.read())
+            result = efjtk.convert.build_logbook(text, ac)
+            path = self.settings.get('exportPath')
+            if not (fn := filedialog.asksaveasfilename(
+                    filetypes=(("All", "*"),),
+                    initialdir=path)):
+                return
+            self.settings['exportPath'] = os.path.dirname(fn)
+            with open(fn, "w") as f:
+                f.write(result)
 
 
 def main():
