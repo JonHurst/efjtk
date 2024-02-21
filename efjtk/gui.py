@@ -1,4 +1,5 @@
 import tkinter as tk
+import tkinter.font as font
 from tkinter import ttk
 from tkinter import messagebox
 from tkinter import filedialog
@@ -21,9 +22,14 @@ HELP_EFJ = "https://hursts.org.uk/efjdocs/format.html"
 class TextWithSyntaxHighlighting(tk.Text):
 
     def __init__(self, parent, highlight_mode, **kwargs):
+        family = "Courier"
+        if "IBM Plex Mono" in font.families():
+            family = "IBM Plex Mono"
+        elif "Consolas" in font.families():
+            family = "Consolas"
         tk.Text.__init__(self, parent, background='white',
                          wrap="none", undo=True, autoseparators=False,
-                         **kwargs)
+                         font=(family, 11, 'normal'), **kwargs)
         self.highlight_mode = highlight_mode
         self.tag_configure("grayed", foreground="#707070")
         self.tag_configure("keyword", foreground="green")
