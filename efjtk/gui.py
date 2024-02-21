@@ -1,10 +1,11 @@
 import tkinter as tk
 from tkinter import ttk
-# from tkinter import messagebox
+from tkinter import messagebox
 from tkinter import filedialog
 import os.path
 import ctypes
 import json
+import webbrowser
 
 import efjtk.modify
 import efjtk.convert
@@ -13,6 +14,8 @@ import efjtk.config
 
 SETTINGS_FILE = os.path.expanduser("~/.efjtkguirc")
 CONFIG_FILE = os.path.expanduser("~/.efjtkrc")
+HELP_URL = "https://hursts.org.uk/efjdocs"
+HELP_EFJ = "https://hursts.org.uk/efjdocs/format.html"
 
 
 class TextWithSyntaxHighlighting(tk.Text):
@@ -126,8 +129,12 @@ class MainWindow(tk.Tk):
         self.__make_menu_section(top, "Export", (
             ('FCL.050 Logbook', self.__export_logbook,
              "Ctrl-L", "<Control-Key-l>", 8),
-            ('Summary', self.__not_impl, "Ctrl-M", "<Control-Key-m>", 2),
+            ('Summary', self.__export_summary, "Ctrl-M", "<Control-Key-m>", 2),
         ), 1)
+        self.__make_menu_section(top, "Help", (
+            ('Online Help', self.__help, "Ctrl-H", "<Control-Key-h>", 7),
+            ('eFJ format', self.__efj_help, "Ctrl-J", "<Control-Key-j>", 2),
+        ))
 
     def __make_accelerator(self, callback):
         def accelerator(ev):
@@ -139,13 +146,13 @@ class MainWindow(tk.Tk):
         self.menus[label.lower()] = menu
         for entry in entries:
             entry_label, callback = entry[:2]
-            accelerator, event, underline = None, None, 0
+            accelerator, event, e_underline = None, None, 0
             if len(entry) == 5:
-                accelerator, event, underline = entry[2:]
+                accelerator, event, e_underline = entry[2:]
             if entry_label:
                 menu.add_command(label=entry_label,
                                  command=callback,
-                                 underline=underline,
+                                 underline=e_underline,
                                  accelerator=accelerator)
                 if event:
                     self.bind(event, self.__make_accelerator(callback))
@@ -273,6 +280,28 @@ class MainWindow(tk.Tk):
             self.settings['exportPath'] = os.path.dirname(fn)
             with open(fn, "w") as f:
                 f.write(result)
+                messagebox.showinfo("Saved", "Logbook saved")
+
+    def __export_summary(self):
+        if not (text := self.txt.get("1.0", tk.END)):
+            return
+        result = efjtk.convert.build_summary(text)
+        path = self.settings.get('exportPath')
+        if not (fn := filedialog.asksaveasfilename(
+                filetypes=(("HTML", "*.html"),
+                           ("All", "*")),
+                initialdir=path)):
+            return
+        self.settings['exportPath'] = os.path.dirname(fn)
+        with open(fn, "w") as f:
+            f.write(result)
+            messagebox.showinfo("Saved", "Summary saved")
+
+    def __help(self):
+        webbrowser.open(HELP_URL)
+
+    def __efj_help(self):
+        webbrowser.open(HELP_EFJ)
 
 
 def main():
