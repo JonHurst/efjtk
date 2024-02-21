@@ -36,7 +36,6 @@ class TextWithSyntaxHighlighting(tk.Text):
             self.tag_remove(tag, "1.0", "end")
         if self.highlight_mode == 'efj':
             self.highlight_efj()
-        self.edit_modified(False)
 
     def highlight_efj(self):
         count = tk.IntVar()
@@ -92,12 +91,15 @@ class MainWindow(tk.Tk):
             self.settings = {}
         tk.Tk.__init__(self)
         self.title("efjtk")
+        self.filename = None
         self.menus = {}
         self.__make_menu()
+        self.menus["file"].entryconfigure("Save", state="disabled")
         self.menus["edit"].entryconfigure("Undo", state="disabled")
         self.menus["edit"].entryconfigure("Redo", state="disabled")
         self.__make_widgets()
         self.txt.bind("<<UndoStack>>", self.__manage_undo)
+        self.txt.bind("<<Modified>>", self.__manage_modified)
 
     def destroy(self):
         with open(SETTINGS_FILE, "w") as f:
@@ -122,8 +124,9 @@ class MainWindow(tk.Tk):
         self.menus["top"] = top
         self.config(menu=top)
         self.__make_menu_section(top, "File", (
-            ('Open', self.__open),
+            ('Open', self.__open, "Ctrl+O", "<Control-Key-o>"),
             ('Save', self.__not_implemented),
+            ('Save As', self.__save_as),
             ("", None),
             ('Quit', self.quit),
         ))
@@ -131,7 +134,7 @@ class MainWindow(tk.Tk):
             ('Undo', self.__undo),
             ('Redo', self.__redo),
             ("", None),
-            ('Clear', self.__not_implemented),
+            ('Clear', self.__clear),
         ))
         self.__make_menu_section(top, "Modify", (
             ('Expand', self.__expand),
@@ -145,14 +148,24 @@ class MainWindow(tk.Tk):
             ('Summary', self.__not_implemented),
         ), 1)
 
+    def __make_accelerator(self, callback):
+        def accelerator(ev):
+            callback()
+        return accelerator
+
     def __make_menu_section(self, top, label, entries, underline=0):
         menu = tk.Menu(top, tearoff=0)
         self.menus[label.lower()] = menu
-        for entry_label, callback in entries:
+        for entry in entries:
+            entry_label, callback = entry[:2]
+            accelerator, event = entry[2:] if len(entry) == 4 else (None, None)
             if entry_label:
                 menu.add_command(label=entry_label,
                                  command=callback,
-                                 underline=0)
+                                 underline=0,
+                                 accelerator=accelerator)
+                if event:
+                    self.bind(event, self.__make_accelerator(callback))
             else:
                 menu.add_separator()
         top.add_cascade(label=label, menu=menu, underline=underline)
@@ -167,12 +180,26 @@ class MainWindow(tk.Tk):
             initialdir=path)
         if not fn:
             return
+        self.filename = fn
         self.settings['openPath'] = os.path.dirname(fn)
         with open(fn) as f:
             efj = f.read()
             self.txt.delete("1.0", tk.END)
             self.txt.insert("1.0", efj)
             self.txt.see(tk.END)
+            self.txt.edit_modified(False)
+            self.txt.edit_reset()
+
+    def __save_as(self):
+        path = self.settings.get('savePath')
+        fn = filedialog.asksaveasfilename(
+            filetypes=(("All", "*"),),
+            initialdir=path)
+        if not fn:
+            return
+        self.settings['savePath'] = os.path.dirname(fn)
+        with open(fn, "w") as f:
+            f.write(self.txt.get("1.0", tk.END))
 
     def __expand(self):
         self.__modify(efjtk.modify.expand_efj)
@@ -217,6 +244,11 @@ class MainWindow(tk.Tk):
             self.txt.edit_redo()
             self.txt.highlight_syntax()
 
+    def __clear(self):
+        self.txt.edit_separator()
+        self.txt.delete('1.0', tk.END)
+        self.menus["file"].entryconfigure("Save", state="disabled")
+
     def __manage_undo(self, event):
         if self.txt.edit("canundo"):
             self.menus["edit"].entryconfigure("Undo", state="normal")
@@ -226,6 +258,14 @@ class MainWindow(tk.Tk):
             self.menus["edit"].entryconfigure("Redo", state="normal")
         else:
             self.menus["edit"].entryconfigure("Redo", state="disabled")
+
+    def __manage_modified(self, event):
+        if self.filename and self.txt.edit_modified():
+            self.menus["file"].entryconfigure("Save", state="normal")
+            self.title("efjtk *")
+        else:
+            self.menus["file"].entryconfigure("Save", state="disabled")
+            self.title("efjtk")
 
 
 def main():
