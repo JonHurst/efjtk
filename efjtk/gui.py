@@ -163,6 +163,7 @@ class MainWindow(tk.Tk):
             efj = f.read()
             self.txt.delete("1.0", tk.END)
             self.txt.insert("1.0", efj)
+            self.txt.see(tk.END)
 
 
 def main():
