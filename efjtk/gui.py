@@ -49,6 +49,8 @@ class TextWithSyntaxHighlighting(tk.Text):
             self.tag_remove(tag, "1.0", "end")
         if self.highlight_mode == 'efj':
             self.highlight_efj()
+        elif self.highlight_mode == 'config':
+            self.highlight_config()
 
     def __highlight(self, re, tag):
         count = tk.IntVar()
@@ -66,6 +68,66 @@ class TextWithSyntaxHighlighting(tk.Text):
                         ("CP:|FO:|PU:|FA:", "keyword"),
                         (r"#.*", "grayed")):
             self.__highlight(re, tag)
+
+    def highlight_config(self):
+        for re, tag in ((r"(spse|spme|mc)\s", "keyword"),
+                        (r"\[[\w.]+\]\n", "grayed")):
+            self.__highlight(re, tag)
+
+
+class ConfigDialog(tk.Toplevel):
+
+    def __init__(self):
+        tk.Toplevel.__init__(self)
+        self.title("Config Editor")
+        self.__make_widgets()
+        with open(CONFIG_FILE) as f:
+            self.txt.insert("1.0", f.read())
+        if self.txt.index(tk.END) == "1.0":
+            self.txt.insert("1.0", "[aircraft.classes]\n")
+        self.focus_set()
+        self.grab_set()
+        self.wait_window()
+
+    def __make_widgets(self):
+        buttons_frm = tk.Frame(self, padx="2m", pady="1m")
+        tk.Button(buttons_frm, text="Save", width="7", command=self.destroy
+                  ).pack(side=tk.RIGHT)
+        tk.Button(buttons_frm, text="Cancel", width="7", command=self.destroy
+                  ).pack(side=tk.RIGHT, padx="1m")
+        tk.Button(buttons_frm, text="Help", width="7", command=self.destroy
+                  ).pack(side=tk.LEFT)
+        buttons_frm.pack(side=tk.BOTTOM, fill=tk.X)
+
+        tk.Frame(self, height="2m").pack(side=tk.BOTTOM)  # Spacer
+
+        self.msg = TextWithSyntaxHighlighting(
+            self, "config", width=40, height=3)
+        self.msg.insert("1.0",
+                        "spse : single pilot single engine\n"
+                        "spme : single pilot multi engine\n"
+                        "mc   : multi crew")
+        self.msg.config(state="disabled", bg="#E0E0E0")
+        self.msg.pack(side=tk.BOTTOM, fill=tk.X)
+
+        tk.Frame(self, height="2m").pack(side=tk.BOTTOM)  # Spacer
+
+        text_frm = tk.Frame(self)
+        text_frm.columnconfigure(0, weight=1)
+        text_frm.rowconfigure(0, weight=1)
+        sbx = ttk.Scrollbar(text_frm, orient='horizontal')
+        sby = ttk.Scrollbar(text_frm, orient='vertical')
+        sbx.grid(row=1, column=0, sticky=tk.EW)
+        sby.grid(row=0, column=1, sticky=tk.NS)
+        self.txt = TextWithSyntaxHighlighting(
+            text_frm, "config", width=30,  height=20)
+        self.txt.grid(row=0, column=0, sticky=tk.NSEW)
+        sbx.config(command=self.txt.xview)
+        sby.config(command=self.txt.yview)
+        self.txt.config(xscrollcommand=sbx.set)
+        self.txt.config(yscrollcommand=sby.set)
+        self.txt.focus()
+        text_frm.pack(fill=tk.BOTH, expand=tk.YES)
 
 
 class MainWindow(tk.Tk):
@@ -116,6 +178,8 @@ class MainWindow(tk.Tk):
             ('Open', self.__open, "Ctrl+O", "<Control-Key-o>", 0),
             ('Save', self.__save, "Ctrl+S", "<Control-Key-s>", 0),
             ('Save As', self.__save_as, "Ctrl+A", "<Control-Key-a>", 5),
+            ("", None),
+            ('Edit Config', self.__config, "Ctrl+G", "<Control-Key-g>", 10),
             ("", None),
             ('Quit', self.quit, "Ctrl+Q", "<Control-Key-q>", 0),
         ))
@@ -205,6 +269,9 @@ class MainWindow(tk.Tk):
             f.write(self.txt.get("1.0", tk.END))
             self.filename = fn
             self.txt.edit_modified(False)
+
+    def __config(self):
+        ConfigDialog()
 
     def __expand(self):
         self.__modify(efjtk.modify.expand_efj)
