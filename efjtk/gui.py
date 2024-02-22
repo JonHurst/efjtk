@@ -332,19 +332,20 @@ class MainWindow(tk.Tk):
         text = self.txt.get('1.0', 'end')
         result = fn(text)
         range_ = self.txt.tag_ranges("sel")
-        if range_:
-            start_line = int(self.txt.index(range_[0]).split(".")[0]) - 1
-            end_line = int(self.txt.index(range_[1]).split(".")[0]) - 1
-            text_lines = text.splitlines()
-            result_lines = result.splitlines()
-            result = "\n".join(text_lines[:start_line] +
-                               result_lines[start_line:end_line]
-                               + text_lines[end_line:])
         self.txt.edit_separator()
-        pos = self.txt.index(tk.INSERT)
-        self.txt.delete('1.0', tk.END)
-        self.txt.insert('1.0', result)
-        self.txt.mark_set(tk.INSERT, pos)
+        if range_:
+            start = f"{self.txt.index(range_[0])} linestart"
+            end = f"{self.txt.index(range_[1])} lineend"
+            start_line = int(self.txt.index(start).split(".")[0])
+            end_line = int(self.txt.index(end).split(".")[0])
+            result_lines = result.splitlines()
+            result = "\n".join(result_lines[start_line - 1:end_line])
+            self.txt.delete(start, end)
+            self.txt.insert(start, result)
+        else:
+            self.txt.delete('1.0', tk.END)
+            self.txt.insert('1.0', result)
+            self.txt.see(tk.END)
 
     def __undo(self):
         if self.txt.edit("canundo"):
