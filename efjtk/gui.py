@@ -7,6 +7,7 @@ import os.path
 import ctypes
 import json
 import webbrowser
+import configparser as cp
 
 import efjtk.modify
 import efjtk.convert
@@ -91,18 +92,18 @@ class ConfigDialog(tk.Toplevel):
 
     def __make_widgets(self):
         buttons_frm = tk.Frame(self, padx="2m", pady="1m")
-        tk.Button(buttons_frm, text="Save", width="7", command=self.destroy
+        tk.Button(buttons_frm, text="Save", width="7", command=self.__save
                   ).pack(side=tk.RIGHT)
         tk.Button(buttons_frm, text="Cancel", width="7", command=self.destroy
                   ).pack(side=tk.RIGHT, padx="1m")
-        tk.Button(buttons_frm, text="Help", width="7", command=self.destroy
+        tk.Button(buttons_frm, text="Help", width="7", command=self.__help
                   ).pack(side=tk.LEFT)
         buttons_frm.pack(side=tk.BOTTOM, fill=tk.X)
 
         tk.Frame(self, height="2m").pack(side=tk.BOTTOM)  # Spacer
 
         self.msg = TextWithSyntaxHighlighting(
-            self, "config", width=40, height=3)
+            self, "config", width=35, height=3)
         self.msg.insert("1.0",
                         "spse : single pilot single engine\n"
                         "spme : single pilot multi engine\n"
@@ -128,6 +129,37 @@ class ConfigDialog(tk.Toplevel):
         self.txt.config(yscrollcommand=sby.set)
         self.txt.focus()
         text_frm.pack(fill=tk.BOTH, expand=tk.YES)
+
+    def __save(self):
+        parser = cp.ConfigParser()
+        try:
+            parser.read_string(self.txt.get("1.0", tk.END))
+        except cp.Error as e:
+            messagebox.showerror(
+                "Bad INI format",
+                str(e),
+                parent=self)
+            return
+        if "aircraft.classes" not in parser.sections():
+            messagebox.showerror(
+                "Missing Section",
+                "[aircraft.classes] not found",
+                parent=self)
+            return
+        for key in parser["aircraft.classes"]:
+            if parser["aircraft.classes"][key] not in {"spse", "spme", "mc"}:
+                messagebox.showerror(
+                    "Bad aircraft class",
+                    f"{parser['aircraft.classes'][key]} is not a class\n"
+                    f"Must be one of spse, spme or mc",
+                    parent=self)
+                return
+        with open(CONFIG_FILE, "w") as f:
+            parser.write(f)
+        self.destroy()
+
+    def __help(self):
+        messagebox.showinfo("Oops", "Help is not written yet!", parent=self)
 
 
 class MainWindow(tk.Tk):
