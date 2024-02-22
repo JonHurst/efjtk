@@ -29,7 +29,7 @@ class TextWithSyntaxHighlighting(tk.Text):
         elif "Consolas" in font.families():
             family = "Consolas"
         tk.Text.__init__(self, parent, background='white',
-                         wrap="none", undo=True, autoseparators=False,
+                         wrap="none", undo=True,
                          font=(family, 11, 'normal'), **kwargs)
         self.highlight_mode = highlight_mode
         self.tag_configure("grayed", foreground="#707070")
@@ -162,6 +162,7 @@ class ConfigDialog(tk.Toplevel):
                 self.txt.insert("1.0", f.read())
         except OSError:
             self.txt.insert("1.0", "[aircraft.classes]\n")
+        self.txt.edit_reset()
         self.focus_set()
         self.grab_set()
         self.wait_window()
@@ -200,7 +201,8 @@ class MainWindow(tk.Tk):
         sby = ttk.Scrollbar(self, orient='vertical')
         sbx.grid(row=1, column=0, sticky=tk.EW)
         sby.grid(row=0, column=1, sticky=tk.NS)
-        self.txt = TextWithSyntaxHighlighting(self, "efj")
+        self.txt = TextWithSyntaxHighlighting(
+            self, "efj", autoseparators=False)
         self.txt.grid(row=0, column=0, sticky=tk.NSEW)
         sbx.config(command=self.txt.xview)
         sby.config(command=self.txt.yview)
