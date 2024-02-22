@@ -82,13 +82,7 @@ class ConfigDialog(tk.Toplevel):
         tk.Toplevel.__init__(self)
         self.title("Config Editor")
         self.__make_widgets()
-        with open(CONFIG_FILE) as f:
-            self.txt.insert("1.0", f.read())
-        if self.txt.index(tk.END) == "1.0":
-            self.txt.insert("1.0", "[aircraft.classes]\n")
-        self.focus_set()
-        self.grab_set()
-        self.wait_window()
+        self.retval = False
 
     def __make_widgets(self):
         buttons_frm = tk.Frame(self, padx="2m", pady="1m")
@@ -156,10 +150,22 @@ class ConfigDialog(tk.Toplevel):
                 return
         with open(CONFIG_FILE, "w") as f:
             parser.write(f)
+        self.retval = True
         self.destroy()
 
     def __help(self):
         messagebox.showinfo("Oops", "Help is not written yet!", parent=self)
+
+    def do_modal(self):
+        try:
+            with open(CONFIG_FILE) as f:
+                self.txt.insert("1.0", f.read())
+        except OSError:
+            self.txt.insert("1.0", "[aircraft.classes]\n")
+        self.focus_set()
+        self.grab_set()
+        self.wait_window()
+        return self.retval
 
 
 class MainWindow(tk.Tk):
@@ -303,7 +309,7 @@ class MainWindow(tk.Tk):
             self.txt.edit_modified(False)
 
     def __config(self):
-        ConfigDialog()
+        return ConfigDialog().do_modal()
 
     def __expand(self):
         self.__modify(efjtk.modify.expand_efj)
@@ -374,18 +380,37 @@ class MainWindow(tk.Tk):
     def __export_logbook(self):
         if not (text := self.txt.get("1.0", tk.END)):
             return
-        with open(CONFIG_FILE) as f:
-            ac = efjtk.config.aircraft_classes(f.read())
+        try:
+            with open(CONFIG_FILE) as fc:
+                config_str = fc.read()
+        except OSError:
+            config_str = ""
+        ac = efjtk.config.aircraft_classes(config_str)
+        try:
             result = efjtk.convert.build_logbook(text, ac)
             path = self.settings.get('exportPath')
             if not (fn := filedialog.asksaveasfilename(
-                    filetypes=(("All", "*"),),
+                    filetypes=(("HTML", "*.html"),),
                     initialdir=path)):
                 return
             self.settings['exportPath'] = os.path.dirname(fn)
-            with open(fn, "w") as f:
-                f.write(result)
-                messagebox.showinfo("Saved", "Logbook saved")
+            fo = open(fn, "w")
+            fo.write(result)
+            messagebox.showinfo("Saved", "Logbook saved")
+        except efjtk.convert.UnknownAircraftType:
+            self.__add_unknown_aircraft_to_config(text, config_str)
+            if self.__config():
+                self.__export_logbook()
+
+    def __add_unknown_aircraft_to_config(self, text, config_str):
+        try:
+            config_str = efjtk.config.build_config(text, config_str, True)
+            with open(CONFIG_FILE, "w") as fc:
+                fc.write(config_str)
+        except cp.Error:
+            messagebox.showerror(
+                "Config Error",
+                "Bad config file. Please correct it!")
 
     def __export_summary(self):
         if not (text := self.txt.get("1.0", tk.END)):
