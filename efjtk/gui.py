@@ -273,9 +273,6 @@ class MainWindow(tk.Tk):
                 menu.add_separator()
         top.add_cascade(label=label, menu=menu, underline=underline)
 
-    def __not_impl(self):
-        pass
-
     def __open(self):
         path = self.settings.get('openPath')
         fn = filedialog.askopenfilename(
@@ -296,7 +293,7 @@ class MainWindow(tk.Tk):
     def __save(self):
         if not self.filename:
             return
-        with open(self.filename, "w") as f:
+        with open(self.filename, "w", encoding="utf-8") as f:
             f.write(self.txt.get("1.0", tk.END))
             self.txt.edit_modified(False)
 
@@ -308,7 +305,7 @@ class MainWindow(tk.Tk):
         if not fn:
             return
         self.settings['savePath'] = os.path.dirname(fn)
-        with open(fn, "w") as f:
+        with open(fn, "w", encoding="utf-8") as f:
             f.write(self.txt.get("1.0", tk.END))
             self.filename = fn
             self.txt.edit_modified(False)
@@ -398,6 +395,7 @@ class MainWindow(tk.Tk):
             if not (fn := filedialog.asksaveasfilename(
                     filetypes=(("HTML", "*.html"),
                                ("All", "*")),
+                    defaultextension=".html",
                     initialdir=path)):
                 return
             self.settings['exportPath'] = os.path.dirname(fn)
@@ -427,6 +425,7 @@ class MainWindow(tk.Tk):
         if not (fn := filedialog.asksaveasfilename(
                 filetypes=(("HTML", "*.html"),
                            ("All", "*")),
+                defaultextension=".html",
                 initialdir=path)):
             return
         self.settings['exportPath'] = os.path.dirname(fn)
