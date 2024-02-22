@@ -192,7 +192,10 @@ class MainWindow(tk.Tk):
     def destroy(self):
         with open(SETTINGS_FILE, "w") as f:
             json.dump(self.settings, f, indent=4)
-        tk.Tk.destroy(self)
+        if self.txt.edit_modified():
+            if messagebox.askyesno("Save", "Save before quitting?"):
+                self.__save()
+        self.quit()
 
     def __make_widgets(self):
         self.columnconfigure(0, weight=1)
@@ -221,7 +224,7 @@ class MainWindow(tk.Tk):
             ("", None),
             ('Edit Config', self.__config, "Ctrl+G", "<Control-Key-g>", 10),
             ("", None),
-            ('Quit', self.quit, "Ctrl+Q", "<Control-Key-q>", 0),
+            ('Quit', self.destroy, "Ctrl+Q", "<Control-Key-q>", 0),
         ))
         self.__make_menu_section(top, "Edit", (
             ('Undo', self.__undo, "Ctrl+Z", "<Control-Key-z>", 0),
@@ -283,7 +286,7 @@ class MainWindow(tk.Tk):
         self.filename = fn
         self.settings['openPath'] = os.path.dirname(fn)
         with open(fn) as f:
-            efj = f.read()
+            efj = f.read().strip()
             self.txt.delete("1.0", tk.END)
             self.txt.insert("1.0", efj)
             self.txt.see(tk.END)
@@ -393,13 +396,14 @@ class MainWindow(tk.Tk):
             result = efjtk.convert.build_logbook(text, ac)
             path = self.settings.get('exportPath')
             if not (fn := filedialog.asksaveasfilename(
-                    filetypes=(("HTML", "*.html"),),
+                    filetypes=(("HTML", "*.html"),
+                               ("All", "*")),
                     initialdir=path)):
                 return
             self.settings['exportPath'] = os.path.dirname(fn)
-            fo = open(fn, "w")
-            fo.write(result)
-            messagebox.showinfo("Saved", "Logbook saved")
+            with open(fn, "w", encoding="utf-8") as f:
+                f.write(result)
+                messagebox.showinfo("Saved", "Logbook saved")
         except efjtk.convert.UnknownAircraftType:
             self.__add_unknown_aircraft_to_config(text, config_str)
             if self.__config():
@@ -426,7 +430,7 @@ class MainWindow(tk.Tk):
                 initialdir=path)):
             return
         self.settings['exportPath'] = os.path.dirname(fn)
-        with open(fn, "w") as f:
+        with open(fn, "w", encoding="utf-8") as f:
             f.write(result)
             messagebox.showinfo("Saved", "Summary saved")
 
