@@ -30,7 +30,7 @@ class TextWithSyntaxHighlighting(tk.Text):
             family = "Consolas"
         tk.Text.__init__(self, parent, background='white',
                          wrap="none", undo=True,
-                         font=(family, 11, 'normal'), **kwargs)
+                         font=(family, 10, 'normal'), **kwargs)
         self.highlight_mode = highlight_mode
         self.tag_configure("grayed", foreground="#707070")
         self.tag_configure("keyword", foreground="green")
