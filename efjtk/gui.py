@@ -202,8 +202,10 @@ class MainWindow(tk.Tk):
         self.rowconfigure(0, weight=1)
         sbx = ttk.Scrollbar(self, orient='horizontal')
         sby = ttk.Scrollbar(self, orient='vertical')
+        grip = ttk.Sizegrip(self)
         sbx.grid(row=1, column=0, sticky=tk.EW)
         sby.grid(row=0, column=1, sticky=tk.NS)
+        grip.grid(row=1, column=1, sticky=tk.NSEW)
         self.txt = TextWithSyntaxHighlighting(
             self, "efj", autoseparators=False)
         self.txt.grid(row=0, column=0, sticky=tk.NSEW)
