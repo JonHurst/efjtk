@@ -232,6 +232,11 @@ class MainWindow(tk.Tk):
             ('Undo', self.__undo, "Ctrl+Z", "<Control-Key-z>", 0),
             ('Redo', self.__redo, "Ctrl-Shift+Z", "<Control-Shift-Key-z>", 0),
             ("", None),
+            ('Cut', self.__cut, "Ctrl+X", None, 0),
+            ('Copy', self.__copy, "Ctrl+C", None, 0),
+            ('Paste', self.__paste, "Ctrl+V", None, 0),
+            ("", None),
+            ('Select All', self.__select_all, "Ctrl+L", "<Control-Key-l>", 8),
             ('Clear', self.__clear, "Ctrl+Del", "<Control-Delete>", 0),
         ))
         self.__make_menu_section(top, "Modify", (
@@ -363,6 +368,21 @@ class MainWindow(tk.Tk):
         self.txt.edit_separator()
         self.txt.delete('1.0', tk.END)
         self.menus["file"].entryconfigure("Save", state="disabled")
+
+    def __cut(self):
+        self.txt.edit_separator()
+        self.txt.event_generate("<<Cut>>")
+
+    def __copy(self):
+        self.txt.event_generate("<<Copy>>")
+
+    def __paste(self):
+        self.txt.edit_separator()
+        self.txt.event_generate("<<Paste>>")
+        self.txt.highlight_syntax()
+
+    def __select_all(self):
+        self.txt.tag_add("sel", "1.0", tk.END)
 
     def __manage_undo(self, event):
         if self.txt.edit("canundo"):
