@@ -1,7 +1,8 @@
 # eFJ Toolkit #
 
-An electronic Flight Journal (eFJ) is a text file used for recording personal
-flight data using a intuitive formalised scheme. It looks something like this:
+An electronic Flight Journal (eFJ) is just a text file containing personal
+flight data using a simple, intuitive scheme that is easy for both computers
+and humans to work with. It looks something like this:
 
       2024-02-04
       G-EZBY:A319
@@ -14,32 +15,15 @@ flight data using a intuitive formalised scheme. It looks something like this:
       BRS/FNC 0708/1045 n:6
       FNC/BRS 1127/1451 m
 
-Full details may be found at <https://hursts.org.uk/efjdocs/format.html>.
+Full details of the format may be found at <https://hursts.org.uk/efjdocs/format.html>.
 
-This toolkit either processes the eFJ into other forms, such as an HTML FCL.050
-compliant logbook, or modifies the eFJ in some useful way. It is written as a
-(filter)[filter](https://en.wikipedia.org/wiki/Filter_(software)) for maximum
-flexibility.
+This is a set of tools for working with text files following this scheme. It
+includes the ability to create FCL.050 compliant logbooks and summaries as
+simple, standalone HTML files that can be viewed with any web browser and
+further processed with spreadsheets, word processors, PDF converters etc. Full
+documentation is available at <https://hursts.org.uk/efjtkdocs>.
 
-## FCL.050 logbok ##
-
-To create an HTML logbook, each aircraft type needs to be specified as either
-single pilot, single engine; single pilot, multi engine; or multi-crew. This is
-handled with a configuration file. A template for this file where all types are
-specified as single pilot, single engine can be created with:
-
-    efj config < my_efj > my_config
-
-This file should be edited, replacing `spse` with `spme` or `mc` where
-appropriate. The logbook can then be created with:
-
-    efj logbook -c my_config < my_efj > my_logbook.html
-
-The `-c` option can be omitted if the config file is stored as `~/.efjrc` or
-`~/.config/efjrc` for Unix/Mac of `.efjrc` in your home directory on Windows.
-
-The created HTML file is standalone, so can be easily moved around and opened
-with any modern browser. It can also be imported into spreadsheets and word
-processors.
-
-## Summary ##
+The tools are written as command line filters, but a simple GUI front end is
+also provided for those that prefer. The tools are also available hooked up to
+a web application at <https://hursts.org.uk/efj> if you prefer not to install
+locally.
