@@ -16,7 +16,7 @@ import efjtk.config
 
 SETTINGS_FILE = os.path.expanduser("~/.efjtkguirc")
 CONFIG_FILE = os.path.expanduser("~/.efjtkrc")
-HELP_URL = "https://staging.hursts.org.uk/efjtkdocs/gui.html"
+HELP_URL = "https://hursts.org.uk/efjtkdocs/gui.html"
 HELP_EFJ = "https://hursts.org.uk/efjdocs/format.html"
 
 

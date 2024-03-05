@@ -11,9 +11,10 @@ Welcome to efjtk's documentation!
    :caption: Contents:
 
    overview
-   modify
-   convert
+   install
+   webapp
    gui
+   command_line
 
 
 Indices and tables

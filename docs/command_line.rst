@@ -1,35 +1,23 @@
-.. _gui:
+.. _command_line:
 
-Graphical User Interface
+Command Line Interface
 ========================
 
-This is a simple, cross platform, Tk based Graphical Interface. A text file with
-an electronic Flight Journal scheme is loaded with the "File|Open" menu item.
-This will be shown with simple syntax highlighting in the basic text editor that
-fills the main area of the window. All menu items will then apply to the text in
-this area.
+The command line interface works as a filter program, i.e. input comes from
+STDIN, output goes to STDOUT and error messages are sent to STDERR.
 
-The menu bar provides "File", "Edit", "Modify", "Export" and "Help" sub-menus:
+There are two categories of tools: those that output a modified version of the
+input and those that output a file in a different format. For example the first
+category includes the ability to insert calculated night flying into the eFJ,
+whereas the latter includes the ability to output an HTML logbook.
 
-File
-----
+In the examples below, replace ``efj_file`` with the path to your eFJ. It is
+assumed that the toolkit has been installed with ``pip`` or ``pipx`` and as such
+the entry point ``efj`` has been made available in a location that is included
+in your PATH environmental variable.
 
-The "Open", "Save", "Save As" and "Quit" menu items should hopefully be
-self-explanatory. The "Edit Config" item is described in :ref:`the "Export|FCL.050
-Logbook" section below <logbook>`.
-
-Edit
-----
-
-All the menu items under the "Edit" menu should be self-explanatory.
-
-
-Modify
-------
-
-The tools in the "Modify" submenu modify the eFJ in place. If some text is
-selected in the text editor (e.g. with a mouse), only lines with selected text
-are modified.
+Modification
+------------
 
 Expand
 ^^^^^^
@@ -37,9 +25,11 @@ Expand
 The eFJ scheme aims to make it as easy as possible to manually enter flight
 data where no better alternative is available. To support this, a couple of
 short forms are allowed that infer data from previous data. This tool expands
-out these short forms, which makes them more human legible.
+out these short forms, which makes them more human legible::
 
-::
+  $ efj expand < efj_file
+
+The input::
 
   2024-01-01
   G-ABCD:A320
@@ -50,7 +40,7 @@ out these short forms, which makes them more human legible.
   / 0900/1000
   / 1100/1200
 
-becomes::
+gives the output::
 
   2024-01-01
   G-ABCD:A320
@@ -65,16 +55,18 @@ becomes::
 Night
 ^^^^^
 
-Updates eFJ with calculated night duration and, where necessary, night landing.
+Updates the eFJ with calculated night duration and, where necessary, night landing::
 
-::
+  $ efj night < efj_file
+
+The input::
 
   2024-01-01
   G-ABCD:A320
   BRS/BFS 1600/1700
   BFS/BRS 1800/1900
 
-becomes::
+gives the output::
 
   2024-01-01
   G-ABCD:A320
@@ -88,16 +80,19 @@ updated.
 VFR
 ^^^
 
-Adds a flag to every sector to indicate that it was flown under visual flight rules.
+Adds a flag to every sector to indicate that it was flown under visual flight
+rules::
 
-::
+  $ efj vfr < efj_file
+
+The input::
 
   2024-01-01
   G-ABCD:A320
   BRS/BFS 1600/1700
   BFS/BRS 1800/1900
 
-becomes::
+gives the output::
 
   2024-01-01
   G-ABCD:A320
@@ -112,16 +107,18 @@ When no role flag is included, it is assumed that the role was p1. This means
 that First Officers must mark each sector as ``p1s``, ``p2`` or ``put``.
 Captains, on the other hand, just have to mark sectors where they were PM for
 the landing with ``m``. This tool allows First Officers to use ``m`` and then
-auto-fill the roles as ``p1s`` or ``p2``.
+auto-fill the roles as ``p1s`` or ``p2``. ::
 
-::
+  $ efj fo < efj_file
+
+The input::
 
   2024-01-01
   G-ABCD:A320
   BRS/BFS 1600/1700 m
   BFS/BRS 1800/1900
 
-becomes::
+gives the output::
 
   2024-01-01
   G-ABCD:A320
@@ -132,16 +129,18 @@ becomes::
 Instructor
 ^^^^^^^^^^
 
-Adds the ``ins`` flag to any sector that does not already have it.
+Adds the ``ins`` flag to any sector that does not already have it. ::
 
-::
+  $ efj ins < efj_file
+
+The input::
 
   2024-01-01
   G-ABCD:A320
   BRS/BFS 1600/1700
   BFS/BRS 1800/1900
 
-becomes::
+gives the output::
 
   2024-01-01
   G-ABCD:A320
@@ -149,12 +148,9 @@ becomes::
   BFS/BRS 1800/1900 ins
 
 
-Export
-------
+Conversion
+----------
 
-This menu activates tools that convert the eFJ into other useful formats:
-
-.. _logbook:
 
 FCL.050 Logbook
 ^^^^^^^^^^^^^^^
@@ -179,20 +175,47 @@ that these flags will nearly always be omitted, requiring that the
 classification is inferred from the aircraft type by the external tool that is
 processing the eFJ.
 
-The GUI interface deals with this by using an INI format file stored as
-``.efjtkrc`` in your home/user directory. When you activate this tool, a check
-is made for any types that are in the eFJ but not in the INI file and an editor
-is presented to gather any required information. Any unknown types are initially
-classified as ``spse`` (single pilot, single engine) — just change ``spse`` to
-``spme`` (single pilot, multi engine) or ``mc`` (multi crew) as appropriate then
-click "Save". You can edit this file at any time by selecting "File|Edit
-Config". If it gets corrupted, just delete ``.efjtkrc`` from your home/user
-directory and it will be recreated next time the tool is activated.
+The command line interface uses an INI file to supply the required extra
+information. This INI file can either be referenced with a command line switch
+(see below) or placed in one of the default locations: these are ``~/.efjtkrc``
+or ``~/.config/efjtkrc``. A template for the INI file can be created by running
+the eFJ you are intending to turn into a logbook through the command::
+
+  $ efj config < efj_file
+
+This produces a file that looks something like this::
+
+  [aircraft.classes]
+  c152 = spse
+  c404 = spse
+  c406 = spse
+  737 = spse
+  a320 = spse
+
+The possible classifications are ``spse`` for single pilot, single engine;
+``spme`` for single pilot, multi engine or ``mc`` for multi crew. The example
+template would therefore need to be modified to::
+
+  [aircraft.classes]
+  c152 = spse
+  c404 = spme
+  c406 = spme
+  737 = mc
+  a320 = mc
+
+If the INI file is saved to one of the default locations, the HTML logbook can
+be produced with::
+
+  $ efj logbook < efj_file
+
+If you want to keep the INI file in a non-default location, use::
+
+  $ efj logbook --config my_ini_path < efj_file
 
 Summary
 ^^^^^^^
 
-The "Summary" tool provides various statistics for the eFJ as a standalone HTML
+The summary tool provides various statistics for the eFJ as a standalone HTML
 file, which can be viewed in any web browser. Since this has no external
 dependencies it may be moved at will. It is also simple enough that it can be
 imported by spreadsheets, word processors, et cetera.
@@ -206,10 +229,6 @@ The results are in the form of three tables: Roles; Conditions; and Landings:
 * The Landings table gives a breakdown of the number of day and night landings by
   aircraft type.
 
+::
 
-Help
-----
-
-The "Help|Online Help" menu item opens this document in your default browser.
-The "Help|eFJ Format" opens the documentation of the eFJ parser library at the
-section where the eFJ scheme is described in full.
+   $ efj summary < efj_file
