@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+   <meta charset='UTF-8'/>
+    <title>eFJ Tool</title>
+    <link rel="stylesheet" type="text/css" href="styles.css"/>
+    <script src="script.js" type="text/javascript"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  </head>
+  <body ondrop="dropHandler(event)" ondragover="dragoverHandler(event)">
+    <div id="working" class="working hidden">Working…</div>
+    <div class="grid">
+      <div class="sidebar">
+        <fieldset>
+          <legend>Actions</legend>
+          <button id="load_efj">Load</button>
+          <input class="file" id="input" type="file" />
+          <button id="clear">Clear</button>
+          <button id="save">Save</button>
+          <button id="copy">Copy</button>
+          <button id="config">Edit config</button>
+        </fieldset>
+        <fieldset>
+          <legend>Download</legend>
+          <button id="logbook"><span class="hide-narrow">FCL.050 </span>Logbook</button>
+          <button id="summary">Summary</button>
+        </fieldset>
+        <fieldset>
+          <legend>Modify</legend>
+          <button id="expand">Expand</button>
+          <button id="night">Night</button>
+          <button id="vfr">VFR</button>
+          <button id="fo">FO</button>
+          <button id="ins">Instructor</button>
+          <button id="back">Undo</button>
+        </fieldset>
+      </div>
+      <textarea id="output" class="editor" contenteditable="true"
+                spellcheck="false" wrap="off"
+                ></textarea>
+    </div>
+    <template id="class_selector">
+      <tr>
+        <td class="aircraft_type"></td>
+        <td><button class="class_selector"></button></td>
+      </tr>
+    </template>
+    <dialog id="config_dialog">
+      <h2>Default Aircraft Classes</h2>
+      <p>Click button to cycle through options.</p>
+      <table id="aircraft_classes">
+      </table>
+      <div class="dialog-buttons">
+        <button id="config_cancel">Cancel</button>
+        <button id="config_save">Save</button>
+      </div>
+    </dialog>
+    <dialog id="error_dialog">
+      <h2>Error</h2>
+      <div id="error_message"> </div>
+      <div class="dialog-buttons">
+        <button id="error_ok">OK</button>
+      </div>
+    </dialog>
+  </body>
+</html>
