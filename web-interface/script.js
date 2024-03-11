@@ -274,6 +274,8 @@ function main() {
     ID("config_save").addEventListener(
         "click",
         () => {save_config();});
+    ID("help").addEventListener("click", () => window.open(
+        "https://hursts.org.uk/efjtkdocs/webapp.html", "_blank"));
 }
 
 window.addEventListener("load", main);
