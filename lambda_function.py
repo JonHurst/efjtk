@@ -1,7 +1,7 @@
 import json
 import configparser as cp
 
-from efjtk.convert import build_logbook, UnknownAircraftClass, build_summary
+from efjtk.convert import build_logbook, UnknownAircraftType, build_summary
 from efjtk.config import build_config
 from efj_parser import ValidationError
 import efjtk.modify
@@ -22,7 +22,7 @@ def logbook(in_, config):
     except cp.Error:  # something fundametally wrong with ini file
         out = build_config(in_, "")
         status = "config"
-    except UnknownAircraftClass:
+    except UnknownAircraftType:
         out = build_config(in_, config)
         status = "config"
     return out, status
