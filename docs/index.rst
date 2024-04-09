@@ -15,11 +15,3 @@ Welcome to efjtk's documentation!
    webapp
    gui
    command_line
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
