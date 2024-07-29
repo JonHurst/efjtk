@@ -3,8 +3,9 @@ Overview
 
 This is a set of tools for working with electronic Flight Journal (eFJ) files.
 An eFJ file is just a text file that stores personal flight data using a simple,
-intuitive scheme that is easy to work with for both humans and computers. A full
-description of the scheme can be found at
+intuitive scheme that is easy to work with for both humans and computers. A
+tutorial detailing how to create files with this scheme can be found at
+https://hursts.org.uk/efj.html and a full description can be found at
 https://hursts.org.uk/efjdocs/format.html.
 
 Three interfaces are provided: a :ref:`web application<webapp>`, a :ref:`Tk
