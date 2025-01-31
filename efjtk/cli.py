@@ -22,7 +22,7 @@ def _args():
     parser.add_argument('format',
                         choices=['expand', 'night', 'vfr', 'ins', 'fo',
                                  'logbook',  'summary',
-                                 'config'])
+                                 'config', 'version'])
     parser.add_argument('-c', '--config', default=None)
     return parser.parse_args()
 
@@ -54,7 +54,9 @@ def main() -> int:
     args = _args()
     data = sys.stdin.read()
     try:
-        if args.format == "logbook":
+        if args.format == "version":
+            print("0.9.3")
+        elif args.format == "logbook":
             ac_classes = aircraft_classes(_config(args.config))
             print(efjtk.convert.build_logbook(data, ac_classes))
         elif args.format == "config":

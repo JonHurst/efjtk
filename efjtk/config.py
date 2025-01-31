@@ -44,7 +44,8 @@ def build_config(in_: str, config: str, raise_on_error: bool = False) -> str:
         parser = cp.ConfigParser()
         parser.add_section("aircraft.classes")
     for s in sectors:
-        if s.aircraft.type_ not in parser["aircraft.classes"]:
+        if (not s.aircraft.class_ and
+                s.aircraft.type_ not in parser["aircraft.classes"]):
             parser["aircraft.classes"][s.aircraft.type_] = "spse"
     f = io.StringIO()
     parser.write(f)
