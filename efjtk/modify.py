@@ -24,10 +24,14 @@ def add_night_data(in_: str) -> str:
             return
         try:
             from_ = af[ret.airports.origin]
+        except KeyError:
+            out.append(f"{line}  # Night: {ret.airports.origin} unknown")
+            return
+        try:
             to = af[ret.airports.dest]
         except KeyError:
-            raise ep.ValidationError(
-                line_num, "Airport(s) not in database", line)
+            out.append(f"{line}  # Night: {ret.airports.dest} unknown")
+            return
         end = ret.start + dt.timedelta(minutes=ret.total)
         dur = night.night_duration(from_, to, ret.start, end)
         if not dur:

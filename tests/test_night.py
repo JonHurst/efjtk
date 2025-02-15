@@ -24,8 +24,6 @@ EGGD/EGGD 1600/1700 n:18 ln
 
     def test_bad(self):
         data = "2024-01-01\nG-ACBD:A320\nXXXX/XXXX 1300/1400"
-        with self.assertRaises(ValidationError) as ve:
-            add_night_data(data)
         self.assertEqual(
-            str(ve.exception),
-            "Line 3: [Airport(s) not in database] XXXX/XXXX 1300/1400")
+            add_night_data(data),
+            data + "  # Night: XXXX unknown")
