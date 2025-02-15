@@ -9,8 +9,7 @@ import efj_parser
 import efjtk.convert
 import efjtk.modify
 from efjtk.config import build_config, aircraft_classes
-
-VERSION = "0.9.5"
+from efjtk.version import VERSION
 
 
 def _args():
