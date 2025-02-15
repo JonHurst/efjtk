@@ -10,18 +10,17 @@ import efjtk.modify
 def logbook(in_, config):
     out = ""
     status = "failed"
-    try:
-        parser = cp.ConfigParser()
-        parser.read_string(config)
+    ac_classes = {}
+    if config:
         try:
+            parser = cp.ConfigParser()
+            parser.read_string(config)
             ac_classes = parser["aircraft.classes"]
-        except KeyError:
-            raise cp.Error
+        except (KeyError, cp.Error):
+            config = ""
+    try:
         out = build_logbook(in_, ac_classes)
         status = "success"
-    except cp.Error:  # something fundametally wrong with ini file
-        out = build_config(in_, "")
-        status = "config"
     except UnknownAircraftType:
         out = build_config(in_, config)
         status = "config"
@@ -67,7 +66,7 @@ def lambda_handler(event, context):
 if __name__ == "__main__":
     event = {
         "body": json.dumps({
-            "efj": open("/home/jon/docs/logbook").read(),
+            "efj": open("/home/jon/docs/flying/logbook/logbook").read(),
             "action": "logbook",
             "config": ""
         })
