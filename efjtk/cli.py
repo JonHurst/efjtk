@@ -10,6 +10,8 @@ import efjtk.convert
 import efjtk.modify
 from efjtk.config import build_config, aircraft_classes
 
+VERSION = "0.9.5"
+
 
 def _args():
     parser = argparse.ArgumentParser(
@@ -52,11 +54,12 @@ _func_map = {
 
 def main() -> int:
     args = _args()
+    if args.format == "version":
+        print(VERSION)
+        return 0
     data = sys.stdin.read()
     try:
-        if args.format == "version":
-            print("0.9.3")
-        elif args.format == "logbook":
+        if args.format == "logbook":
             ac_classes = aircraft_classes(_config(args.config))
             print(efjtk.convert.build_logbook(data, ac_classes))
         elif args.format == "config":
