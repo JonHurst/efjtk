@@ -37,11 +37,18 @@ class TextWithSyntaxHighlighting(tk.Text):
         self.tag_configure("datetime", foreground="blue")
         self.bind(
             '<KeyRelease>',
-            lambda *args: self.edit_modified() and self.highlight_syntax())
+            lambda *args: self.edit_modified() and self.schedule_highlight())
+        self.highlight_timer = None
 
     def insert(self, idx, text, *args):
         tk.Text.insert(self, idx, text, *args)
         self.highlight_syntax()
+
+    def schedule_highlight(self):
+        if self.highlight_timer:
+            self.winfo_toplevel().after_cancel(self.highlight_timer)
+        self.highlight_timer = self.winfo_toplevel().after(
+            1000, lambda *args: self.highlight_syntax())
 
     def highlight_syntax(self):
         if not self.highlight_mode:
@@ -52,6 +59,7 @@ class TextWithSyntaxHighlighting(tk.Text):
             self.highlight_efj()
         elif self.highlight_mode == 'config':
             self.highlight_config()
+        self.highlight_timer = None
 
     def __highlight(self, re, tag):
         count = tk.IntVar()
