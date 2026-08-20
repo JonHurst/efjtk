@@ -50,10 +50,8 @@ async function save_to_file(text, mimetype, suggested_name) {
 function show_error(text) {
     const sections = text.split(" : ");
     if(sections && sections[0] == "efj_parser") {
-        ID("error_message").innerHTML =
-            `<dl><dt>Line:</dt><dd>${sections[1]}</dd>
-<dt>Message:</dt><dd>${sections[2]}</dd>
-<dt>Text:</dt><dd><code>${sections[3]}</code></dd></dl>`;
+        ID("error_message").innerText =
+            `Line ${sections[1]} : ${sections[2]} : ${sections[3]}`;
     }
     else {
         ID("error_message").innerText = text;
@@ -276,6 +274,9 @@ function main() {
         () => {save_config();});
     ID("help").addEventListener("click", () => window.open(
         "https://hursts.org.uk/efjtkdocs/webapp.html", "_blank"));
+    const body = document.getElementsByTagName("body")[0];
+    body.addEventListener("drop", dropHandler);
+    body.addEventListener("dragover", dragoverHandler);
 }
 
 window.addEventListener("load", main);

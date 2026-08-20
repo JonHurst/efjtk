@@ -167,3 +167,7 @@ code {
 .aircraft_type {
     font-size: 1.2rem;
 }
+
+#error_message {
+    margin: 1rem 0;
+}
