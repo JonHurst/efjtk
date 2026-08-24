@@ -21,7 +21,6 @@
       position: relative;
       table-layout: fixed;
       width: 100rem;
-      border-bottom: var(--thick-border);
   }
 
   .j-lb-table thead {
@@ -31,12 +30,16 @@
       top: 0;
   }
 
-  /* Table borders */
-  /* thead borders */
-  .j-lb-table thead tr:first-child th {
-    border-top: var(--thick-border);
-    border-right: var(--thick-border);
-  }
+ .j-lb-footer {
+     border-top: var(--thick-border);
+ }
+
+ /* Table borders */
+ /* thead borders */
+ .j-lb-table thead tr:first-child th {
+     border-top: var(--thick-border);
+     border-right: var(--thick-border);
+ }
   .j-lb-table thead tr:first-child th:first-child {
       border-left: var(--thick-border);
   }
@@ -139,7 +142,7 @@
       width: 2.25rem;
   }
   .j-col-pic {
-      width: 8rem;
+      width: 9rem;
   }
 
   @page {
@@ -196,6 +199,9 @@
       <tbody>
 <!--{rows}-->
       </tbody>
+      <tfoot>
+        <tr><td class="j-lb-footer" colspan="21"></td></tr>
+      </tfoot>
     </table>
   </body>
 </html>
