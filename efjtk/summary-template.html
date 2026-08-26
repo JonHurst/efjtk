@@ -36,43 +36,30 @@
 
      thead {
          border: var(--thick-border);
-         tr:first-child {
-             th:first-child {
-                 border-right: var(--thick-border);
-                 width: 10rem;
-             }
-             th:last-child {
-                 border-left: var(--thick-border);
-             }
-         }
+     }
+     thead tr:first-child th:first-child {
+         border-right: var(--thick-border);
+         width: 10rem;
+     }
+     thead tr:first-child th:last-child {
+         border-left: var(--thick-border);
      }
 
-     tbody {
-         tr:nth-child(even) {
-             background-color: var(--stripe);
-         }
-         th {
-             border-right: var(--thick-border);
-         }
+     tbody tr:nth-child(even) {
+         background-color: var(--stripe);
+     }
+     tbody th {
+         border-right: var(--thick-border);
      }
 
-     tfoot {
-         th {
-             border-right: var(--thick-border);
-         }
-     }
-
-     .roles, .landings {
-         thead tr:first-child th:last-child {
+     .roles thead tr:first-child th:last-child,
+     .landings thead tr:first-child th:last-child {
              border-left: var(--thick-border);
              width: 6rem;
-         }
-         tbody td:last-child {
-             border-left: var(--thick-border);
-         }
-         tfoot td:last-child {
-             border-left: var(--thick-border);
-         }
+     }
+     .roles tbody td:last-child,
+     .landings tbody td:last-child {
+         border-left: var(--thick-border);
      }
 
      .col_total {
@@ -95,11 +82,9 @@
         <tr><th>p1</th><th>p1s</th><th>p2</th><th>put</th></tr>
       </thead>
       <tbody>
-<!--{roles_body}-->
-      </tbody>
-      <tfoot>
+        <!--{roles_body}-->
         <!--{roles_totals}-->
-      </tfoot>
+      </tbody>
     </table>
     <table class="conditions">
       <thead>
@@ -107,11 +92,9 @@
         <tr><th>VFR</th><th>IFR</th><th>Day</th><th>Night</th></tr>
       </thead>
       <tbody>
-<!--{cond_body}-->
-      </tbody>
-      <tfoot>
+        <!--{cond_body}-->
         <!--{cond_totals}-->
-      </tfoot>
+      </tbody>
     </table>
     <table class="landings">
       <thead>
@@ -120,11 +103,9 @@
         <tr><th>Day</th><th>Night</th></tr>
       </thead>
       <tbody>
-<!--{ldg_body}-->
+        <!--{ldg_body}-->
+        <!--{ldg_totals}-->
       </tbody>
-      <tfoot>
-<!--{ldg_totals}-->
-      </tfoot>
     </table>
   </body>
 </html>
