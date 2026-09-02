@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="efjtk",
-    version="1.0",
+    version="1.1",
     author="Jon Hurst",
     author_email="jon.a@hursts.org.uk",
     description="Convert EFJ files into FCL compliant logbooks and more",
@@ -14,7 +14,7 @@ setuptools.setup(
     url="https://github.com/JonHurst/efjtk",
     packages=setuptools.find_packages(),
     classifiers=[
-        "Development Status :: 4 - Beta",
+        "Development Status :: 5 - Production/Stable",
         "Environment :: Console",
         "Programming Language :: Python :: 3",
         ("License :: OSI Approved :: "
@@ -24,7 +24,7 @@ setuptools.setup(
     python_requires='>=3.11',
     install_requires=[
         "nightflight >=0.9.2",
-        "efj_parser >=0.9.5"
+        "efj_parser >=1.0"
     ],
     package_data={
         "efjtk": ["summary-template.html",
