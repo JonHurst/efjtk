@@ -7,9 +7,9 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'efjtk'
-copyright = '2024, Jon Hurst'
+copyright = '2026, Jon Hurst'
 author = 'Jon Hurst'
-release = '0.1'
+release = '1.1'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
