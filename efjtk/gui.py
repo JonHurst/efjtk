@@ -12,6 +12,7 @@ import configparser as cp
 import efjtk.modify
 import efjtk.convert
 import efjtk.config
+import efjtk.version
 
 
 SETTINGS_FILE = os.path.expanduser("~/.efjtkguirc")
@@ -186,7 +187,7 @@ class MainWindow(tk.Tk):
         except Exception:
             self.settings = {}
         tk.Tk.__init__(self)
-        self.title("efjtk")
+        self.title(f"efjtk (v{efjtk.version.VERSION})")
         self.filename = None
         self.menus = {}
         self.__make_menu()
