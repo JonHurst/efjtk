@@ -345,6 +345,8 @@ class MainWindow(tk.Tk):
         self.__modify(efjtk.modify.add_ins_flag)
 
     def __modify(self, fn):
+        self.busy()
+        self.update()
         text = self.txt.get('1.0', 'end')
         result = fn(text)
         range_ = self.txt.tag_ranges("sel")
@@ -362,6 +364,7 @@ class MainWindow(tk.Tk):
             self.txt.delete('1.0', tk.END)
             self.txt.insert('1.0', result)
             self.txt.see(tk.END)
+        self.busy_forget()
 
     def __undo(self):
         if self.txt.edit("canundo"):
