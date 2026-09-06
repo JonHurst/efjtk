@@ -9,3 +9,7 @@ BRS/BRS 1000/1100 ins ld:6 v  # Bloggs, circuits
 {CP:Smith}
 /CWL 1200/1230 put v
 / 2000/2030 n v
+
+2024-01-02
+G-IJKL:A321:mc
+BRS/FNC 0900/1200

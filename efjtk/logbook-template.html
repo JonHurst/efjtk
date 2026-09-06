@@ -145,17 +145,19 @@
       width: 9rem;
   }
 
-  tr {
+  thead tr, tbody tr {
      height: 2rem;
   }
 
   @media print {
      @page {
          size: A4 landscape;
+         margin: 1cm;
      }
-     :root {
-         font-size: 2.763mm;
-     }
+      :root {
+          font-size: 2.763mm;
+          --thick-border: 0.15rem solid black;
+      }
   }
 
 </style>

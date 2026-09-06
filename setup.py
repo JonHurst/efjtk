@@ -28,7 +28,8 @@ setuptools.setup(
     ],
     package_data={
         "efjtk": ["summary-template.html",
-                        "logbook-template.html"]
+                  "logbook-template.html",
+                  "cumulative-template.html"]
     },
     entry_points={
         "console_scripts": ["efj = efjtk.cli:main"],

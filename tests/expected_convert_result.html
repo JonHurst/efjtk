@@ -1,7 +1,7 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
   <head>
-   <meta charset='UTF-8'/>
+   <meta charset='UTF-8'>
     <title>FCL.050 Logbook</title>
 <style>
   :root {
@@ -21,7 +21,6 @@
       position: relative;
       table-layout: fixed;
       width: 100rem;
-      border-bottom: var(--thick-border);
   }
 
   .j-lb-table thead {
@@ -31,12 +30,16 @@
       top: 0;
   }
 
-  /* Table borders */
-  /* thead borders */
-  .j-lb-table thead tr:first-child th {
-    border-top: var(--thick-border);
-    border-right: var(--thick-border);
-  }
+ .j-lb-footer {
+     border-top: var(--thick-border);
+ }
+
+ /* Table borders */
+ /* thead borders */
+ .j-lb-table thead tr:first-child th {
+     border-top: var(--thick-border);
+     border-right: var(--thick-border);
+ }
   .j-lb-table thead tr:first-child th:first-child {
       border-left: var(--thick-border);
   }
@@ -139,13 +142,22 @@
       width: 2.25rem;
   }
   .j-col-pic {
-      width: 8rem;
+      width: 9rem;
   }
 
-  @page {
-      size: A4 landscape;
-      -prince-shrink-to-fit: auto;
-      margin: 1cm;
+  thead tr, tbody tr {
+     height: 2rem;
+  }
+
+  @media print {
+     @page {
+         size: A4 landscape;
+         margin: 1cm;
+     }
+      :root {
+          font-size: 2.763mm;
+          --thick-border: 0.15rem solid black;
+      }
   }
 
 </style>
@@ -153,27 +165,27 @@
   <body>
     <table class='j-lb-table'>
 <colgroup>
-<col class="j-col-date"/>
-<col class="j-col-place"/>
-<col class="j-col-time"/>
-<col class="j-col-place"/>
-<col class="j-col-time"/>
-<col class="j-col-type"/>
-<col class="j-col-reg"/>
-<col class="j-col-narrow"/>
-<col class="j-col-narrow"/>
-<col class="j-col-duration"/>
-<col class="j-col-duration"/>
-<col class="j-col-pic"/>
-<col class="j-col-narrow"/>
-<col class="j-col-narrow"/>
-<col class="j-col-duration"/>
-<col class="j-col-duration"/>
-<col class="j-col-duration"/>
-<col class="j-col-duration"/>
-<col class="j-col-duration"/>
-<col class="j-col-duration"/>
-<col class="j-col-remark"/>
+<col class="j-col-date">
+<col class="j-col-place">
+<col class="j-col-time">
+<col class="j-col-place">
+<col class="j-col-time">
+<col class="j-col-type">
+<col class="j-col-reg">
+<col class="j-col-narrow">
+<col class="j-col-narrow">
+<col class="j-col-duration">
+<col class="j-col-duration">
+<col class="j-col-pic">
+<col class="j-col-narrow">
+<col class="j-col-narrow">
+<col class="j-col-duration">
+<col class="j-col-duration">
+<col class="j-col-duration">
+<col class="j-col-duration">
+<col class="j-col-duration">
+<col class="j-col-duration">
+<col class="j-col-remark">
 </colgroup>
       <thead>
         <tr><th rowspan="2">Date</th>
@@ -196,10 +208,14 @@
       <tbody>
 <tr><td>01/01/2024</td><td>BRS</td><td>10:00</td><td>BFS</td><td>11:00</td><td>A320</td><td>G-ABCD</td><td></td><td></td><td>1:00</td><td>1:00</td><td>Self</td><td>1</td><td></td><td></td><td>1:00</td><td>1:00</td><td></td><td></td><td></td><td></td></tr>
 <tr><td>01/01/2024</td><td>BFS</td><td>12:00</td><td>BRS</td><td>13:00</td><td>A320</td><td>G-ABCD</td><td></td><td></td><td>1:00</td><td>1:00</td><td>Self</td><td></td><td></td><td></td><td>1:00</td><td>1:00</td><td></td><td></td><td></td><td></td></tr>
+<tr><td>02/01/2024</td><td>BRS</td><td>09:00</td><td>FNC</td><td>12:00</td><td>A321</td><td>G-IJKL</td><td></td><td></td><td>3:00</td><td>3:00</td><td>Self</td><td>1</td><td></td><td></td><td>3:00</td><td>3:00</td><td></td><td></td><td></td><td></td></tr>
 <tr><td>03/01/2024</td><td>BRS</td><td>10:00</td><td>BRS</td><td>11:00</td><td>C152</td><td>G-EFGH</td><td>✓</td><td></td><td></td><td>1:00</td><td>Self</td><td>6</td><td></td><td></td><td></td><td>1:00</td><td></td><td></td><td>1:00</td><td>Bloggs, circuits</td></tr>
 <tr><td>03/01/2024</td><td>BRS</td><td>12:00</td><td>CWL</td><td>12:30</td><td>C152</td><td>G-EFGH</td><td>✓</td><td></td><td></td><td>0:30</td><td>Smith</td><td>1</td><td></td><td></td><td></td><td></td><td></td><td>0:30</td><td></td><td></td></tr>
 <tr><td>03/01/2024</td><td>CWL</td><td>20:00</td><td>BRS</td><td>20:30</td><td>C152</td><td>G-EFGH</td><td>✓</td><td></td><td></td><td>0:30</td><td>Self</td><td></td><td>1</td><td>0:30</td><td></td><td>0:30</td><td></td><td></td><td></td><td></td></tr>
       </tbody>
+      <tfoot>
+        <tr><td class="j-lb-footer" colspan="21"></td></tr>
+      </tfoot>
     </table>
   </body>
 </html>

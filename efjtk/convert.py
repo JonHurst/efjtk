@@ -50,7 +50,7 @@ def _aircraft_class_cells(
 def build_logbook(in_: str, ac_classes: cp.SectionProxy) -> str:
     _, sectors = ep.Parser().parse(in_)
     rows = []
-    for s in sectors:
+    for s in sorted(sectors):
         cells = [f"{s.start:%d/%m/%Y}",
                  s.airports.origin, f"{s.start:%H:%M}",
                  s.airports.dest,
@@ -165,3 +165,46 @@ def build_summary(in_: str) -> str:
         ldg_body="\n".join(landings[:-1]),
         ldg_totals=landings[-1]
     )
+
+
+def build_cumulative(efj: str, ac_classes: cp.SectionProxy) -> str:
+    _, sectors = ep.Parser().parse(efj)
+    spse, spme, mc, total = 0, 0, 0, 0
+    day_ldg, night_ldg = 0, 0
+    night, ifr = 0, 0
+    pic, p2, put, ins = 0, 0, 0, 0
+    rows = []
+    for s in sorted(sectors):
+        end = s.start + dt.timedelta(minutes=s.total)
+        total += s.total
+        if s.aircraft.class_:
+            aircraft_class = s.aircraft.class_
+        else:
+            try:
+                aircraft_class = ac_classes[s.aircraft.type_]
+            except KeyError:
+                raise UnknownAircraftType(s.aircraft.type_)
+        if aircraft_class == "spse":
+            spse += s.total
+        elif aircraft_class == "spme":
+            spme += s.total
+        else:
+            mc += s.total
+        day_ldg += s.landings.day
+        night_ldg += s.landings.night
+        night += s.conditions.night
+        ifr += s.conditions.ifr
+        pic += s.roles.p1 + s.roles.p1s
+        p2 += s.roles.p2
+        put += s.roles.put
+        ins += s.roles.instructor
+        cells = [f"{end:%d/%m/%Y}", f"{end:%H:%M}",
+                 _duration(spse), _duration(spme), _duration(mc),
+                 _duration(total),
+                 str(day_ldg), str(night_ldg),
+                 _duration(night), _duration(ifr),
+                 _duration(pic), _duration(p2), _duration(put), _duration(ins)
+                 ]
+        rows.append(f"<tr><td>{'</td><td>'.join(cells)}</td></tr>")
+    return (_get_template("cumulative-template.html")
+            .format(rows="\n".join(rows)))

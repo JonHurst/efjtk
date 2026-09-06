@@ -22,7 +22,7 @@ def _args():
             required for generation of the FCL.050 logbook."""))
     parser.add_argument('format',
                         choices=['expand', 'night', 'vfr', 'ins', 'fo',
-                                 'logbook',  'summary',
+                                 'logbook',  'summary', 'cumulative',
                                  'config', 'version'])
     parser.add_argument('-c', '--config', default=None)
     return parser.parse_args()
@@ -61,6 +61,9 @@ def main() -> int:
         if args.format == "logbook":
             ac_classes = aircraft_classes(_config(args.config))
             print(efjtk.convert.build_logbook(data, ac_classes))
+        elif args.format == "cumulative":
+            ac_classes = aircraft_classes(_config(args.config))
+            print(efjtk.convert.build_cumulative(data, ac_classes))
         elif args.format == "config":
             sys.stdout.write(
                 build_config(data, _config(args.config)))

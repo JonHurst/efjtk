@@ -212,6 +212,25 @@ If you want to keep the INI file in a non-default location, use::
 
   $ efj logbook --config my_ini_path < efj_file
 
+Cumulative Totals
+^^^^^^^^^^^^^^^^^
+
+The cumulative totals tool provides the cumulative totals for every entry in the
+FCL.050 logbook as a standalone HTML file. This file may be moved around at will
+and can be opened in any modern web browser or spreadsheet application.
+
+The instructions for creating and using an INI file to specify aircraft classes
+as described above for the logbook tool also apply to the cumulative totals
+tool.
+
+The command for the cumulative total tool is::
+
+  $ efj cumulative < efj_file
+
+or if your INI file is in a non-default location::
+
+  $ efj cumulative --config my_in_path < efj_file
+
 Summary
 ^^^^^^^
 

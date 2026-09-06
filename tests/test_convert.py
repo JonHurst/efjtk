@@ -21,6 +21,16 @@ class TestLogbook(unittest.TestCase):
         self.assertEqual(output.strip(), expected.strip())
 
 
+class TestCumulative(unittest.TestCase):
+
+    def test_standard(self):
+        with open("convert_test_input") as f:
+            output = efjtk.convert.build_cumulative(f.read(), ac_classes)
+        with open("expected_cum_convert_result.html") as f:
+            expected = f.read()
+        self.assertEqual(output.strip(), expected.strip())
+
+
 if __name__ == "__main__":
     with open("convert_test_input") as f:
         print(efjtk.convert.build_logbook(f.read(), ac_classes))
