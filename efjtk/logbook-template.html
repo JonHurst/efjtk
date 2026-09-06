@@ -149,10 +149,13 @@
      height: 2rem;
   }
 
-  @page {
-      size: A4 landscape;
-      -prince-shrink-to-fit: auto;
-      margin: 1.25cm 1cm 1cm;
+  @media print {
+     @page {
+         size: A4 landscape;
+     }
+     :root {
+         font-size: 2.763mm;
+     }
   }
 
 </style>
