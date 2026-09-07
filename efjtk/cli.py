@@ -4,6 +4,7 @@ import sys
 import argparse
 from typing import Optional
 import os.path
+import datetime as dt
 
 import efj_parser
 import efjtk.convert
@@ -25,6 +26,8 @@ def _args():
                                  'logbook',  'summary', 'cumulative',
                                  'config', 'version'])
     parser.add_argument('-c', '--config', default=None)
+    parser.add_argument('-f', '--from', dest='from_', default=None)
+    parser.add_argument('-t', '--to', default=None)
     return parser.parse_args()
 
 
@@ -56,11 +59,20 @@ def main() -> int:
     if args.format == "version":
         print(VERSION)
         return 0
+    date_range = [None, None]
+    for c, arg in enumerate((args.from_, args.to)):
+        if arg:
+            try:
+                date_range[c] = dt.date.fromisoformat(arg)
+            except ValueError as e:
+                print(e, file=sys.stderr)
+                return -4
+    date_range = tuple(date_range)
     data = sys.stdin.read()
     try:
         if args.format == "logbook":
             ac_classes = aircraft_classes(_config(args.config))
-            print(efjtk.convert.build_logbook(data, ac_classes))
+            print(efjtk.convert.build_logbook(data, ac_classes, date_range))
         elif args.format == "cumulative":
             ac_classes = aircraft_classes(_config(args.config))
             print(efjtk.convert.build_cumulative(data, ac_classes))

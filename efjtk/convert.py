@@ -2,6 +2,7 @@ import configparser as cp
 import importlib.resources as res
 import datetime as dt
 
+from typing import Optional
 import efj_parser as ep
 
 
@@ -10,6 +11,9 @@ class UnknownAircraftType(Exception):
 
     def __init__(self, type_):
         self.missing_type = type_
+
+
+DateRange = tuple[Optional[dt.date], Optional[dt.date]]
 
 
 def _get_template(filename):
@@ -47,10 +51,18 @@ def _aircraft_class_cells(
     return ["", "✓", ""]  # must be "spme"
 
 
-def build_logbook(in_: str, ac_classes: cp.SectionProxy) -> str:
+def build_logbook(
+        in_: str,
+        ac_classes: cp.SectionProxy,
+        daterange: DateRange = (None, None)
+) -> str:
     _, sectors = ep.Parser().parse(in_)
     rows = []
     for s in sorted(sectors):
+        if daterange[0] and s.start.date() < daterange[0]:
+            continue
+        if daterange[1] and s.start.date() >= daterange[1]:
+            break
         cells = [f"{s.start:%d/%m/%Y}",
                  s.airports.origin, f"{s.start:%H:%M}",
                  s.airports.dest,
