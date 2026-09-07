@@ -87,6 +87,38 @@ class TestCumulative(unittest.TestCase):
             self.assertEqual(output.strip(), expected.strip())
 
 
-if __name__ == "__main__":
-    with open("convert_test_input") as f:
-        print(efjtk.convert.build_logbook(f.read(), ac_classes))
+class TestSummary(unittest.TestCase):
+
+    def setUp(self):
+        with open("convert_test_input") as f:
+            self.test_input = f.read()
+
+    def test_standard(self):
+        output = efjtk.convert.build_summary(self.test_input)
+        with open("expected_summary.html") as f:
+            expected = f.read()
+            self.assertEqual(output.strip(), expected.strip())
+
+    def test_ranged_from(self):
+        output = efjtk.convert.build_summary(
+            self.test_input,
+            (dt.date(2024, 1, 3), None))
+        with open("expected_summary_from.html") as f:
+            expected = f.read()
+            self.assertEqual(output.strip(), expected.strip())
+
+    def test_ranged_to(self):
+        output = efjtk.convert.build_summary(
+            self.test_input,
+            (None, dt.date(2024, 1, 3)))
+        with open("expected_summary_to.html") as f:
+            expected = f.read()
+            self.assertEqual(output.strip(), expected.strip())
+
+    def test_ranged_fromto(self):
+        output = efjtk.convert.build_summary(
+            self.test_input,
+            (dt.date(2024, 1, 2), dt.date(2024, 1, 3)))
+        with open("expected_summary_fromto.html") as f:
+            expected = f.read()
+            self.assertEqual(output.strip(), expected.strip())

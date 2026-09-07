@@ -2,13 +2,17 @@
 
 import re
 import datetime as dt
+from typing import Optional
 
 import efj_parser as ep
 import nightflight.night as night  # type:ignore
 from nightflight.airport_nvecs import airfields as af  # type:ignore
 
 
-def add_night_data(in_: str) -> str:
+DateRange = tuple[Optional[dt.date], Optional[dt.date]]
+
+
+def add_night_data(in_: str, daterange:DateRange = (None, None)) -> str:
     """Add night data to eFJ format text file in string form.
 
     :param in_: An eFJ format text file in string form.
@@ -51,7 +55,7 @@ def add_night_data(in_: str) -> str:
     return "\n".join(out)
 
 
-def expand_efj(in_: str) -> str:
+def expand_efj(in_: str, daterange:DateRange = (None, None)) -> str:
     """Expand short dates (e.g. ++) and omitted airports, leaving all other
     lines intact.
 
@@ -77,7 +81,7 @@ def expand_efj(in_: str) -> str:
     return "\n".join(out)
 
 
-def add_fo_role_flag(in_: str) -> str:
+def add_fo_role_flag(in_: str, daterange:DateRange = (None, None)) -> str:
     out = []
     re_sec = re.compile(r"\A(\w*/\w* \d{4}/\d{4})\s*(.*)\Z")
 
@@ -95,7 +99,7 @@ def add_fo_role_flag(in_: str) -> str:
     return "\n".join(out)
 
 
-def add_ins_flag(in_: str) -> str:
+def add_ins_flag(in_: str, daterange:DateRange = (None, None)) -> str:
     out = []
     re_sec = re.compile(r"\A(\w*/\w* \d{4}/\d{4})\s*(.*)\Z")
 
@@ -110,7 +114,7 @@ def add_ins_flag(in_: str) -> str:
     return "\n".join(out)
 
 
-def add_vfr_flag(in_: str) -> str:
+def add_vfr_flag(in_: str, daterange:DateRange = (None, None)) -> str:
     out = []
     re_sec = re.compile(r"\A(\w*/\w* \d{4}/\d{4})\s*(.*)\Z")
 

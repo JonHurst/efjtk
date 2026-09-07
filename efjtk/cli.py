@@ -86,7 +86,7 @@ def main() -> int:
             sys.stdout.write(
                 build_config(data, _config(args.config)))
         elif args.format in _func_map:
-            print(_func_map[args.format](data))
+            print(_func_map[args.format](data, date_range))
         else:
             return -1
         return 0

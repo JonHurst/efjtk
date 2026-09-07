@@ -159,13 +159,25 @@ def _build_landings(sectors):
     return rows
 
 
-def build_summary(in_: str) -> str:
+def build_summary(in_: str, daterange: DateRange = (None, None)) -> str:
     """Build an HTML file with a summary table.
 
     :param in_: An EFJ format text file as a string
+
+    :param daterange: A tuple of the form (FROM, TO) where FROM and TO are
+        datetime dates. Sectors commencing on a date on or after FROM but
+        before TO will be summarised (i.e range is half closed). FROM and/or TO
+        may be None in which case the associated restriction is not applied.
+
     :return: An HTML file as a string
+
     """
-    _, sectors = ep.Parser().parse(in_)
+    _, parsed_sectors = ep.Parser().parse(in_)
+    sectors = []
+    for s in parsed_sectors:
+        if ((not daterange[0] or s.start.date() >= daterange[0]) and
+                (not daterange[1] or s.start.date() < daterange[1])):
+            sectors.append(s)
     roles = _build_roles(sectors)
     conditions = _build_conditions(sectors)
     landings = _build_landings(sectors)
