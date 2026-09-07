@@ -13,20 +13,27 @@
      }
      body {
          background-color: white;
-         line-height: 1.5;
-         display: flex;
-         flex-direction: column;
-         align-items: center;
-         justify-content: space-around;
-         gap: 2rem;
      }
 
      table {
          border: var(--thick-border);
          border-collapse: collapse;
          table-layout: fixed;
-         width: 40rem;
+         width: 70rem;
          break-inside: avoid;
+         margin: 2rem auto;
+     }
+
+     tr {
+         height: 2rem;
+     }
+
+     thead {
+         border: var(--thick-border);
+     }
+
+     thead tr:first-child th:first-child {
+         width: 9rem;
      }
 
      td, th {
@@ -34,77 +41,61 @@
          border: var(--thin-border);
      }
 
-     thead {
-         border: var(--thick-border);
-     }
-     thead tr:first-child th:first-child {
+     tbody th,
+     thead tr:first-child th:first-child,
+     .table-1 thead tr:first-child th:nth-child(2),
+     .table-1 tbody td:nth-child(2),
+     .table-2 thead tr:first-child th:nth-child(2),
+     .table-2 thead tr:nth-child(2) th:nth-child(4),
+     .table-2 tbody td:nth-child(5) {
          border-right: var(--thick-border);
-         width: 10rem;
-     }
-     thead tr:first-child th:last-child {
-         border-left: var(--thick-border);
      }
 
      tbody tr:nth-child(even) {
          background-color: var(--stripe);
      }
-     tbody th {
-         border-right: var(--thick-border);
-     }
 
-     .roles thead tr:first-child th:last-child,
-     .landings thead tr:first-child th:last-child {
-             border-left: var(--thick-border);
-             width: 6rem;
-     }
-     .roles tbody td:last-child,
-     .landings tbody td:last-child {
-         border-left: var(--thick-border);
-     }
-
-     .col_total {
+     tbody tr:last-child {
          border-top: var(--thick-border);
-     }
-     .total {
          font-weight: bold;
+         background-color: white;
      }
 
-     @page {
-         size: a4 landscape;
+
+     @media print {
+         @page {
+             size: A4 landscape;
+             margin: 1cm;
+         }
+         :root {
+             font-size: 2.763mm;
+             --thick-border: 0.15rem solid black;
+         }
      }
     </style>
   </head>
   <body>
-    <table class="roles">
+    <table class="table-1">
       <thead>
-        <tr><th rowspan="2">Type</th><th colspan="4">Roles</th>
-          <th rowspan="2">Total</th> </tr>
-        <tr><th>p1</th><th>p1s</th><th>p2</th><th>put</th></tr>
+        <tr><th rowspan="2">Type</th><th rowspan="2">Total</th>
+          <th colspan="6">Roles</th></tr>
+        <tr><th>pic</th><th>p1</th><th>p1s</th><th>p2</th><th>put</th><th>ins</th></tr>
       </thead>
       <tbody>
-        <tr><th>C152</th><td>1:30</td><td></td><td></td><td>0:30</td><td class='total'>2:00</td></tr>
-        <tr class='col_total'><th>Total</th><td class='total'>1:30</td><td class="total"></td><td class="total"></td><td class="total">0:30</td><td class='total'>2:00</td></tr>
+        <tr><th>C152</th><td>2:00</td><td>1:30</td><td>1:30</td><td></td><td></td><td>0:30</td><td>1:00</td></tr>
+<tr class='col_total'><th>Total</th><td class='total'>2:00</td><td class="total">1:30</td><td class="total">1:30</td><td class="total"></td><td class="total"></td><td class="total">0:30</td><td class="total">1:00</td></tr>
       </tbody>
     </table>
-    <table class="conditions">
+    <table class="table-2">
       <thead>
-        <tr><th rowspan="2">Type</th><th colspan="4">Conditions</th></tr>
-        <tr><th>VFR</th><th>IFR</th><th>Day</th><th>Night</th></tr>
+        <tr><th rowspan="2">Type</th><th colspan="4">Conditions</th>
+          <th colspan="2">Landings</th> </tr>
+        <tr><th>VFR</th><th>IFR</th><th>Day</th><th>Night</th>
+          <th>Day</th><td>Night</td></tr>
       </thead>
       <tbody>
-        <tr><th>C152</th><td>2:00</td><td></td><td>1:30</td><td>0:30</td></tr>
-        <tr class='col_total'><th>Total</th><td class='total'>2:00</td><td class="total"></td><td class="total">1:30</td><td class="total">0:30</td></tr>
-      </tbody>
-    </table>
-    <table class="landings">
-      <thead>
-        <tr><th rowspan="2">Type</th><th colspan="2">Landings</th>
-          <th rowspan="2">Total</th> </tr>
-        <tr><th>Day</th><th>Night</th></tr>
-      </thead>
-      <tbody>
-        <tr><th>C152</th><td>7</td><td>1</td><td class='total'>8</td></tr>
-        <tr class='col_total'><th>Total</th><td class='total'>7</td><td class="total">1</td><td class='total'>8</td></tr>
+        <tr><th>C152</th><td>2:00</td><td></td><td>1:30</td><td>0:30</td><td>7</td><td>1</td></tr>
+<tr class='col_total'><th>Total</th><td class='total'>2:00</td><td class="total"></td><td class="total">1:30</td><td class="total">0:30</td><td>7</td><td class="total">1</td></tr>
       </tbody>
     </table>
   </body>
