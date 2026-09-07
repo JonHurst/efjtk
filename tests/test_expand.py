@@ -1,4 +1,5 @@
 import unittest
+import datetime as dt
 
 from efj_parser import ValidationError
 import efjtk.modify
@@ -30,6 +31,48 @@ CDG/BRS 1500/1600
 2024-02-01
 PMI/CDG 1200/0100"""
         self.assertEqual(efjtk.modify.expand_efj(data), expected)
+
+    def test_range(self):
+        data = """\
+2024-01-29
+G-ABCD:A320
+BRS/KEF 1600/1900
+/ 2000/2300
+
++
+/CDG 1300/1400
+/ 1500/1600
+++
+PMI/ 1200/0100"""
+        self.assertEqual(
+            efjtk.modify.expand_efj(
+                data,
+                (dt.date(2024, 1, 30), None)),
+            """\
+2024-01-29
+G-ABCD:A320
+BRS/KEF 1600/1900
+/ 2000/2300
+
+2024-01-30
+BRS/CDG 1300/1400
+CDG/BRS 1500/1600
+2024-02-01
+PMI/CDG 1200/0100""")
+        self.assertEqual(
+            efjtk.modify.expand_efj(
+                data, (dt.date(2024, 1, 29), dt.date(2024, 2, 1))),
+            """\
+2024-01-29
+G-ABCD:A320
+BRS/KEF 1600/1900
+KEF/BRS 2000/2300
+
+2024-01-30
+BRS/CDG 1300/1400
+CDG/BRS 1500/1600
+2024-02-01
+PMI/ 1200/0100""")
 
     def test_bad(self):
         with self.subTest("No preceding date"):

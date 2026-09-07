@@ -12,7 +12,14 @@ from nightflight.airport_nvecs import airfields as af  # type:ignore
 DateRange = tuple[Optional[dt.date], Optional[dt.date]]
 
 
-def add_night_data(in_: str, daterange:DateRange = (None, None)) -> str:
+def _dt_in_daterange(d: dt.datetime, daterange: DateRange):
+    if ((not daterange[0] or d.date() >= daterange[0]) and
+            (not daterange[1] or d.date() < daterange[1])):
+        return True
+    return False
+
+
+def add_night_data(in_: str, daterange: DateRange = (None, None)) -> str:
     """Add night data to eFJ format text file in string form.
 
     :param in_: An eFJ format text file in string form.
@@ -23,7 +30,9 @@ def add_night_data(in_: str, daterange:DateRange = (None, None)) -> str:
     re_sec = re.compile(r"\A(\w*/\w* \d{4}/\d{4})(.*)\Z")
 
     def callback(line, line_num, type_, ret):
-        if type_ != "sector" or ret.conditions.night > 0:
+        if (type_ != "sector" or
+                ret.conditions.night > 0 or
+                not _dt_in_daterange(ret.start, daterange)):
             out.append(line)
             return
         try:
@@ -55,7 +64,7 @@ def add_night_data(in_: str, daterange:DateRange = (None, None)) -> str:
     return "\n".join(out)
 
 
-def expand_efj(in_: str, daterange:DateRange = (None, None)) -> str:
+def expand_efj(in_: str, daterange: DateRange = (None, None)) -> str:
     """Expand short dates (e.g. ++) and omitted airports, leaving all other
     lines intact.
 
@@ -69,7 +78,7 @@ def expand_efj(in_: str, daterange:DateRange = (None, None)) -> str:
     def callback(line, line_num, type_, ret):
         if type_ == "short_date":
             out.append(f"{ret:%Y-%m-%d}")
-        elif type_ == "sector":
+        elif type_ == "sector" and _dt_in_daterange(ret.start, daterange):
             if mo := re_sec.match(line):
                 out.append(
                     f"{ret.airports.origin}/{ret.airports.dest} {mo.group(1)}")
@@ -81,12 +90,14 @@ def expand_efj(in_: str, daterange:DateRange = (None, None)) -> str:
     return "\n".join(out)
 
 
-def add_fo_role_flag(in_: str, daterange:DateRange = (None, None)) -> str:
+def add_fo_role_flag(in_: str, daterange: DateRange = (None, None)) -> str:
     out = []
     re_sec = re.compile(r"\A(\w*/\w* \d{4}/\d{4})\s*(.*)\Z")
 
     def callback(line, line_num, type_, ret):
-        if type_ != "sector" or ret.roles.p1 != ret.total:
+        if (type_ != "sector" or
+                ret.roles.p1 != ret.total or
+                not _dt_in_daterange(ret.start, daterange)):
             out.append(line)
         else:
             mo = re_sec.match(line)
@@ -99,12 +110,14 @@ def add_fo_role_flag(in_: str, daterange:DateRange = (None, None)) -> str:
     return "\n".join(out)
 
 
-def add_ins_flag(in_: str, daterange:DateRange = (None, None)) -> str:
+def add_ins_flag(in_: str, daterange: DateRange = (None, None)) -> str:
     out = []
     re_sec = re.compile(r"\A(\w*/\w* \d{4}/\d{4})\s*(.*)\Z")
 
     def callback(line, line_num, type_, ret):
-        if type_ != "sector" or ret.roles.instructor:
+        if (type_ != "sector" or
+                ret.roles.instructor or
+                not _dt_in_daterange(ret.start, daterange)):
             out.append(line)
         else:
             mo = re_sec.match(line)
@@ -114,12 +127,14 @@ def add_ins_flag(in_: str, daterange:DateRange = (None, None)) -> str:
     return "\n".join(out)
 
 
-def add_vfr_flag(in_: str, daterange:DateRange = (None, None)) -> str:
+def add_vfr_flag(in_: str, daterange: DateRange = (None, None)) -> str:
     out = []
     re_sec = re.compile(r"\A(\w*/\w* \d{4}/\d{4})\s*(.*)\Z")
 
     def callback(line, line_num, type_, ret):
-        if type_ != "sector" or ret.conditions.ifr < ret.total:
+        if (type_ != "sector" or
+                ret.conditions.ifr < ret.total or
+                not _dt_in_daterange(ret.start, daterange)):
             out.append(line)
         else:
             mo = re_sec.match(line)
