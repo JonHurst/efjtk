@@ -17,17 +17,23 @@ def _args():
     parser = argparse.ArgumentParser(
         description=(
             """Process an electronic Flight Journal (eFJ) file. Tools to aid in
-            manual creation of eFJ files (expand, night, vfr, ins, fo) and
-            tools to convert to useful formats (logbook, summary) are included.
-            Also included is a tool to help create a config file, which is
-            required for generation of the FCL.050 logbook."""))
+            manual creation of eFJ files (expand, night, vfr, ins, fo) and tools
+            to convert to useful formats (logbook, summary, cumulative) are
+            included. Also included is a tool to help create a config file,
+            which is required for generation of the FCL.050 logbook."""))
     parser.add_argument('format',
                         choices=['expand', 'night', 'vfr', 'ins', 'fo',
                                  'logbook',  'summary', 'cumulative',
                                  'config', 'version'])
-    parser.add_argument('-c', '--config', default=None)
-    parser.add_argument('-f', '--from', dest='from_', default=None)
-    parser.add_argument('-t', '--to', default=None)
+    parser.add_argument(
+        '-c', '--config', default=None,
+        help="Use CONFIG for configuration rather than ~/.efjtkrc etc.")
+    parser.add_argument(
+        '-f', '--from', dest='from_', metavar="FROM", default=None,
+        help="Restrict output to dates including and after FROM")
+    parser.add_argument(
+        '-t', '--to', default=None,
+        help="Restrict output to dates up to but excluding TO")
     return parser.parse_args()
 
 
