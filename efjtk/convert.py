@@ -87,75 +87,57 @@ def build_logbook(
     return _get_template("logbook-template.html").format(rows="\n".join(rows))
 
 
-def _build_roles(sectors):
+def _table1_rows(sectors: list[ep.Sector]):
     rpt = {}
     for s in sectors:
         type_ = s.aircraft.type_
-        roles = [s.roles.p1, s.roles.p1s, s.roles.p2, s.roles.put]
+        roles = [s.roles.p1, s.roles.p1s, s.roles.p2,
+                 s.roles.put, s.roles.instructor]
         if s.aircraft.type_ not in rpt:
             rpt[type_] = roles
         else:
             rpt[type_] = [X + Y for X, Y in zip(rpt[type_], roles)]
     rows = []
-    role_total = [0, 0, 0, 0]
-    for type_ in sorted(rpt.keys()):
-        role_total = [X + Y for X, Y in zip(role_total, rpt[type_])]
-        total = sum(rpt[type_])
-        data = '</td><td>'.join([_duration(X) for X in rpt[type_]])
-        rows.append(f"<tr><th>{type_}</th><td>{data}</td>"
-                    f"<td class='total'>{_duration(total)}</td></tr>")
-    data = '</td><td class="total">'.join([_duration(X) for X in role_total])
-    rows.append(f"<tr class='col_total'><th>Total</th><td class='total'>{data}"
-                f"</td><td class='total'>{_duration(sum(role_total))}"
-                f"</td></tr>")
-    return rows
-
-
-def _build_conditions(sectors):
-    cond_pt = {}
-    for s in sectors:
-        type_ = s.aircraft.type_
-        conditions = [s.total - s.conditions.ifr, s.conditions.ifr,
-                      s.total - s.conditions.night, s.conditions.night]
-        if s.aircraft.type_ not in cond_pt:
-            cond_pt[type_] = conditions
-        else:
-            cond_pt[type_] = [X + Y for X, Y in
-                              zip(cond_pt[type_], conditions)]
-    rows = []
-    cond_total = [0, 0, 0, 0]
-    for type_ in sorted(cond_pt.keys()):
-        cond_total = [X + Y for X, Y in zip(cond_total, cond_pt[type_])]
-        data = '</td><td>'.join([_duration(X) for X in cond_pt[type_]])
-        rows.append(f"<tr><th>{type_}</th><td>{data}</td></tr>")
-    data = '</td><td class="total">'.join([_duration(X) for X in cond_total])
+    col_totals = [0, 0, 0, 0, 0, 0, 0]
+    for type_, roles in sorted(rpt.items()):
+        cols = [sum(roles[:-1]), roles[0] + roles[1], *roles]
+        col_totals = [X + Y for X, Y in zip(col_totals, cols)]
+        col_data = '</td><td>'.join(_duration(X) for X in cols)
+        rows.append(f"<tr><th>{type_}</th><td>{col_data}</td></tr>")
+    data = '</td><td class="total">'.join([_duration(X) for X in col_totals])
     rows.append(f"<tr class='col_total'><th>Total</th>"
                 f"<td class='total'>{data}</td></tr>")
     return rows
 
 
-def _build_landings(sectors):
-    ldg_pt = {}
+def _table2_rows(sectors: list[ep.Sector]):
+    rpt = {}
     for s in sectors:
         type_ = s.aircraft.type_
+        conditions = [s.total - s.conditions.ifr, s.conditions.ifr,
+                      s.total - s.conditions.night, s.conditions.night]
         landings = [s.landings.day, s.landings.night]
-        if s.aircraft.type_ not in ldg_pt:
-            ldg_pt[type_] = landings
-        else:
-            ldg_pt[type_] = [X + Y for X, Y in
-                             zip(ldg_pt[type_], landings)]
+        if s.aircraft.type_ not in rpt:
+            rpt[type_] = [0, 0, 0, 0, 0, 0]
+        rpt[type_] = [X + Y for X, Y in
+                      zip(rpt[type_], conditions + landings)]
     rows = []
-    landing_total = [0, 0]
-    for type_ in sorted(ldg_pt.keys()):
-        landing_total = [X + Y for X, Y in zip(landing_total, ldg_pt[type_])]
-        data = '</td><td>'.join([str(X) for X in ldg_pt[type_]])
-        total = sum(ldg_pt[type_])
-        rows.append(f"<tr><th>{type_}</th><td>{data}</td>"
-                    f"<td class='total'>{total}</td></tr>")
-    data = '</td><td class="total">'.join([str(X) for X in landing_total])
+    col_totals = [0, 0, 0, 0, 0, 0]
+    for type_, cells in sorted(rpt.items()):
+        col_totals = [X + Y for X, Y in zip(col_totals, cells)]
+        data = (
+            '</td><td>'.join(_duration(X) for X in cells[:4]) +
+            '</td><td>' +
+            '</td><td>'.join(str(X) for X in cells[4:])
+        )
+        rows.append(f"<tr><th>{type_}</th><td>{data}</td></tr>")
+    data = (
+        '</td><td class="total">'.join(_duration(X) for X in col_totals[:4]) +
+        '</td><td>' +
+        '</td><td class="total">'.join(str(X) for X in col_totals[4:])
+    )
     rows.append(f"<tr class='col_total'><th>Total</th>"
-                f"<td class='total'>{data}</td>"
-                f"<td class='total'>{sum(landing_total)}</td></tr>")
+                f"<td class='total'>{data}</td></tr>")
     return rows
 
 
@@ -178,16 +160,9 @@ def build_summary(in_: str, daterange: DateRange = (None, None)) -> str:
         if ((not daterange[0] or s.start.date() >= daterange[0]) and
                 (not daterange[1] or s.start.date() < daterange[1])):
             sectors.append(s)
-    roles = _build_roles(sectors)
-    conditions = _build_conditions(sectors)
-    landings = _build_landings(sectors)
     return _get_template("summary-template.html").format(
-        roles_body="\n".join(roles[:-1]),
-        roles_totals=roles[-1],
-        cond_body="\n".join(conditions[:-1]),
-        cond_totals=conditions[-1],
-        ldg_body="\n".join(landings[:-1]),
-        ldg_totals=landings[-1]
+        table1_body="\n".join(_table1_rows(sectors)),
+        table2_body="\n".join(_table2_rows(sectors))
     )
 
 
