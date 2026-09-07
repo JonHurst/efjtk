@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+   <meta charset='UTF-8'>
+    <title>Cumulative Totals</title>
+    <style>
+     :root {
+         --thin-border: 0.0625rem solid black;
+         --thick-border: 0.125rem solid black;
+         --stripe: #E0FFE0;
+         background-color: white;
+         color: black;
+         font-family: arial, sans-serif;
+     }
+
+     .j-cum-table {
+         margin: auto;
+         border-collapse: separate;
+         border-spacing: 0;
+         text-align: center;
+         position: relative;
+         table-layout: fixed;
+         width: 84rem;
+     }
+
+     .j-cum-table thead {
+         background-color: white;
+         font-weight: bold;
+         position: sticky;
+         top: 0;
+     }
+
+     tbody tr:nth-child(even) {
+         background-color: var(--stripe);
+     }
+
+     .j-footer {
+         border-top: var(--thick-border);
+     }
+
+     tfoot {
+         height: 0;
+     }
+
+     thead th {
+         border-top: var(--thick-border);
+         border-bottom: var(--thick-border);
+         border-right: var(--thin-border);
+     }
+
+     tbody td {
+         border-bottom: var(--thin-border);
+         border-right: var(--thin-border);
+     }
+
+     thead th:first-child,
+     tbody td:first-child {
+         border-left: var(--thick-border);
+     }
+
+     tbody td:nth-child(2),
+     tbody td:nth-child(5),
+     tbody td:nth-child(6),
+     tbody td:nth-child(8),
+     tbody td:nth-child(10),
+     tbody td:nth-child(14),
+     thead th:nth-child(2),
+     thead th:nth-child(5),
+     thead th:nth-child(6),
+     thead th:nth-child(8),
+     thead th:nth-child(10),
+     thead th:nth-child(14) {
+         border-right: var(--thick-border);
+     }
+
+     .j-col-time {
+         width: 4rem;
+     }
+     .j-col-duration {
+         width: 6rem;
+     }
+     .j-col-landings {
+         width: 6rem;
+     }
+
+     thead tr, tbody tr {
+         height: 2rem;
+     }
+
+     @media print {
+         @page {
+             size: A4 landscape;
+             margin: 1cm;
+         }
+         :root {
+             font-size: 2.763mm;
+             --thick-border: 0.15rem solid black;
+         }
+     }
+
+    </style>
+  </head>
+  <body>
+    <table class='j-cum-table'>
+      <colgroup>
+        <col class="j-col-date">
+        <col class="j-col-time">
+        <col class="j-col-duration">
+        <col class="j-col-duration">
+        <col class="j-col-duration">
+        <col class="j-col-duration">
+        <col class="j-col-landings">
+        <col class="j-col-landings">
+        <col class="j-col-duration">
+        <col class="j-col-duration">
+        <col class="j-col-duration">
+        <col class="j-col-duration">
+        <col class="j-col-duration">
+        <col class="j-col-duration">
+      </colgroup>
+      <thead>
+        <tr><th>Date</th><th>Time</th><th>SPSE</th><th>SPME</th><th>MC</th>
+          <th>Total</th><th>Day Ldg</th><th>Night Ldg</th>
+          <th>Night</th><th>IFR</th>
+          <th>PIC</th><th>Co-Pilot</th><th>Dual</th><th>Inst</th></tr>
+      </thead>
+      <tbody>
+<tr><td>01/01/2024</td><td>11:00</td><td></td><td></td><td>1:00</td><td>1:00</td><td>1</td><td>0</td><td></td><td>1:00</td><td>1:00</td><td></td><td></td><td></td></tr>
+<tr><td>01/01/2024</td><td>13:00</td><td></td><td></td><td>2:00</td><td>2:00</td><td>1</td><td>0</td><td></td><td>2:00</td><td>2:00</td><td></td><td></td><td></td></tr>
+      </tbody>
+      <tfoot>
+        <tr><td colspan="14" class="j-footer"></td></tr>
+      </tfoot>
+    </table>
+  </body>
+</html>
+

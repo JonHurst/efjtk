@@ -75,7 +75,7 @@ def main() -> int:
             print(efjtk.convert.build_logbook(data, ac_classes, date_range))
         elif args.format == "cumulative":
             ac_classes = aircraft_classes(_config(args.config))
-            print(efjtk.convert.build_cumulative(data, ac_classes))
+            print(efjtk.convert.build_cumulative(data, ac_classes, date_range))
         elif args.format == "config":
             sys.stdout.write(
                 build_config(data, _config(args.config)))

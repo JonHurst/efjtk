@@ -179,7 +179,10 @@ def build_summary(in_: str) -> str:
     )
 
 
-def build_cumulative(efj: str, ac_classes: cp.SectionProxy) -> str:
+def build_cumulative(
+        efj: str,
+        ac_classes: cp.SectionProxy,
+        daterange: DateRange = (None, None)) -> str:
     _, sectors = ep.Parser().parse(efj)
     spse, spme, mc, total = 0, 0, 0, 0
     day_ldg, night_ldg = 0, 0
@@ -188,6 +191,8 @@ def build_cumulative(efj: str, ac_classes: cp.SectionProxy) -> str:
     rows = []
     for s in sorted(sectors):
         end = s.start + dt.timedelta(minutes=s.total)
+        if daterange[1] and end.date() >= daterange[1]:
+            break
         total += s.total
         if s.aircraft.class_:
             aircraft_class = s.aircraft.class_
@@ -210,6 +215,8 @@ def build_cumulative(efj: str, ac_classes: cp.SectionProxy) -> str:
         p2 += s.roles.p2
         put += s.roles.put
         ins += s.roles.instructor
+        if daterange[0] and end.date() < daterange[0]:
+            continue
         cells = [f"{end:%d/%m/%Y}", f"{end:%H:%M}",
                  _duration(spse), _duration(spme), _duration(mc),
                  _duration(total),
