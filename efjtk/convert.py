@@ -98,7 +98,7 @@ def _table1_rows(sectors: list[ep.Sector]):
         else:
             rpt[type_] = [X + Y for X, Y in zip(rpt[type_], roles)]
     rows = []
-    col_totals = [0, 0, 0, 0, 0, 0, 0, 0]
+    col_totals = [0] * 8
     for type_, roles in sorted(rpt.items()):
         cols = [sum(roles[:-1]), sum(roles[:2]), *roles]
         col_totals = [X + Y for X, Y in zip(col_totals, cols)]
@@ -110,19 +110,37 @@ def _table1_rows(sectors: list[ep.Sector]):
     return rows
 
 
+def _ac_classes(s: ep.Sector) -> tuple[int, int, int]:
+    retval = [0] * 3
+    if s.aircraft.class_:
+        aircraft_class = s.aircraft.class_
+    else:
+        try:
+            aircraft_class = ac_classes[s.aircraft.type_]
+        except KeyError:
+            raise UnknownAircraftType(s.aircraft.type_)
+    if aircraft_class == "spse":
+        retval[0] = s.total
+    elif aircraft_class == "spme":
+        retval[1] = s.total
+    else:
+        retval[2] = s.total
+    return tuple(retval)
+
+
 def _table2_rows(sectors: list[ep.Sector]):
     rpt = {}
     for s in sectors:
         type_ = s.aircraft.type_
-        conditions = [s.total - s.conditions.ifr, s.conditions.ifr,
-                      s.total - s.conditions.night, s.conditions.night]
-        landings = [s.landings.day, s.landings.night]
+        conditions = (s.total - s.conditions.ifr, s.conditions.ifr,
+                      s.total - s.conditions.night, s.conditions.night)
+        landings = (s.landings.day, s.landings.night)
         if s.aircraft.type_ not in rpt:
-            rpt[type_] = [0, 0, 0, 0, 0, 0]
+            rpt[type_] = [0] * 9
         rpt[type_] = [X + Y for X, Y in
-                      zip(rpt[type_], conditions + landings)]
+                      zip(rpt[type_], _ac_classes(s) + conditions + landings)]
     rows = []
-    col_totals = [0, 0, 0, 0, 0, 0]
+    col_totals = [0] * 9
     for type_, cells in sorted(rpt.items()):
         col_totals = [X + Y for X, Y in zip(col_totals, cells)]
         data = (
