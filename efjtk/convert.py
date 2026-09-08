@@ -2,7 +2,7 @@ import configparser as cp
 import importlib.resources as res
 import datetime as dt
 
-from typing import Optional, cast
+from typing import Optional
 import efj_parser as ep
 
 
@@ -118,9 +118,9 @@ def _ac_class_tuple(
             aircraft_class = ac_classes[s.aircraft.type_]
         except KeyError:
             raise UnknownAircraftType(s.aircraft.type_)
-    return cast(tuple[int, int, int],
-                tuple(s.total if aircraft_class == X else 0
-                      for X in ("spse", "spme", "mc")))
+    spse, spme, mc = (s.total if aircraft_class == X else 0
+                      for X in ("spse", "spme", "mc"))
+    return (spse, spme, mc)
 
 
 def _table2_rows(
