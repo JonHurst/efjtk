@@ -32,25 +32,6 @@ def _duration(minutes):
     return ""
 
 
-def _aircraft_class_cells(
-        sector: ep.Sector,
-        ac_classes: cp.SectionProxy,
-        duration: str
-) -> list[str]:
-    if sector.aircraft.class_:
-        aircraft_class = sector.aircraft.class_
-    else:
-        try:
-            aircraft_class = ac_classes[sector.aircraft.type_]
-        except KeyError:
-            raise UnknownAircraftType(sector.aircraft.type_)
-    if aircraft_class == "mc":
-        return ["", "", duration]
-    if aircraft_class == "spse":
-        return ["✓", "", ""]
-    return ["", "✓", ""]  # must be "spme"
-
-
 def build_logbook(
         in_: str,
         ac_classes: cp.SectionProxy,
@@ -68,9 +49,12 @@ def build_logbook(
                  s.airports.dest,
                  f"{s.start + dt.timedelta(minutes=s.total):%H:%M}",
                  s.aircraft.type_, s.aircraft.reg]
-        duration = _duration(s.total)
-        cells.extend(_aircraft_class_cells(s, ac_classes, duration))
-        cells.append(duration)
+        ac_class_cells = [_duration(X) for X in _ac_class_tuple(s, ac_classes)]
+        for c in range(2):  # replace the first two durations with ticks if >0
+            if ac_class_cells[c]:
+                ac_class_cells[c] = "✓"
+        cells.extend(ac_class_cells)
+        cells.append(_duration(s.total))
         cells.append(s.captain)
         cells.extend([str(s.landings.day or ""), str(s.landings.night or "")])
         night, ifr = "", ""
