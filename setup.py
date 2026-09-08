@@ -24,7 +24,7 @@ setuptools.setup(
     python_requires='>=3.11',
     install_requires=[
         "nightflight >=0.9.2",
-        "efj_parser >=1.0"
+        "efj_parser >=2.0"
     ],
     package_data={
         "efjtk": ["summary-template.html",

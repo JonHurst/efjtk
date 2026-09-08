@@ -92,15 +92,15 @@ def _table1_rows(sectors: list[ep.Sector]):
     for s in sectors:
         type_ = s.aircraft.type_
         roles = [s.roles.p1, s.roles.p1s, s.roles.p2,
-                 s.roles.put, s.roles.instructor]
+                 s.roles.put, s.roles.p0, s.roles.instructor]
         if s.aircraft.type_ not in rpt:
             rpt[type_] = roles
         else:
             rpt[type_] = [X + Y for X, Y in zip(rpt[type_], roles)]
     rows = []
-    col_totals = [0, 0, 0, 0, 0, 0, 0]
+    col_totals = [0, 0, 0, 0, 0, 0, 0, 0]
     for type_, roles in sorted(rpt.items()):
-        cols = [sum(roles[:-1]), roles[0] + roles[1], *roles]
+        cols = [sum(roles[:-1]), sum(roles[:2]), *roles]
         col_totals = [X + Y for X, Y in zip(col_totals, cols)]
         col_data = '</td><td>'.join(_duration(X) for X in cols)
         rows.append(f"<tr><th>{type_}</th><td>{col_data}</td></tr>")
