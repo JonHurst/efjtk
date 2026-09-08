@@ -145,14 +145,14 @@ def _table2_rows(
 ) -> list[str]:
     rpt = {}
     for s in sectors:
-        type_ = s.aircraft.type_
         conditions = (s.total - s.conditions.ifr, s.conditions.ifr,
                       s.total - s.conditions.night, s.conditions.night)
         landings = (s.landings.day, s.landings.night)
         if s.aircraft.type_ not in rpt:
-            rpt[type_] = [0] * 9
-        cells = _ac_class_tuple(s, ac_classes) + conditions + landings
-        rpt[type_] = [X + Y for X, Y in zip(rpt[type_], cells)]
+            rpt[s.aircraft.type_] = [0] * 9
+        rpt[s.aircraft.type_] = [X + Y for X, Y in zip(
+            rpt[s.aircraft.type_],
+            _ac_class_tuple(s, ac_classes) + conditions + landings)]
     rows = []
     col_totals = [0] * 9
     for type_, cells in sorted(rpt.items()):
