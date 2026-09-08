@@ -201,19 +201,10 @@ def build_cumulative(
         if daterange[1] and end.date() >= daterange[1]:
             break
         total += s.total
-        if s.aircraft.class_:
-            aircraft_class = s.aircraft.class_
-        else:
-            try:
-                aircraft_class = ac_classes[s.aircraft.type_]
-            except KeyError:
-                raise UnknownAircraftType(s.aircraft.type_)
-        if aircraft_class == "spse":
-            spse += s.total
-        elif aircraft_class == "spme":
-            spme += s.total
-        else:
-            mc += s.total
+        classes = _ac_class_tuple(s, ac_classes)
+        spse += classes[0]
+        spme += classes[1]
+        mc += classes[2]
         day_ldg += s.landings.day
         night_ldg += s.landings.night
         night += s.conditions.night
