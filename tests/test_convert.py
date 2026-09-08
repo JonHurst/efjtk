@@ -58,7 +58,7 @@ class TestCumulative(unittest.TestCase):
 
     def test_standard(self):
         output = efjtk.convert.build_cumulative(self.test_input, ac_classes)
-        with open("expected_cum_convert_result.html") as f:
+        with open("expected_cumulative.html") as f:
             expected = f.read()
             self.assertEqual(output.strip(), expected.strip())
 
@@ -66,7 +66,7 @@ class TestCumulative(unittest.TestCase):
         output = efjtk.convert.build_cumulative(
             self.test_input, ac_classes,
             (dt.date(2024, 1, 3), None))
-        with open("expected_cum_convert_result_from.html") as f:
+        with open("expected_cumulative_from.html") as f:
             expected = f.read()
             self.assertEqual(output.strip(), expected.strip())
 
@@ -74,7 +74,7 @@ class TestCumulative(unittest.TestCase):
         output = efjtk.convert.build_cumulative(
             self.test_input, ac_classes,
             (None, dt.date(2024, 1, 3)))
-        with open("expected_cum_convert_result_to.html") as f:
+        with open("expected_cumulative_to.html") as f:
             expected = f.read()
             self.assertEqual(output.strip(), expected.strip())
 
@@ -82,7 +82,7 @@ class TestCumulative(unittest.TestCase):
         output = efjtk.convert.build_cumulative(
             self.test_input, ac_classes,
             (dt.date(2024, 1, 2), dt.date(2024, 1, 3)))
-        with open("expected_cum_convert_result_fromto.html") as f:
+        with open("expected_cumulative_fromto.html") as f:
             expected = f.read()
             self.assertEqual(output.strip(), expected.strip())
 
@@ -94,7 +94,7 @@ class TestSummary(unittest.TestCase):
             self.test_input = f.read()
 
     def test_standard(self):
-        output = efjtk.convert.build_summary(self.test_input)
+        output = efjtk.convert.build_summary(self.test_input, ac_classes)
         with open("expected_summary.html") as f:
             expected = f.read()
             self.assertEqual(output.strip(), expected.strip())
@@ -102,6 +102,7 @@ class TestSummary(unittest.TestCase):
     def test_ranged_from(self):
         output = efjtk.convert.build_summary(
             self.test_input,
+            ac_classes,
             (dt.date(2024, 1, 3), None))
         with open("expected_summary_from.html") as f:
             expected = f.read()
@@ -110,6 +111,7 @@ class TestSummary(unittest.TestCase):
     def test_ranged_to(self):
         output = efjtk.convert.build_summary(
             self.test_input,
+            ac_classes,
             (None, dt.date(2024, 1, 3)))
         with open("expected_summary_to.html") as f:
             expected = f.read()
@@ -118,6 +120,7 @@ class TestSummary(unittest.TestCase):
     def test_ranged_fromto(self):
         output = efjtk.convert.build_summary(
             self.test_input,
+            ac_classes,
             (dt.date(2024, 1, 2), dt.date(2024, 1, 3)))
         with open("expected_summary_fromto.html") as f:
             expected = f.read()

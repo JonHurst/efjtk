@@ -110,7 +110,7 @@ def _table1_rows(sectors: list[ep.Sector]):
     return rows
 
 
-def _ac_classes(s: ep.Sector) -> tuple[int, int, int]:
+def _ac_class_tuple(s: ep.Sector, ac_classes) -> tuple[int, int, int]:
     retval = [0] * 3
     if s.aircraft.class_:
         aircraft_class = s.aircraft.class_
@@ -128,7 +128,10 @@ def _ac_classes(s: ep.Sector) -> tuple[int, int, int]:
     return tuple(retval)
 
 
-def _table2_rows(sectors: list[ep.Sector]):
+def _table2_rows(
+        sectors: list[ep.Sector],
+        ac_classes: cp.SectionProxy
+) -> list[str]:
     rpt = {}
     for s in sectors:
         type_ = s.aircraft.type_
@@ -137,29 +140,33 @@ def _table2_rows(sectors: list[ep.Sector]):
         landings = (s.landings.day, s.landings.night)
         if s.aircraft.type_ not in rpt:
             rpt[type_] = [0] * 9
-        rpt[type_] = [X + Y for X, Y in
-                      zip(rpt[type_], _ac_classes(s) + conditions + landings)]
+        cells = _ac_class_tuple(s, ac_classes) + conditions + landings
+        rpt[type_] = [X + Y for X, Y in zip(rpt[type_], cells)]
     rows = []
     col_totals = [0] * 9
     for type_, cells in sorted(rpt.items()):
         col_totals = [X + Y for X, Y in zip(col_totals, cells)]
         data = (
-            '</td><td>'.join(_duration(X) for X in cells[:4]) +
+            '</td><td>'.join(_duration(X) for X in cells[:7]) +
             '</td><td>' +
-            '</td><td>'.join(str(X) for X in cells[4:])
+            '</td><td>'.join(str(X) for X in cells[7:])
         )
         rows.append(f"<tr><th>{type_}</th><td>{data}</td></tr>")
     data = (
-        '</td><td class="total">'.join(_duration(X) for X in col_totals[:4]) +
+        '</td><td class="total">'.join(_duration(X) for X in col_totals[:7]) +
         '</td><td>' +
-        '</td><td class="total">'.join(str(X) for X in col_totals[4:])
+        '</td><td class="total">'.join(str(X) for X in col_totals[7:])
     )
     rows.append(f"<tr class='col_total'><th>Total</th>"
                 f"<td class='total'>{data}</td></tr>")
     return rows
 
 
-def build_summary(in_: str, daterange: DateRange = (None, None)) -> str:
+def build_summary(
+        in_: str,
+        ac_classes: cp.SectionProxy,
+        daterange: DateRange = (None, None)
+) -> str:
     """Build an HTML file with a summary table.
 
     :param in_: An EFJ format text file as a string
@@ -180,7 +187,7 @@ def build_summary(in_: str, daterange: DateRange = (None, None)) -> str:
             sectors.append(s)
     return _get_template("summary-template.html").format(
         table1_body="\n".join(_table1_rows(sectors)),
-        table2_body="\n".join(_table2_rows(sectors))
+        table2_body="\n".join(_table2_rows(sectors, ac_classes))
     )
 
 

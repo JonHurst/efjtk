@@ -19,9 +19,9 @@
          border: var(--thick-border);
          border-collapse: collapse;
          table-layout: fixed;
-         width: 70rem;
+         width: 80rem;
          break-inside: avoid;
-         margin: 2rem auto;
+         margin: 0 auto 2rem;
      }
 
      tr {
@@ -42,12 +42,12 @@
      }
 
      tbody th,
-     thead tr:first-child th:first-child,
-     .table-1 thead tr:first-child th:nth-child(2),
+     thead tr:first-child th,
      .table-1 tbody td:nth-child(2),
-     .table-2 thead tr:first-child th:nth-child(2),
-     .table-2 thead tr:nth-child(2) th:nth-child(4),
-     .table-2 tbody td:nth-child(5) {
+     .table-2 thead tr:nth-child(2) th:nth-child(3),
+     .table-2 thead tr:nth-child(2) th:nth-child(7),
+     .table-2 tbody td:nth-child(4),
+     .table-2 tbody td:nth-child(8) {
          border-right: var(--thick-border);
      }
 
@@ -78,28 +78,29 @@
     <table class="table-1">
       <thead>
         <tr><th rowspan="2">Type</th><th rowspan="2">Total</th>
-          <th colspan="6">Roles</th></tr>
-        <tr><th>pic</th><th>p1</th><th>p1s</th><th>p2</th><th>put</th><th>ins</th></tr>
+          <th colspan="7">Roles</th></tr>
+        <tr><th>pic</th><th>p1</th><th>p1s</th><th>p2</th><th>put</th>
+          <th>other</th><th>ins</th></tr>
       </thead>
       <tbody>
-        <tr><th>A320</th><td>2:00</td><td>2:00</td><td>2:00</td><td></td><td></td><td></td><td></td></tr>
-<tr><th>A321</th><td>3:00</td><td>3:00</td><td>3:00</td><td></td><td></td><td></td><td></td></tr>
-<tr><th>C152</th><td>2:00</td><td>1:30</td><td>1:30</td><td></td><td></td><td>0:30</td><td>1:00</td></tr>
-<tr class='col_total'><th>Total</th><td class='total'>7:00</td><td class="total">6:30</td><td class="total">6:30</td><td class="total"></td><td class="total"></td><td class="total">0:30</td><td class="total">1:00</td></tr>
+        <tr><th>A320</th><td>2:00</td><td>2:00</td><td>2:00</td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><th>A321</th><td>3:00</td><td>3:00</td><td>3:00</td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><th>C152</th><td>2:00</td><td>1:30</td><td>1:30</td><td></td><td></td><td>0:30</td><td></td><td>1:00</td></tr>
+<tr class='col_total'><th>Total</th><td class='total'>7:00</td><td class="total">6:30</td><td class="total">6:30</td><td class="total"></td><td class="total"></td><td class="total">0:30</td><td class="total"></td><td class="total">1:00</td></tr>
       </tbody>
     </table>
     <table class="table-2">
       <thead>
-        <tr><th rowspan="2">Type</th><th colspan="4">Conditions</th>
-          <th colspan="2">Landings</th> </tr>
-        <tr><th>VFR</th><th>IFR</th><th>Day</th><th>Night</th>
-          <th>Day</th><td>Night</td></tr>
+        <tr><th rowspan="2">Type</th><th colspan="3">Classes</th>
+          <th colspan="4">Conditions</th><th colspan="2">Landings</th></tr>
+        <tr><th>SPSE</th><th>SPME</th><th>MC</th><th>VFR</th><th>IFR</th>
+          <th>Day</th><th>Night</th><th>Day</th><td>Night</td></tr>
       </thead>
       <tbody>
-        <tr><th>A320</th><td></td><td>2:00</td><td>2:00</td><td></td><td>1</td><td>0</td></tr>
-<tr><th>A321</th><td></td><td>3:00</td><td>3:00</td><td></td><td>1</td><td>0</td></tr>
-<tr><th>C152</th><td>2:00</td><td></td><td>1:30</td><td>0:30</td><td>7</td><td>1</td></tr>
-<tr class='col_total'><th>Total</th><td class='total'>2:00</td><td class="total">5:00</td><td class="total">6:30</td><td class="total">0:30</td><td>9</td><td class="total">1</td></tr>
+        <tr><th>A320</th><td></td><td></td><td>2:00</td><td></td><td>2:00</td><td>2:00</td><td></td><td>1</td><td>0</td></tr>
+<tr><th>A321</th><td></td><td></td><td>3:00</td><td></td><td>3:00</td><td>3:00</td><td></td><td>1</td><td>0</td></tr>
+<tr><th>C152</th><td>2:00</td><td></td><td></td><td>2:00</td><td></td><td>1:30</td><td>0:30</td><td>7</td><td>1</td></tr>
+<tr class='col_total'><th>Total</th><td class='total'>2:00</td><td class="total"></td><td class="total">5:00</td><td class="total">2:00</td><td class="total">5:00</td><td class="total">6:30</td><td class="total">0:30</td><td>9</td><td class="total">1</td></tr>
       </tbody>
     </table>
   </body>

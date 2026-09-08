@@ -53,7 +53,6 @@ def _config(filename: Optional[str]) -> str:
 _func_map = {
     "expand": efjtk.modify.expand_efj,
     "night": efjtk.modify.add_night_data,
-    "summary": efjtk.convert.build_summary,
     "vfr": efjtk.modify.add_vfr_flag,
     "fo": efjtk.modify.add_fo_role_flag,
     "ins": efjtk.modify.add_ins_flag,
@@ -82,6 +81,9 @@ def main() -> int:
         elif args.format == "cumulative":
             ac_classes = aircraft_classes(_config(args.config))
             print(efjtk.convert.build_cumulative(data, ac_classes, date_range))
+        elif args.format == "summary":
+            ac_classes = aircraft_classes(_config(args.config))
+            print(efjtk.convert.build_summary(data, ac_classes, date_range))
         elif args.format == "config":
             sys.stdout.write(
                 build_config(data, _config(args.config)))
