@@ -454,18 +454,29 @@ class MainWindow(tk.Tk):
     def __export_summary(self):
         if not (text := self.txt.get("1.0", tk.END)):
             return
-        result = efjtk.convert.build_summary(text)
-        path = self.settings.get('exportPath')
-        if not (fn := filedialog.asksaveasfilename(
-                filetypes=(("HTML", "*.html"),
-                           ("All", "*")),
-                defaultextension=".html",
-                initialdir=path)):
-            return
-        self.settings['exportPath'] = os.path.dirname(fn)
-        with open(fn, "w", encoding="utf-8") as f:
-            f.write(result)
-            messagebox.showinfo("Saved", "Summary saved")
+        try:
+            with open(CONFIG_FILE) as fc:
+                config_str = fc.read()
+        except OSError:
+            config_str = ""
+        ac = efjtk.config.aircraft_classes(config_str)
+        try:
+            result = efjtk.convert.build_summary(text, ac)
+            path = self.settings.get('exportPath')
+            if not (fn := filedialog.asksaveasfilename(
+                    filetypes=(("HTML", "*.html"),
+                               ("All", "*")),
+                    defaultextension=".html",
+                    initialdir=path)):
+                return
+            self.settings['exportPath'] = os.path.dirname(fn)
+            with open(fn, "w", encoding="utf-8") as f:
+                f.write(result)
+                messagebox.showinfo("Saved", "Summary saved")
+        except efjtk.convert.UnknownAircraftType:
+            self.__add_unknown_aircraft_to_config(text, config_str)
+            if self.__config():
+                self.__export_summary()
 
     def __help(self):
         webbrowser.open(HELP_URL)

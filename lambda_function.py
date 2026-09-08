@@ -7,7 +7,7 @@ from efj_parser import ValidationError
 import efjtk.modify
 
 
-def logbook(in_, config):
+def call_with_config_check(fn, in_, config):
     out = ""
     status = "failed"
     ac_classes = {}
@@ -19,7 +19,7 @@ def logbook(in_, config):
         except (KeyError, cp.Error):
             config = ""
     try:
-        out = build_logbook(in_, ac_classes)
+        out = fn(in_, ac_classes)
         status = "success"
     except UnknownAircraftType:
         out = build_config(in_, config)
@@ -43,10 +43,11 @@ def lambda_handler(event, context):
     status = "failed"
     try:
         if action == "logbook":
-            out, status = logbook(in_, data["config"])
+            out, status = call_with_config_check(
+                build_logbook, in_, data["config"])
         elif action == "summary":
-            out = build_summary(in_)
-            status = "success"
+            out, status = call_with_config_check(
+                build_summary, in_, data["config"])
         elif action in _func_map:
             out = _func_map[action](in_)
             status = "success"
@@ -66,8 +67,8 @@ def lambda_handler(event, context):
 if __name__ == "__main__":
     event = {
         "body": json.dumps({
-            "efj": open("/home/jon/docs/flying/logbook/logbook").read(),
-            "action": "logbook",
+            "efj": open("/home/jon/data/logbook").read(),
+            "action": "summary",
             "config": ""
         })
     }

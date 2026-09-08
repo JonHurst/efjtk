@@ -1,6 +1,7 @@
 "use strict";
 
 const EFJTOOL_URL = "https://yu3zknipfl.execute-api.eu-west-2.amazonaws.com/default/efj-tool";
+// const EFJTOOL_URL = "https://u8ei87fcgi.execute-api.eu-west-2.amazonaws.com/default/efj-tool-staging";
 
 let ID = x => document.getElementById(x);
 let history = new Array;
@@ -126,7 +127,7 @@ async function get_fcl_logbook() {
         save_to_file(result[0], "text/html", "fcl-logbook.html");
     }
     else if(result[1] == "config") {
-        edit_config(result[0], true);
+        edit_config(result[0], get_fcl_logbook);
     }
     else
         show_error(result[0]);
@@ -155,7 +156,7 @@ function change_class_value() {
 }
 
 
-async function edit_config(ini, retry_logbook=false) {
+async function edit_config(ini, retry=null) {
     let lines = ini.split("\n");
     if(lines[0] != "[aircraft.classes]") {
         show_error("Bad ini");
@@ -176,7 +177,7 @@ async function edit_config(ini, retry_logbook=false) {
         button.addEventListener("click", change_class_value);
         class_div.append(clone);
     }
-    ID("config_dialog").retry_logbook = retry_logbook;
+    ID("config_dialog").retry = retry;
     ID("config_dialog").showModal();
 }
 
@@ -191,20 +192,25 @@ async function save_config() {
     }
     window.localStorage.setItem("ini", ini.join("\n"));
     ID("config").classList.remove("hidden");
-    if(ID("config_dialog").retry_logbook) {
-        ID("config_dialog").retry_logbook = false;
-        get_fcl_logbook();
+    if(ID("config_dialog").retry !== null) {
+        let fn = ID("config_dialog").retry;
+        ID("config_dialog").retry = null;
+        fn();
     }
     ID("config_dialog").close();;
 }
 
 
 async function get_summary() {
-    let result = await post(ID("output").value, "summary", "");
+    let config = window.localStorage.getItem("ini");
+    let result = await post(ID("output").value, "summary", config || "");
     if(!result)
         return;
     if(result[1] == "success")
         save_to_file(result[0], "text/html", "summary.html");
+    else if(result[1] == "config") {
+        edit_config(result[0], get_summary);
+    }
     else
         show_error(result[0]);
 }

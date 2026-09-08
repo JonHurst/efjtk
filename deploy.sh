@@ -2,6 +2,7 @@
 
 PROJ_DIR=$(dirname "$0")
 ZIPFILE="deploy.zip"
+# FUNCTIONID=efj-tool-staging
 FUNCTIONID=efj-tool
 
 cd $PROJ_DIR
