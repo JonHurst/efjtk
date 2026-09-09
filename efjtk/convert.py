@@ -32,6 +32,35 @@ def _duration(minutes):
     return ""
 
 
+def _ac_class_tuple(
+        s: ep.Sector,
+        ac_classes: cp.SectionProxy
+) -> tuple[int, int, int]:
+    """Get minutes alloted to aircraft classes.
+
+    :param s: The sector to process
+
+    :param ac_classes: Effectively a case-insensitive dict mapping aircraft
+        type to aircraft class (spse, spme or mc)
+
+    :returns: A tuple of the form (SPSE, SPME, MC) where each cell is the
+        minutes (as an integer) to allot to the associated class.
+
+    :raises UnknownAircraftType: Raised if the class associated with a type is
+        not available from the Sector object, nor from the ac_classes mapping.
+    """
+    if s.aircraft.class_:  # will be "" if no class assigned by parser
+        aircraft_class = s.aircraft.class_
+    else:
+        try:
+            aircraft_class = ac_classes[s.aircraft.type_]
+        except KeyError:
+            raise UnknownAircraftType(s.aircraft.type_)
+    spse, spme, mc = (s.total if aircraft_class == X else 0
+                      for X in ("spse", "spme", "mc"))
+    return (spse, spme, mc)
+
+
 def build_logbook(
         in_: str,
         ac_classes: cp.SectionProxy,
@@ -92,35 +121,6 @@ def _table1_rows(sectors: list[ep.Sector]):
     rows.append(f"<tr class='col_total'><th>Total</th>"
                 f"<td class='total'>{data}</td></tr>")
     return rows
-
-
-def _ac_class_tuple(
-        s: ep.Sector,
-        ac_classes: cp.SectionProxy
-) -> tuple[int, int, int]:
-    """Get minutes alloted to aircraft classes.
-
-    :param s: The sector to process
-
-    :param ac_classes: Effectively a case-insensitive dict mapping aircraft
-        type to aircraft class (spse, spme or mc)
-
-    :returns: A tuple of the form (SPSE, SPME, MC) where each cell is the
-        minutes (as an integer) to allot to the associated class.
-
-    :raises UnknownAircraftType: Raised if the class associated with a type is
-        not available from the Sector object, nor from the ac_classes mapping.
-    """
-    if s.aircraft.class_:  # will be "" if no class assigned by parser
-        aircraft_class = s.aircraft.class_
-    else:
-        try:
-            aircraft_class = ac_classes[s.aircraft.type_]
-        except KeyError:
-            raise UnknownAircraftType(s.aircraft.type_)
-    spse, spme, mc = (s.total if aircraft_class == X else 0
-                      for X in ("spse", "spme", "mc"))
-    return (spse, spme, mc)
 
 
 def _table2_rows(
