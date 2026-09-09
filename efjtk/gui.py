@@ -516,7 +516,34 @@ class MainWindow(tk.Tk):
         webbrowser.open(HELP_EFJ)
 
     def __test(self):
-        print(_daterange_from_efj(self.txt.get('1.0', 'end')))
+        if dr := _daterange_from_efj(self.txt.get('1.0', 'end')):
+            dr_dlg = tk.Toplevel()
+
+            def callback():
+                print(start.get(), end.get())
+                dr_dlg.destroy()
+            start_frame = tk.Frame(dr_dlg)
+            start_frame.pack()
+            tk.Label(start_frame, width=15, text="From (inclusive)"
+                     ).pack(side=tk.LEFT)
+            start = tk.Entry(start_frame, width=20)
+            start.pack(side=tk.RIGHT)
+            start.insert(0, dr[0])
+            end_frame = tk.Frame(dr_dlg)
+            end_frame.pack()
+            tk.Label(end_frame, width=15, text="To (exclusive)"
+                     ).pack(side=tk.LEFT)
+            end = tk.Entry(end_frame, width=20)
+            end.insert(0, dr[1])
+            end.pack(side=tk.RIGHT)
+            buttons = tk.Frame(dr_dlg)
+            buttons.pack(fill=tk.X)
+            tk.Button(buttons, width=5, text="OK", command=callback
+                      ).pack(side=tk.RIGHT)
+            dr_dlg.attributes(topmost=True)
+            dr_dlg.focus_set()
+            dr_dlg.grab_set()
+            dr_dlg.wait_window()
 
 
 def _daterange_from_efj(efj: str) -> tuple[dt.date, dt.date] | None:
@@ -527,7 +554,6 @@ def _daterange_from_efj(efj: str) -> tuple[dt.date, dt.date] | None:
                 try:
                     extracted_date = dt.date.fromisoformat(mo.group(1))
                     dates.append(extracted_date)
-                    print("Dates Now", dates)
                 except ValueError:
                     continue
             elif mo.group(2) and len(dates):
