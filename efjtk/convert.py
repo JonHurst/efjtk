@@ -28,6 +28,7 @@ def _get_template(filename: str) -> str:
 
     The template should use <!--{ and }--> to delimit the kwarg that str.format
     will replace. Use of { and } elsewhere in the template is suitably escaped.
+
     """
     template_file = res.files("efjtk").joinpath(filename)
     with template_file.open() as f:
@@ -45,6 +46,7 @@ def _duration(minutes: int) -> str:
 
     :returns: An empty string for 0 minutes, otherwise duration in the form
         H:MM
+
     """
     if minutes:
         return f"{minutes // 60}:{minutes % 60:02}"
@@ -67,6 +69,7 @@ def _ac_class_tuple(
 
     :raises UnknownAircraftType: Raised if the class associated with a type is
         not available from the Sector object, nor from the ac_classes mapping.
+
     """
     if s.aircraft.class_:  # will be "" if no class assigned by parser
         aircraft_class = s.aircraft.class_
@@ -88,6 +91,7 @@ def _row(cells: tuple[str, ...], class_: str = "") -> str:
     :param class_: A string to assign to the row's class attribute
 
     :returns: A string containing a properly escaped HTML table row
+
     """
     c = class_ and f" class='{escape(class_)}'"
     inner = "".join(f"<td>{escape(X, False)}</td>" for X in cells)
@@ -115,6 +119,7 @@ def build_logbook(
 
     :raises UnknownAircraftType: Raised if the class of an encountered aircraft
         type can neither be determined from the sector nor from ac_classes.
+
     """
     _, sectors = ep.Parser().parse(efj)
     rows = []
@@ -157,6 +162,7 @@ def summary_table1(sectors: list[ep.Sector]) -> list[str]:
     :param sectors: The list of sectors to process into a summary
 
     :returns: A list of HTML table rows as strings
+
     """
     roles_for_type: dict[str, list[int]] = {}
     for s in sectors:
@@ -246,6 +252,7 @@ def build_summary(
         may be None in which case the associated restriction is not applied.
 
     :return:  The summary tables as standalone HTML as a string
+
     """
     _, parsed_sectors = ep.Parser().parse(efj)
     sectors = []
@@ -280,6 +287,7 @@ def build_cumulative(
 
     :raises UnknownAircraftType: Raised if the class of an encountered aircraft
         type can neither be determined from the sector nor from ac_classes.
+
     """
     _, sectors = ep.Parser().parse(efj)
     cumulative_totals = [0] * 12
