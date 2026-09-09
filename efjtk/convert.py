@@ -64,6 +64,14 @@ def _ac_class_tuple(
 
 
 def _row(cells: tuple[str, ...], class_: str = "") -> str:
+    """Build an HTML table row from a tuple of strings
+
+    :param cells: The strings representing the table cells
+
+    :param class_: A string to assign to the row's class attribute
+
+    :returns: A string containing a properly escaped HTML table row
+    """
     c = class_ and f" class='{escape(class_)}'"
     inner = "".join(f"<td>{escape(X, False)}</td>" for X in cells)
     return f"<tr{c}>{inner}</tr>"
