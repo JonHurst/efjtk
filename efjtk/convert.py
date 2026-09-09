@@ -202,37 +202,34 @@ def build_cumulative(
         ac_classes: cp.SectionProxy,
         daterange: DateRange = (None, None)) -> str:
     _, sectors = ep.Parser().parse(efj)
-    spse, spme, mc, total = 0, 0, 0, 0
-    day_ldg, night_ldg = 0, 0
-    night, ifr = 0, 0
-    pic, p2, put, ins = 0, 0, 0, 0
+    cumulative_totals = [0] * 12
     rows = []
     for s in sorted(sectors):
         end = s.start + dt.timedelta(minutes=s.total)
         if daterange[1] and end.date() >= daterange[1]:
             break
-        total += s.total
-        classes = _ac_class_tuple(s, ac_classes)
-        spse += classes[0]
-        spme += classes[1]
-        mc += classes[2]
-        day_ldg += s.landings.day
-        night_ldg += s.landings.night
-        night += s.conditions.night
-        ifr += s.conditions.ifr
-        pic += s.roles.p1 + s.roles.p1s
-        p2 += s.roles.p2
-        put += s.roles.put
-        ins += s.roles.instructor
+        sector_cells = (
+            *_ac_class_tuple(s, ac_classes),  # SPSE, SPME, MC minutes
+            s.total,  # Total minutes
+            s.landings.day,  # Day landings
+            s.landings.night,  # Night landings
+            s.conditions.night,  # Night minutes
+            s.conditions.ifr,  # IFR minutes
+            s.roles.p1 + s.roles.p1s,  # PIC minutes
+            s.roles.p2,  # Co-Pilot minutes
+            s.roles.put,  # Dual minutes
+            s.roles.instructor  # Instructor minutes
+        )
+        for c in range(12):
+            cumulative_totals[c] += sector_cells[c]
         if daterange[0] and end.date() < daterange[0]:
             continue
-        cells = [f"{end:%d/%m/%Y}", f"{end:%H:%M}",
-                 _duration(spse), _duration(spme), _duration(mc),
-                 _duration(total),
-                 str(day_ldg), str(night_ldg),
-                 _duration(night), _duration(ifr),
-                 _duration(pic), _duration(p2), _duration(put), _duration(ins)
-                 ]
-        rows.append(f"<tr><td>{'</td><td>'.join(cells)}</td></tr>")
+        rows.append(_row((
+            f"{end:%d/%m/%Y}",
+            f"{end:%H:%M}",
+            *(_duration(X) for X in cumulative_totals[:4]),
+            *(str(X) for X in cumulative_totals[4:6]),
+            *(_duration(X) for X in cumulative_totals[6:]))
+        ))
     return (_get_template("cumulative-template.html")
             .format(rows="\n".join(rows)))
