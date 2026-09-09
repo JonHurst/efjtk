@@ -17,9 +17,9 @@ def _args():
     parser = argparse.ArgumentParser(
         description=(
             """Process an electronic Flight Journal (eFJ) file. Tools to aid in
-            manual creation of eFJ files (expand, night, vfr, ins, fo) and tools
-            to convert to useful formats (logbook, summary, cumulative) are
-            included. Also included is a tool to help create a config file,
+            manual creation of eFJ files (expand, night, vfr, ins, fo) and
+            tools to convert to useful formats (logbook, summary, cumulative)
+            are included. Also included is a tool to help create a config file,
             which is required for generation of the FCL.050 logbook."""))
     parser.add_argument('format',
                         choices=['expand', 'night', 'vfr', 'ins', 'fo',
@@ -64,15 +64,13 @@ def main() -> int:
     if args.format == "version":
         print(VERSION)
         return 0
-    date_range = [None, None]
-    for c, arg in enumerate((args.from_, args.to)):
-        if arg:
-            try:
-                date_range[c] = dt.date.fromisoformat(arg)
-            except ValueError as e:
-                print(e, file=sys.stderr)
-                return -4
-    date_range = tuple(date_range)
+    try:
+        date_from = args.from_ and dt.date.fromisoformat(args.from_)
+        date_to = args.to and dt.date.fromisoformat(args.to)
+    except ValueError as e:
+        print(e, file=sys.stderr)
+        return -4
+    date_range = (date_from, date_to)
     data = sys.stdin.read()
     try:
         if args.format == "logbook":
