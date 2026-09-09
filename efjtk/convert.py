@@ -3,6 +3,8 @@ import importlib.resources as res
 import datetime as dt
 
 from typing import Optional
+from html import escape
+
 import efj_parser as ep
 
 
@@ -61,6 +63,12 @@ def _ac_class_tuple(
     return (spse, spme, mc)
 
 
+def _row(cells: tuple[str, ...], class_: str = "") -> str:
+    c = class_ and f" class='{escape(class_)}'"
+    inner = "".join(f"<td>{escape(X, False)}</td>" for X in cells)
+    return f"<tr{c}>{inner}</tr>"
+
+
 def build_logbook(
         in_: str,
         ac_classes: cp.SectionProxy,
@@ -73,30 +81,31 @@ def build_logbook(
             continue
         if daterange[1] and s.start.date() >= daterange[1]:
             break
-        cells = [f"{s.start:%d/%m/%Y}",
-                 s.airports.origin, f"{s.start:%H:%M}",
-                 s.airports.dest,
-                 f"{s.start + dt.timedelta(minutes=s.total):%H:%M}",
-                 s.aircraft.type_, s.aircraft.reg]
-        ac_class_cells = [_duration(X) for X in _ac_class_tuple(s, ac_classes)]
-        for c in range(2):  # replace the first two durations with ticks if >0
-            if ac_class_cells[c]:
-                ac_class_cells[c] = "✓"
-        cells.extend(ac_class_cells)
-        cells.append(_duration(s.total))
-        cells.append(s.captain)
-        cells.extend([str(s.landings.day or ""), str(s.landings.night or "")])
-        night, ifr = "", ""
-        if s.conditions.night:
-            night = _duration(s.conditions.night)
-        if s.conditions.ifr:
-            ifr = _duration(s.conditions.ifr)
-        cells.extend([night, ifr])
-        cells.extend([_duration(X) if X else ""
-                      for X in (s.roles.p1 + s.roles.p1s, s.roles.p2,
-                                s.roles.put, s.roles.instructor)])
-        cells.append(s.comment)
-        rows.append(f"<tr><td>{'</td><td>'.join(cells)}</td></tr>")
+        ac_class_t = _ac_class_tuple(s, ac_classes)
+        cells = (
+            f"{s.start:%d/%m/%Y}",  # Date
+            s.airports.origin,  # Departure Place
+            f"{s.start:%H:%M}",  # Departure Time
+            s.airports.dest,  # Arrival Place
+            f"{s.start + dt.timedelta(minutes=s.total):%H:%M}",  # Arrival Time
+            s.aircraft.type_,  # Aircraft Type
+            s.aircraft.reg,  # Aircraft Reg
+            "✓" if ac_class_t[0] else "",  # SE tick
+            "✓" if ac_class_t[1] else "",  # ME tick
+            _duration(ac_class_t[2]),  # MC duration
+            _duration(s.total),  # Total duration
+            s.captain,  # PIC
+            str(s.landings.day or ""),  # Day landings
+            str(s.landings.night or ""),  # Night landings
+            _duration(s.conditions.night),  # Night duration
+            _duration(s.conditions.ifr),  # IFR duration
+            _duration(s.roles.p1 + s.roles.p1s),  # PIC duration
+            _duration(s.roles.p2),  # Co-Pilot duration
+            _duration(s.roles.put),  # Dual duration
+            _duration(s.roles.instructor),  # Instruction duration
+            s.comment  # Comment
+        )
+        rows.append(_row(cells))
     return _get_template("logbook-template.html").format(rows="\n".join(rows))
 
 
