@@ -292,7 +292,7 @@ class MainWindow(tk.Tk):
     def __open(self):
         path = self.settings.get('openPath')
         fn = filedialog.askopenfilename(
-            filetypes=(("All", "*"),),
+            filetypes=(("Text", "*.txt"), ("Text", "*.efj"), ("All", "*")),
             initialdir=path)
         if not fn:
             return
