@@ -38,7 +38,14 @@ def _get_template(filename):
     return template
 
 
-def _duration(minutes):
+def _duration(minutes: int) -> str:
+    """Convert minutes to a string representation of duration
+
+    :param minutes: The number of minutes to convert
+
+    :returns: An empty string for 0 minutes, otherwise duration in the form
+        H:MM
+    """
     if minutes:
         return f"{minutes // 60}:{minutes % 60:02}"
     return ""
