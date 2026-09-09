@@ -11,8 +11,12 @@
          color: black;
          font-family: arial, sans-serif;
      }
+
      body {
          background-color: white;
+         padding: 1rem;
+         width: min-content;
+         margin: auto;
      }
 
      table {
@@ -21,7 +25,7 @@
          table-layout: fixed;
          width: 80rem;
          break-inside: avoid;
-         margin: 0 auto 2rem;
+         margin: 0 0 2rem;
      }
 
      tr {
@@ -41,7 +45,7 @@
          border: var(--thin-border);
      }
 
-     tbody th,
+     tbody td:first-child,
      thead tr:first-child th,
      .table-1 tbody td:nth-child(2),
      .table-2 thead tr:nth-child(2) th:nth-child(3),
@@ -71,6 +75,10 @@
              font-size: 2.763mm;
              --thick-border: 0.15rem solid black;
          }
+         body {
+             margin: 0 auto;
+             padding: 0;
+         }
      }
     </style>
   </head>
@@ -83,8 +91,8 @@
           <th>other</th><th>ins</th></tr>
       </thead>
       <tbody>
-        <tr><th>C152</th><td>2:00</td><td>1:30</td><td>1:30</td><td></td><td></td><td>0:30</td><td></td><td>1:00</td></tr>
-<tr class='col_total'><th>Total</th><td class='total'>2:00</td><td class="total">1:30</td><td class="total">1:30</td><td class="total"></td><td class="total"></td><td class="total">0:30</td><td class="total"></td><td class="total">1:00</td></tr>
+        <tr><td>C152</td><td>2:00</td><td>1:30</td><td>1:30</td><td></td><td></td><td>0:30</td><td></td><td>1:00</td></tr>
+<tr><td>Total</td><td>2:00</td><td>1:30</td><td>1:30</td><td></td><td></td><td>0:30</td><td></td><td>1:00</td></tr>
       </tbody>
     </table>
     <table class="table-2">
@@ -95,8 +103,8 @@
           <th>Day</th><th>Night</th><th>Day</th><td>Night</td></tr>
       </thead>
       <tbody>
-        <tr><th>C152</th><td>2:00</td><td></td><td></td><td>2:00</td><td></td><td>1:30</td><td>0:30</td><td>7</td><td>1</td></tr>
-<tr class='col_total'><th>Total</th><td class='total'>2:00</td><td class="total"></td><td class="total"></td><td class="total">2:00</td><td class="total"></td><td class="total">1:30</td><td class="total">0:30</td><td>7</td><td class="total">1</td></tr>
+        <tr><td>C152</td><td>2:00</td><td></td><td></td><td>2:00</td><td></td><td>1:30</td><td>0:30</td><td>7</td><td>1</td></tr>
+<tr><td>Total</td><td>2:00</td><td></td><td></td><td>2:00</td><td></td><td>1:30</td><td>0:30</td><td>7</td><td>1</td></tr>
       </tbody>
     </table>
   </body>

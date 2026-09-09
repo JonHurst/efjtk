@@ -109,60 +109,62 @@ def build_logbook(
     return _get_template("logbook-template.html").format(rows="\n".join(rows))
 
 
-def _table1_rows(sectors: list[ep.Sector]):
-    rpt = {}
+def summary_table1(sectors: list[ep.Sector]) -> list[str]:
+    roles_for_type: dict[str, list[int]] = {}
     for s in sectors:
-        type_ = s.aircraft.type_
-        roles = [s.roles.p1, s.roles.p1s, s.roles.p2,
-                 s.roles.put, s.roles.p0, s.roles.instructor]
-        if s.aircraft.type_ not in rpt:
-            rpt[type_] = roles
-        else:
-            rpt[type_] = [X + Y for X, Y in zip(rpt[type_], roles)]
+        if s.aircraft.type_ not in roles_for_type:
+            roles_for_type[s.aircraft.type_] = [0] * 6
+        sector_roles = (s.roles.p1, s.roles.p1s, s.roles.p2,
+                        s.roles.put, s.roles.p0, s.roles.instructor)
+        for c in range(6):
+            roles_for_type[s.aircraft.type_][c] += sector_roles[c]
     rows = []
     col_totals = [0] * 8
-    for type_, roles in sorted(rpt.items()):
-        cols = [sum(roles[:-1]), sum(roles[:2]), *roles]
-        col_totals = [X + Y for X, Y in zip(col_totals, cols)]
-        col_data = '</td><td>'.join(_duration(X) for X in cols)
-        rows.append(f"<tr><th>{type_}</th><td>{col_data}</td></tr>")
-    data = '</td><td class="total">'.join([_duration(X) for X in col_totals])
-    rows.append(f"<tr class='col_total'><th>Total</th>"
-                f"<td class='total'>{data}</td></tr>")
+    for type_, roles in sorted(roles_for_type.items()):
+        cells = (
+            sum(roles[:-1]),  # Total (excludes instruction)
+            sum(roles[:2]),  # PIC (P1 + P1S)
+            *roles  # P1, P1S, P2, PUT, P0, INS
+        )
+        for c in range(8):
+            col_totals[c] += cells[c]
+        rows.append(_row(tuple([type_] + [_duration(X) for X in cells])))
+    rows.append(_row(tuple(["Total"] + [_duration(X) for X in col_totals])))
     return rows
 
 
-def _table2_rows(
+def summary_table2(
         sectors: list[ep.Sector],
         ac_classes: cp.SectionProxy
 ) -> list[str]:
-    rpt = {}
+    cells_for_type = {}
     for s in sectors:
-        conditions = (s.total - s.conditions.ifr, s.conditions.ifr,
-                      s.total - s.conditions.night, s.conditions.night)
-        landings = (s.landings.day, s.landings.night)
-        if s.aircraft.type_ not in rpt:
-            rpt[s.aircraft.type_] = [0] * 9
-        rpt[s.aircraft.type_] = [X + Y for X, Y in zip(
-            rpt[s.aircraft.type_],
-            _ac_class_tuple(s, ac_classes) + conditions + landings)]
+        if s.aircraft.type_ not in cells_for_type:
+            cells_for_type[s.aircraft.type_] = [0] * 9
+        sector_cells = (
+            *_ac_class_tuple(s, ac_classes),  # SPSE, SPME, MC
+            s.total - s.conditions.ifr,  # VFR
+            s.conditions.ifr,  # IFR
+            s.total - s.conditions.night,  # Day
+            s.conditions.night,  # Night
+            s.landings.day,  # Day landings
+            s.landings.night  # Night landings
+        )
+        for c in range(9):
+            cells_for_type[s.aircraft.type_][c] += sector_cells[c]
     rows = []
     col_totals = [0] * 9
-    for type_, cells in sorted(rpt.items()):
-        col_totals = [X + Y for X, Y in zip(col_totals, cells)]
-        data = (
-            '</td><td>'.join(_duration(X) for X in cells[:7]) +
-            '</td><td>' +
-            '</td><td>'.join(str(X) for X in cells[7:])
-        )
-        rows.append(f"<tr><th>{type_}</th><td>{data}</td></tr>")
-    data = (
-        '</td><td class="total">'.join(_duration(X) for X in col_totals[:7]) +
-        '</td><td>' +
-        '</td><td class="total">'.join(str(X) for X in col_totals[7:])
-    )
-    rows.append(f"<tr class='col_total'><th>Total</th>"
-                f"<td class='total'>{data}</td></tr>")
+    for type_, cells in sorted(cells_for_type.items()):
+        for c in range(9):
+            col_totals[c] += cells[c]
+        rows.append(_row(tuple(
+            [type_] +
+            [_duration(X) for X in cells[:7]] +
+            [str(X) for X in cells[7:]])))
+    rows.append(_row(tuple(
+            ["Total"] +
+            [_duration(X) for X in col_totals[:7]] +
+            [str(X) for X in col_totals[7:]])))
     return rows
 
 
@@ -190,8 +192,8 @@ def build_summary(
                 (not daterange[1] or s.start.date() < daterange[1])):
             sectors.append(s)
     return _get_template("summary-template.html").format(
-        table1_body="\n".join(_table1_rows(sectors)),
-        table2_body="\n".join(_table2_rows(sectors, ac_classes))
+        table1_body="\n".join(summary_table1(sectors)),
+        table2_body="\n".join(summary_table2(sectors, ac_classes))
     )
 
 

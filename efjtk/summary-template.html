@@ -11,8 +11,12 @@
          color: black;
          font-family: arial, sans-serif;
      }
+
      body {
          background-color: white;
+         padding: 1rem;
+         width: min-content;
+         margin: auto;
      }
 
      table {
@@ -21,7 +25,7 @@
          table-layout: fixed;
          width: 80rem;
          break-inside: avoid;
-         margin: 0 auto 2rem;
+         margin: 0 0 2rem;
      }
 
      tr {
@@ -41,7 +45,7 @@
          border: var(--thin-border);
      }
 
-     tbody th,
+     tbody td:first-child,
      thead tr:first-child th,
      .table-1 tbody td:nth-child(2),
      .table-2 thead tr:nth-child(2) th:nth-child(3),
@@ -70,6 +74,10 @@
          :root {
              font-size: 2.763mm;
              --thick-border: 0.15rem solid black;
+         }
+         body {
+             margin: 0 auto;
+             padding: 0;
          }
      }
     </style>
