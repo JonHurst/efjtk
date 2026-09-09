@@ -152,6 +152,12 @@ def build_logbook(
 
 
 def summary_table1(sectors: list[ep.Sector]) -> list[str]:
+    """Build the rows of the first summary table
+
+    :param sectors: The list of sectors to process into a summary
+
+    :returns: A list of HTML table rows as strings
+    """
     roles_for_type: dict[str, list[int]] = {}
     for s in sectors:
         if s.aircraft.type_ not in roles_for_type:
@@ -179,6 +185,18 @@ def summary_table2(
         sectors: list[ep.Sector],
         ac_classes: cp.SectionProxy
 ) -> list[str]:
+    """Build the rows of the second summary table
+
+    :param sectors: The list of sectors to process into a summary
+
+    :param ac_classes: A configparser SectionProxy object, which behaves like a
+        case-insensitive dict with an aircraft type as key and one of "spse",
+        "spme", or "mc" as value.
+
+    :returns: A list of HTML table rows as strings
+
+    """
+
     cells_for_type = {}
     for s in sectors:
         if s.aircraft.type_ not in cells_for_type:
@@ -215,17 +233,20 @@ def build_summary(
         ac_classes: cp.SectionProxy,
         daterange: DateRange = (None, None)
 ) -> str:
-    """Build an HTML file with a summary table.
+    """Build an standalone HTML summary table
 
     :param in_: An EFJ format text file as a string
+
+    :param ac_classes: A configparser SectionProxy object, which behaves like a
+        case-insensitive dict with an aircraft type as key and one of "spse",
+        "spme", or "mc" as value.
 
     :param daterange: A tuple of the form (FROM, TO) where FROM and TO are
         datetime dates. Sectors commencing on a date on or after FROM but
         before TO will be summarised (i.e range is half closed). FROM and/or TO
         may be None in which case the associated restriction is not applied.
 
-    :return: An HTML file as a string
-
+    :return:  The summary tables as standalone HTML as a string
     """
     _, parsed_sectors = ep.Parser().parse(in_)
     sectors = []
