@@ -228,7 +228,7 @@ def summary_table2(
 
 
 def build_summary(
-        in_: str,
+        efj: str,
         ac_classes: cp.SectionProxy,
         daterange: DateRange = (None, None)
 ) -> str:
@@ -247,7 +247,7 @@ def build_summary(
 
     :return:  The summary tables as standalone HTML as a string
     """
-    _, parsed_sectors = ep.Parser().parse(in_)
+    _, parsed_sectors = ep.Parser().parse(efj)
     sectors = []
     for s in parsed_sectors:
         if ((not daterange[0] or s.start.date() >= daterange[0]) and
