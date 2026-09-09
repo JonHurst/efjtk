@@ -233,36 +233,36 @@ class MainWindow(tk.Tk):
             ('Save', self.__save, "Ctrl+S", "<Control-Key-s>", 0),
             ('Save As', self.__save_as, "Ctrl+A", "<Control-Key-a>", 5),
             ("", None),
-            ('Edit Config', self.__config, "Ctrl+G", "<Control-Key-g>", 10),
+            ('Edit Config', self.__config),
             ("", None),
             ('Quit', self.destroy, "Ctrl+Q", "<Control-Key-q>", 0),
         ))
         self.__make_menu_section(top, "Edit", (
             ('Undo', self.__undo, "Ctrl+Z", "<Control-Key-z>", 0),
-            ('Redo', self.__redo, "Ctrl-Shift+Z", "<Control-Shift-Key-z>", 0),
+            ('Redo', self.__redo),
             ("", None),
-            ('Cut', self.__cut, "Ctrl+X", None, 0),
-            ('Copy', self.__copy, "Ctrl+C", None, 0),
+            ('Cut', self.__cut, "Ctrl+X", None, 1),
+            ('Copy', self.__copy, "Ctrl+C", None, 1),
             ('Paste', self.__paste, "Ctrl+V", None, 0),
             ("", None),
-            ('Select All', self.__select_all, "Ctrl+L", "<Control-Key-l>", 8),
-            ('Clear', self.__clear, "Ctrl+Del", "<Control-Delete>", 0),
+            ('Select All', self.__select_all),
+            ('Clear', self.__clear),
         ))
         self.__make_menu_section(top, "Modify", (
-            ('Expand', self.__expand, "Ctrl+E", "<Control-Key-e>", 0),
-            ('Night', self.__night, "Ctrl+N", "<Control-Key-n>", 0),
-            ('FO', self.__fo, "Ctrl+F", "<Control-Key-f>", 0),
-            ('VFR', self.__vfr, "Ctrl+R", "<Control-Key-r>", 0),
-            ('Instructor', self.__instructor, "Ctrl+I", "<Control-Key-i>", 0),
+            ('Expand', self.__expand),
+            ('Night', self.__night),
+            ('FO', self.__fo),
+            ('VFR', self.__vfr),
+            ('Instructor', self.__instructor),
         ))
         self.__make_menu_section(top, "Export", (
-            ('FCL.050 Logbook', self.__export_logbook,
-             "Ctrl-L", "<Control-Key-l>", 8),
-            ('Summary', self.__export_summary, "Ctrl-M", "<Control-Key-m>", 2),
+            ('FCL.050 Logbook', self.__export_logbook),
+            ('Cumulative Totals', self.__export_cumulative),
+            ('Summary', self.__export_summary),
         ), 1)
         self.__make_menu_section(top, "Help", (
-            ('Online Help', self.__help, "Ctrl-H", "<Control-Key-h>", 7),
-            ('eFJ format', self.__efj_help, "Ctrl-J", "<Control-Key-j>", 2),
+            ('Online Help', self.__help),
+            ('eFJ format', self.__efj_help),
         ))
 
     def __make_accelerator(self, callback):
@@ -477,6 +477,33 @@ class MainWindow(tk.Tk):
             self.__add_unknown_aircraft_to_config(text, config_str)
             if self.__config():
                 self.__export_summary()
+
+    def __export_cumulative(self):
+        if not (text := self.txt.get("1.0", tk.END)):
+            return
+        try:
+            with open(CONFIG_FILE) as fc:
+                config_str = fc.read()
+        except OSError:
+            config_str = ""
+        ac = efjtk.config.aircraft_classes(config_str)
+        try:
+            result = efjtk.convert.build_cumulative(text, ac)
+            path = self.settings.get('exportPath')
+            if not (fn := filedialog.asksaveasfilename(
+                    filetypes=(("HTML", "*.html"),
+                               ("All", "*")),
+                    defaultextension=".html",
+                    initialdir=path)):
+                return
+            self.settings['exportPath'] = os.path.dirname(fn)
+            with open(fn, "w", encoding="utf-8") as f:
+                f.write(result)
+                messagebox.showinfo("Saved", "Cummulative Totals saved")
+        except efjtk.convert.UnknownAircraftType:
+            self.__add_unknown_aircraft_to_config(text, config_str)
+            if self.__config():
+                self.__export_cumulative()
 
     def __help(self):
         webbrowser.open(HELP_URL)
