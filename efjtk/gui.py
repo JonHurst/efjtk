@@ -7,6 +7,8 @@ import os.path
 import ctypes
 import json
 import webbrowser
+import datetime as dt
+import re
 import configparser as cp
 
 import efjtk.modify
@@ -73,16 +75,16 @@ class TextWithSyntaxHighlighting(tk.Text):
             self.tag_add(tag, new_idx, start_idx)
 
     def highlight_efj(self):
-        for re, tag in ((r"\d{4}-\d{2}-\d{2}", "datetime"),
-                        (r"\d{4}/\d{4}", "datetime"),
-                        ("CP:|FO:|PU:|FA:", "keyword"),
-                        (r"#.*", "grayed")):
-            self.__highlight(re, tag)
+        for r, tag in ((r"\d{4}-\d{2}-\d{2}", "datetime"),
+                       (r"\d{4}/\d{4}", "datetime"),
+                       ("CP:|FO:|PU:|FA:", "keyword"),
+                       (r"#.*", "grayed")):
+            self.__highlight(r, tag)
 
     def highlight_config(self):
-        for re, tag in ((r"(spse|spme|mc)\s", "keyword"),
-                        (r"\[[\w.]+\]\n", "grayed")):
-            self.__highlight(re, tag)
+        for r, tag in ((r"(spse|spme|mc)\s", "keyword"),
+                       (r"\[[\w.]+\]\n", "grayed")):
+            self.__highlight(r, tag)
 
 
 class ConfigDialog(tk.Toplevel):
@@ -236,6 +238,8 @@ class MainWindow(tk.Tk):
             ('Edit Config', self.__config),
             ("", None),
             ('Quit', self.destroy, "Ctrl+Q", "<Control-Key-q>", 0),
+            ("", None),  # DEBUG
+            ("Test", self.__test),  # DEBUG
         ))
         self.__make_menu_section(top, "Edit", (
             ('Undo', self.__undo, "Ctrl+Z", "<Control-Key-z>", 0),
@@ -510,6 +514,27 @@ class MainWindow(tk.Tk):
 
     def __efj_help(self):
         webbrowser.open(HELP_EFJ)
+
+    def __test(self):
+        print(_daterange_from_efj(self.txt.get('1.0', 'end')))
+
+
+def _daterange_from_efj(efj: str) -> tuple[dt.date, dt.date] | None:
+    dates: list[dt.date] = []
+    for line in efj.splitlines():
+        if mo := re.match(r"\s*(\d{4}-\d{2}-\d{2})|([+]+)", line):
+            if mo.group(1):
+                try:
+                    extracted_date = dt.date.fromisoformat(mo.group(1))
+                    dates.append(extracted_date)
+                    print("Dates Now", dates)
+                except ValueError:
+                    continue
+            elif mo.group(2) and len(dates):
+                dates.append(dates[-1] + dt.timedelta(days=len(mo.group(2))))
+    if len(dates):
+        return (min(dates), max(dates) + dt.timedelta(days=1))
+    return None
 
 
 def main():
