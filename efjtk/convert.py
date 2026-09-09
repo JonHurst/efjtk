@@ -276,7 +276,7 @@ def build_cumulative(
         a half-open interval (right hand excluded) of dates to include in the
         output.
 
-    :returns: A string containing a cumulative totals asstandalone HTML
+    :returns: A string containing a cumulative totals as standalone HTML
 
     :raises UnknownAircraftType: Raised if the class of an encountered aircraft
         type can neither be determined from the sector nor from ac_classes.
