@@ -196,7 +196,6 @@ def summary_table2(
     :returns: A list of HTML table rows as strings
 
     """
-
     cells_for_type = {}
     for s in sectors:
         if s.aircraft.type_ not in cells_for_type:
@@ -263,7 +262,25 @@ def build_summary(
 def build_cumulative(
         efj: str,
         ac_classes: cp.SectionProxy,
-        daterange: DateRange = (None, None)) -> str:
+        daterange: DateRange = (None, None)
+) -> str:
+    """Build cumulative totals for an FCL.050 logbook as standalone HTML
+
+    :param efj: The efj as a string
+
+    :param ac_classes: A configparser SectionProxy object, which behaves like a
+        case-insensitive dict with an aircraft type as key and one of "spse",
+        "spme", or "mc" as value.
+
+    :param daterange: A tuple of two optional datetime.date objects specifying
+        a half-open interval (right hand excluded) of dates to include in the
+        output.
+
+    :returns: A string containing a cumulative totals asstandalone HTML
+
+    :raises UnknownAircraftType: Raised if the class of an encountered aircraft
+        type can neither be determined from the sector nor from ac_classes.
+    """
     _, sectors = ep.Parser().parse(efj)
     cumulative_totals = [0] * 12
     rows = []
