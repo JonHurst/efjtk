@@ -18,7 +18,7 @@ class UnknownAircraftType(Exception):
 DateRange = tuple[Optional[dt.date], Optional[dt.date]]
 
 
-def _get_template(filename):
+def _get_template(filename: str) -> str:
     """Get and prepare a template from the package's resources
 
     :param filename: The name of the file as recorded in the 'efjtk' key's list
