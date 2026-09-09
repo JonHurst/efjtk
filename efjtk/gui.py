@@ -517,30 +517,33 @@ class MainWindow(tk.Tk):
 
     def __test(self):
         if dr := _daterange_from_efj(self.txt.get('1.0', 'end')):
-            dr_dlg = tk.Toplevel()
+            dr_dlg = tk.Toplevel(padx=5, pady=5)
+            dr_dlg.title("Date Range")
+            dr_dlg.resizable(None, None)
 
             def callback():
                 print(start.get(), end.get())
                 dr_dlg.destroy()
-            start_frame = tk.Frame(dr_dlg)
-            start_frame.pack()
-            tk.Label(start_frame, width=15, text="From (inclusive)"
-                     ).pack(side=tk.LEFT)
-            start = tk.Entry(start_frame, width=20)
+            start_frame = ttk.Frame(dr_dlg)
+            start_frame.pack(padx=5, pady=5)
+            ttk.Label(start_frame, width=15, text="From (inclusive):"
+                      ).pack(side=tk.LEFT)
+            start = ttk.Entry(start_frame, width=20, justify="center")
             start.pack(side=tk.RIGHT)
             start.insert(0, dr[0])
-            end_frame = tk.Frame(dr_dlg)
-            end_frame.pack()
-            tk.Label(end_frame, width=15, text="To (exclusive)"
-                     ).pack(side=tk.LEFT)
-            end = tk.Entry(end_frame, width=20)
+            end_frame = ttk.Frame(dr_dlg)
+            end_frame.pack(padx=5, pady=5)
+            ttk.Label(end_frame, width=15, text="To (exclusive):"
+                      ).pack(side=tk.LEFT)
+            end = ttk.Entry(end_frame, width=20, justify="center")
             end.insert(0, dr[1])
             end.pack(side=tk.RIGHT)
-            buttons = tk.Frame(dr_dlg)
-            buttons.pack(fill=tk.X)
-            tk.Button(buttons, width=5, text="OK", command=callback
-                      ).pack(side=tk.RIGHT)
-            dr_dlg.attributes(topmost=True)
+            buttons = ttk.Frame(dr_dlg)
+            buttons.pack(fill=tk.X, padx=5, pady=5)
+            ttk.Button(buttons, width=5, text="OK", command=callback
+                       ).pack(side=tk.RIGHT)
+            dr_dlg.transient(self)
+            dr_dlg.wait_visibility()
             dr_dlg.focus_set()
             dr_dlg.grab_set()
             dr_dlg.wait_window()
