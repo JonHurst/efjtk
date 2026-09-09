@@ -95,11 +95,28 @@ def _row(cells: tuple[str, ...], class_: str = "") -> str:
 
 
 def build_logbook(
-        in_: str,
+        efj: str,
         ac_classes: cp.SectionProxy,
         daterange: DateRange = (None, None)
 ) -> str:
-    _, sectors = ep.Parser().parse(in_)
+    """Build a standalone HTML FCL.050 compliant logbook from an efj
+
+    :param efj: The efj as a string
+
+    :param ac_classes: A configparser SectionProxy object, which behaves like a
+        case-insensitive dict with an aircraft type as key and one of "spse",
+        "spme", or "mc" as value.
+
+    :param daterange: A tuple of two optional datetime.date objects specifying
+        a half-open interval (right hand excluded) of dates to include in the
+        output.
+
+    :returns: A string containing a standalone HTML FCL.050 compliant logbook
+
+    :raises UnknownAircraftType: Raised if the class of an encountered aircraft
+        type can neither be determined from the sector nor from ac_classes.
+    """
+    _, sectors = ep.Parser().parse(efj)
     rows = []
     for s in sorted(sectors):
         if daterange[0] and s.start.date() < daterange[0]:
