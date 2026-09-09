@@ -19,6 +19,16 @@ DateRange = tuple[Optional[dt.date], Optional[dt.date]]
 
 
 def _get_template(filename):
+    """Get and prepare a template from the package's resources
+
+    :param filename: The name of the file as recorded in the 'efjtk' key's list
+        under package_data in setup.py
+
+    :returns: The template ready for str.format to use
+
+    The template should use <!--{ and }--> to delimit the kwarg that str.format
+    will replace. Use of { and } elsewhere in the template is suitably escaped.
+    """
     template_file = res.files("efjtk").joinpath(filename)
     with template_file.open() as f:
         template = f.read()
