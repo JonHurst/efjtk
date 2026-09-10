@@ -417,7 +417,26 @@ class MainWindow(tk.Tk):
             self.menus["file"].entryconfigure("Save", state="disabled")
             self.title("efjtk")
 
+    def __add_unknown_aircraft_to_config(self, text, config_str):
+        try:
+            config_str = efjtk.config.build_config(text, config_str, True)
+            with open(CONFIG_FILE, "w") as fc:
+                fc.write(config_str)
+        except cp.Error:
+            messagebox.showerror(
+                "Config Error",
+                "Bad config file. Please correct it!")
+
     def __export_logbook(self):
+        self.__export(efjtk.convert.build_logbook)
+
+    def __export_summary(self):
+        self.__export(efjtk.convert.build_summary)
+
+    def __export_cumulative(self):
+        self.__export(efjtk.convert.build_cumulative)
+
+    def __export(self, fn):
         if not (text := self.txt.get("1.0", tk.END)):
             return
         try:
@@ -429,86 +448,22 @@ class MainWindow(tk.Tk):
         try:
             if (daterange := daterange_dialog(self, text)) is None:
                 return
-            result = efjtk.convert.build_logbook(text, ac, daterange)
+            result = fn(text, ac, daterange)
             path = self.settings.get('exportPath')
-            if not (fn := filedialog.asksaveasfilename(
+            if not (fname := filedialog.asksaveasfilename(
                     filetypes=(("HTML", "*.html"), ("All", "*")),
                     defaultextension=".html",
                     initialdir=path)):
                 return
-            self.settings['exportPath'] = os.path.dirname(fn)
-            with open(fn, "w", encoding="utf-8") as f:
+            self.settings['exportPath'] = os.path.dirname(fname)
+            with open(fname, "w", encoding="utf-8") as f:
                 f.write(result)
         except efjtk.convert.UnknownAircraftType:
             self.__add_unknown_aircraft_to_config(text, config_str)
             if self.__config():
-                self.__export_logbook()
+                self.__export(fn)
         except VE as e:
             messagebox.showerror("Parse Error", str(e))
-
-    def __add_unknown_aircraft_to_config(self, text, config_str):
-        try:
-            config_str = efjtk.config.build_config(text, config_str, True)
-            with open(CONFIG_FILE, "w") as fc:
-                fc.write(config_str)
-        except cp.Error:
-            messagebox.showerror(
-                "Config Error",
-                "Bad config file. Please correct it!")
-
-    def __export_summary(self):
-        if not (text := self.txt.get("1.0", tk.END)):
-            return
-        try:
-            with open(CONFIG_FILE) as fc:
-                config_str = fc.read()
-        except OSError:
-            config_str = ""
-        ac = efjtk.config.aircraft_classes(config_str)
-        try:
-            result = efjtk.convert.build_summary(text, ac)
-            path = self.settings.get('exportPath')
-            if not (fn := filedialog.asksaveasfilename(
-                    filetypes=(("HTML", "*.html"),
-                               ("All", "*")),
-                    defaultextension=".html",
-                    initialdir=path)):
-                return
-            self.settings['exportPath'] = os.path.dirname(fn)
-            with open(fn, "w", encoding="utf-8") as f:
-                f.write(result)
-                messagebox.showinfo("Saved", "Summary saved")
-        except efjtk.convert.UnknownAircraftType:
-            self.__add_unknown_aircraft_to_config(text, config_str)
-            if self.__config():
-                self.__export_summary()
-
-    def __export_cumulative(self):
-        if not (text := self.txt.get("1.0", tk.END)):
-            return
-        try:
-            with open(CONFIG_FILE) as fc:
-                config_str = fc.read()
-        except OSError:
-            config_str = ""
-        ac = efjtk.config.aircraft_classes(config_str)
-        try:
-            result = efjtk.convert.build_cumulative(text, ac)
-            path = self.settings.get('exportPath')
-            if not (fn := filedialog.asksaveasfilename(
-                    filetypes=(("HTML", "*.html"),
-                               ("All", "*")),
-                    defaultextension=".html",
-                    initialdir=path)):
-                return
-            self.settings['exportPath'] = os.path.dirname(fn)
-            with open(fn, "w", encoding="utf-8") as f:
-                f.write(result)
-                messagebox.showinfo("Saved", "Cummulative Totals saved")
-        except efjtk.convert.UnknownAircraftType:
-            self.__add_unknown_aircraft_to_config(text, config_str)
-            if self.__config():
-                self.__export_cumulative()
 
     def __help(self):
         webbrowser.open(HELP_URL)
