@@ -198,6 +198,7 @@ class MainWindow(tk.Tk):
         self.menus["edit"].entryconfigure("Undo", state="disabled")
         self.menus["edit"].entryconfigure("Redo", state="disabled")
         self.__make_widgets()
+        self.__update_status()
         self.txt.bind("<<UndoStack>>", self.__manage_undo)
         self.txt.bind("<<Modified>>", self.__manage_modified)
 
@@ -214,17 +215,23 @@ class MainWindow(tk.Tk):
         self.rowconfigure(0, weight=1)
         sbx = ttk.Scrollbar(self, orient='horizontal')
         sby = ttk.Scrollbar(self, orient='vertical')
-        grip = ttk.Sizegrip(self)
         sbx.grid(row=1, column=0, sticky=tk.EW)
-        sby.grid(row=0, column=1, sticky=tk.NS)
-        grip.grid(row=1, column=1, sticky=tk.NSEW)
+        sby.grid(row=0, column=1, rowspan=2, sticky=tk.NS)
         self.txt = TextWithSyntaxHighlighting(
             self, "efj", autoseparators=False)
+        self.txt.bind('<KeyRelease>', self.__update_status)
+        self.txt.bind('<ButtonRelease>', self.__update_status)
         self.txt.grid(row=0, column=0, sticky=tk.NSEW)
         sbx.config(command=self.txt.xview)
         sby.config(command=self.txt.yview)
         self.txt.config(xscrollcommand=sbx.set)
         self.txt.config(yscrollcommand=sby.set)
+        statusbar = ttk.Frame(self)
+        statusbar.grid(row=2, column=0, columnspan=2, sticky=tk.EW)
+        self.status = ttk.Label(statusbar, anchor="e",
+                                padding=(16, 0), text=" ")
+        ttk.Sizegrip(statusbar).pack(side=tk.RIGHT, anchor=tk.SE)
+        self.status.pack(fill=tk.X)
         self.txt.focus()
 
     def __make_menu(self):
@@ -308,6 +315,7 @@ class MainWindow(tk.Tk):
             self.txt.see(tk.END)
             self.txt.edit_modified(False)
             self.txt.edit_reset()
+            self.__update_status()
 
     def __save(self):
         if not self.filename:
@@ -474,6 +482,10 @@ class MainWindow(tk.Tk):
 
     def __efj_help(self):
         webbrowser.open(HELP_EFJ)
+
+    def __update_status(self, _=None):
+        line, col = self.txt.index("insert").split(".")
+        self.status.configure(text=f"Line {line}, Column {col}")
 
 
 def daterange_dialog(
