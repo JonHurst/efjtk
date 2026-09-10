@@ -591,8 +591,8 @@ def goto_line_dialog(parent, maxvalue) -> int | None:
     entry = ttk.Entry(f, width=20, justify="center", textvariable=tk_line,
                       validate="key", validatecommand=(tk_validate, "%P"))
     entry.pack(side=tk.RIGHT)
-    entry.focus_set()
     entry.bind("<Return>", ok_clicked)
+    entry.bind("<Escape>", lambda _: gl_dlg.destroy())
     buttons = ttk.Frame(gl_dlg)
     buttons.pack(fill=tk.X, padx=PADDING, pady=PADDING)
     ttk.Button(buttons, width=10, text="OK", command=ok_clicked
@@ -603,7 +603,7 @@ def goto_line_dialog(parent, maxvalue) -> int | None:
     gl_dlg.resizable(False, False)
     gl_dlg.transient(parent)
     gl_dlg.wait_visibility()
-    gl_dlg.focus_set()
+    entry.focus_set()
     gl_dlg.grab_set()
     gl_dlg.wait_window()
     return retval
