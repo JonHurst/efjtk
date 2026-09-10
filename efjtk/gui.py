@@ -3,7 +3,6 @@ import tkinter.font as font
 from tkinter import ttk
 from tkinter import messagebox
 from tkinter import filedialog
-from tkinter import simpledialog
 import os.path
 import ctypes
 import json
@@ -492,9 +491,7 @@ class MainWindow(tk.Tk):
 
     def __goto_line(self):
         last = int(self.txt.index("end").split(".")[0])
-        line = simpledialog.askinteger(
-            "Goto Line", "Go to line number: ",
-            minvalue=1, maxvalue=last)
+        line = goto_line_dialog(self, last)
         if line:
             index = f"{line}.0"
             self.txt.mark_set("insert", index)
@@ -561,6 +558,54 @@ def daterange_dialog(
     dr_dlg.focus_set()
     dr_dlg.grab_set()
     dr_dlg.wait_window()
+    return retval
+
+
+def goto_line_dialog(parent, maxvalue) -> int | None:
+    PADDING = 5
+    retval = None  # will return None unless OK is clicked
+    gl_dlg = tk.Toplevel(padx=PADDING, pady=PADDING)
+    tk_line = tk.StringVar(parent, "")
+
+    def ok_clicked(_=None):
+        try:
+            nonlocal retval
+            try:
+                line = int(tk_line.get())
+            except ValueError:
+                raise ValueError(f"{tk_line.get()} is not valid")
+            if line > maxvalue:
+                raise ValueError(f"Last line is {maxvalue}")
+            retval = line
+            gl_dlg.destroy()
+        except ValueError as e:
+            messagebox.showerror("Invalid Data", str(e))
+
+    def validate(s):
+        return False if re.search(r"[^\d]", s) else True
+    tk_validate = gl_dlg.register(validate)
+    # add widgets
+    f = ttk.Frame(gl_dlg)
+    f.pack(padx=PADDING, pady=PADDING)
+    ttk.Label(f, width=10, text="Go to line: ").pack(side=tk.LEFT)
+    entry = ttk.Entry(f, width=20, justify="center", textvariable=tk_line,
+                      validate="key", validatecommand=(tk_validate, "%P"))
+    entry.pack(side=tk.RIGHT)
+    entry.focus_set()
+    entry.bind("<Return>", ok_clicked)
+    buttons = ttk.Frame(gl_dlg)
+    buttons.pack(fill=tk.X, padx=PADDING, pady=PADDING)
+    ttk.Button(buttons, width=10, text="OK", command=ok_clicked
+               ).pack(side=tk.RIGHT, padx=PADDING)
+    ttk.Button(buttons, width=10, text="Cancel", command=gl_dlg.destroy
+               ).pack(side=tk.RIGHT, padx=PADDING)
+    gl_dlg.title("Go To Line")
+    gl_dlg.resizable(False, False)
+    gl_dlg.transient(parent)
+    gl_dlg.wait_visibility()
+    gl_dlg.focus_set()
+    gl_dlg.grab_set()
+    gl_dlg.wait_window()
     return retval
 
 
