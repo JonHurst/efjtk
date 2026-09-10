@@ -490,7 +490,7 @@ class MainWindow(tk.Tk):
         self.status.configure(text=f"Line {line}, Column {col}")
 
     def __goto_line(self):
-        last = int(self.txt.index("end").split(".")[0])
+        last = int(self.txt.index("end-1 chars").split(".")[0])
         line = goto_line_dialog(self, last)
         if line:
             index = f"{line}.0"
