@@ -3,6 +3,7 @@ import tkinter.font as font
 from tkinter import ttk
 from tkinter import messagebox
 from tkinter import filedialog
+from tkinter import simpledialog
 import os.path
 import ctypes
 import json
@@ -257,6 +258,8 @@ class MainWindow(tk.Tk):
             ("", None),
             ('Select All', self.__select_all),
             ('Clear', self.__clear),
+            ("", None),
+            ('Goto Line', self.__goto_line, "Ctrl+G", "<Control-Key-g>", 1),
         ))
         self.__make_menu_section(top, "Modify", (
             ('Expand', self.__expand),
@@ -486,6 +489,16 @@ class MainWindow(tk.Tk):
     def __update_status(self, _=None):
         line, col = self.txt.index("insert").split(".")
         self.status.configure(text=f"Line {line}, Column {col}")
+
+    def __goto_line(self):
+        last = int(self.txt.index("end").split(".")[0])
+        line = simpledialog.askinteger(
+            "Goto Line", "Go to line number: ",
+            minvalue=1, maxvalue=last)
+        if line:
+            index = f"{line}.0"
+            self.txt.mark_set("insert", index)
+            self.txt.see(index)
 
 
 def daterange_dialog(
