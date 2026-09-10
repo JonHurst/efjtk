@@ -427,25 +427,22 @@ class MainWindow(tk.Tk):
             config_str = ""
         ac = efjtk.config.aircraft_classes(config_str)
         try:
-            daterange = self.__get_daterange(text)
+            if (daterange := daterange_dialog(self, text)) is None:
+                return
             result = efjtk.convert.build_logbook(text, ac, daterange)
             path = self.settings.get('exportPath')
             if not (fn := filedialog.asksaveasfilename(
-                    filetypes=(("HTML", "*.html"),
-                               ("All", "*")),
+                    filetypes=(("HTML", "*.html"), ("All", "*")),
                     defaultextension=".html",
                     initialdir=path)):
                 return
             self.settings['exportPath'] = os.path.dirname(fn)
             with open(fn, "w", encoding="utf-8") as f:
                 f.write(result)
-                messagebox.showinfo("Saved", "Logbook saved")
         except efjtk.convert.UnknownAircraftType:
             self.__add_unknown_aircraft_to_config(text, config_str)
             if self.__config():
                 self.__export_logbook()
-        except ValueError as e:
-            messagebox.showerror("Invalid Data", str(e))
         except VE as e:
             messagebox.showerror("Parse Error", str(e))
 
@@ -519,70 +516,68 @@ class MainWindow(tk.Tk):
     def __efj_help(self):
         webbrowser.open(HELP_EFJ)
 
-    def __get_daterange(
-            self,
-            text: str
-    ) -> tuple[dt.date | None, dt.date | None]:
-        dr = _daterange_from_efj(text)
-        if dr is None:
-            return (None, None)
-        # set up tk variables
-        from_date = tk.StringVar(self, dr[0].isoformat())
-        to_date = tk.StringVar(self, dr[1].isoformat())
-        # set up dialog widgets
-        PADDING = 5
-        dr_dlg = tk.Toplevel(padx=PADDING, pady=PADDING)
-        for label_text, variable in (
-                ("From (inclusive):", from_date),
-                ("To (exclusive):", to_date)):
-            f = ttk.Frame(dr_dlg)
-            f.pack(padx=PADDING, pady=PADDING)
-            ttk.Label(f, width=15, text=label_text).pack(side=tk.LEFT)
-            ttk.Entry(
-                f, width=20,
-                justify="center",
-                validate="key",
-                validatecommand=(self.register(validate_date), "%P"),
-                textvariable=variable
-            ).pack(side=tk.RIGHT)
-        buttons = ttk.Frame(dr_dlg)
-        buttons.pack(fill=tk.X, padx=PADDING, pady=PADDING)
-        ttk.Button(buttons, width=10, text="OK",
-                   command=dr_dlg.destroy).pack(side=tk.RIGHT)
-        # show modal dialog
-        dr_dlg.title("Date Range")
-        dr_dlg.resizable(None, None)
-        dr_dlg.transient(self)
-        dr_dlg.wait_visibility()
-        dr_dlg.focus_set()
-        dr_dlg.grab_set()
-        dr_dlg.wait_window()
-        # return may raise ValueError if dates are invalid
-        return (dt.date.fromisoformat(from_date.get()),
-                dt.date.fromisoformat(to_date.get()))
 
-
-def _daterange_from_efj(efj: str) -> tuple[dt.date, dt.date] | None:
+def daterange_dialog(
+        parent, efj: str
+) -> tuple[dt.date | None, dt.date | None] | None:
+    PADDING = 5
+    retval = None  # will return None unless OK is clicked
+    # search for full date range within efj
     dates: list[dt.date] = []
     for line in efj.splitlines():
         if mo := re.match(r"\s*(\d{4}-\d{2}-\d{2})|([+]+)", line):
             if mo.group(1):
                 try:
-                    extracted_date = dt.date.fromisoformat(mo.group(1))
-                    dates.append(extracted_date)
+                    dates.append(dt.date.fromisoformat(mo.group(1)))
                 except ValueError:
                     continue
-            elif mo.group(2) and len(dates):
+            elif dates and mo.group(2):
                 dates.append(dates[-1] + dt.timedelta(days=len(mo.group(2))))
-    if len(dates):
-        return (min(dates), max(dates) + dt.timedelta(days=1))
-    return None
+    if len(dates) == 0:
+        messagebox.showerror("Invalid Data", "No dates found")
+        return None
+    end = max(dates) + dt.timedelta(days=1)
+    from_date = tk.StringVar(parent, min(dates).isoformat())
+    to_date = tk.StringVar(parent, end.isoformat())
+    dr_dlg = tk.Toplevel(padx=PADDING, pady=PADDING)
 
+    def ok_clicked():
+        try:
+            nonlocal retval
+            retval = (dt.date.fromisoformat(from_date.get()),
+                      dt.date.fromisoformat(to_date.get()))
+            dr_dlg.destroy()
+        except ValueError as e:
+            messagebox.showerror("Invalid Data", str(e))
 
-def validate_date(s):
-    if re.search(r"[^\d-]", s):
-        return False
-    return True
+    def validate(s):
+        return False if re.search(r"[^\d-]", s) else True
+    tk_validate = dr_dlg.register(validate)
+    # date entry frames
+    for label_text, variable in (("From (inclusive):", from_date),
+                                 ("To (exclusive):", to_date)):
+        f = ttk.Frame(dr_dlg)
+        f.pack(padx=PADDING, pady=PADDING)
+        ttk.Label(f, width=15, text=label_text).pack(side=tk.LEFT)
+        ttk.Entry(f, width=20, justify="center", textvariable=variable,
+                  validate="key", validatecommand=(tk_validate, "%P"),
+                  ).pack(side=tk.RIGHT)
+    # buttons
+    buttons = ttk.Frame(dr_dlg)
+    buttons.pack(fill=tk.X, padx=PADDING, pady=PADDING)
+    ttk.Button(buttons, width=10, text="OK", command=ok_clicked
+               ).pack(side=tk.RIGHT, padx=PADDING)
+    ttk.Button(buttons, width=10, text="Cancel", command=dr_dlg.destroy
+               ).pack(side=tk.RIGHT, padx=PADDING)
+    # show modal dialog
+    dr_dlg.title("Date Range")
+    dr_dlg.resizable(False, False)
+    dr_dlg.transient(parent)
+    dr_dlg.wait_visibility()
+    dr_dlg.focus_set()
+    dr_dlg.grab_set()
+    dr_dlg.wait_window()
+    return retval
 
 
 def main():
