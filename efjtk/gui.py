@@ -351,23 +351,27 @@ class MainWindow(tk.Tk):
         self.busy()
         self.update()
         text = self.txt.get('1.0', 'end')
-        result = fn(text)
-        range_ = self.txt.tag_ranges("sel")
-        self.txt.edit_separator()
-        if range_:
-            start = f"{self.txt.index(range_[0])} linestart"
-            end = f"{self.txt.index(range_[1])} lineend"
-            start_line = int(self.txt.index(start).split(".")[0])
-            end_line = int(self.txt.index(end).split(".")[0])
-            result_lines = result.splitlines()
-            result = "\n".join(result_lines[start_line - 1:end_line])
-            self.txt.delete(start, end)
-            self.txt.insert(start, result)
-        else:
-            self.txt.delete('1.0', tk.END)
-            self.txt.insert('1.0', result)
-            self.txt.see(tk.END)
-        self.busy_forget()
+        try:
+            result = fn(text)
+            range_ = self.txt.tag_ranges("sel")
+            self.txt.edit_separator()
+            if range_:
+                start = f"{self.txt.index(range_[0])} linestart"
+                end = f"{self.txt.index(range_[1])} lineend"
+                start_line = int(self.txt.index(start).split(".")[0])
+                end_line = int(self.txt.index(end).split(".")[0])
+                result_lines = result.splitlines()
+                result = "\n".join(result_lines[start_line - 1:end_line])
+                self.txt.delete(start, end)
+                self.txt.insert(start, result)
+            else:
+                self.txt.delete('1.0', tk.END)
+                self.txt.insert('1.0', result)
+                self.txt.see(tk.END)
+        except VE as e:
+            messagebox.showerror("Parse Error", str(e))
+        finally:
+            self.busy_forget()
 
     def __undo(self):
         if self.txt.edit("canundo"):
