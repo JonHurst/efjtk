@@ -219,8 +219,8 @@ class MainWindow(tk.Tk):
         sby.grid(row=0, column=1, rowspan=2, sticky=tk.NS)
         self.txt = TextWithSyntaxHighlighting(
             self, "efj", autoseparators=False)
-        self.txt.bind('<KeyRelease>', self.__update_status)
-        self.txt.bind('<ButtonRelease>', self.__update_status)
+        self.txt.bind('<KeyRelease>', self.__update_status, '+')
+        self.txt.bind('<ButtonRelease>', self.__update_status, '+')
         self.txt.grid(row=0, column=0, sticky=tk.NSEW)
         sbx.config(command=self.txt.xview)
         sby.config(command=self.txt.yview)
