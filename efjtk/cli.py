@@ -2,13 +2,14 @@
 
 import sys
 import argparse
-from typing import Optional
+from typing import Optional, Callable
 import os.path
 import datetime as dt
 
 import efj_parser
 import efjtk.convert
 import efjtk.modify
+import efjtk.gec
 from efjtk.config import build_config, aircraft_classes
 from efjtk.version import VERSION
 
@@ -24,7 +25,7 @@ def _args():
     parser.add_argument('format',
                         choices=['expand', 'night', 'vfr', 'ins', 'fo',
                                  'logbook',  'summary', 'cumulative',
-                                 'config', 'version'])
+                                 'config', 'version', 'gec'])
     parser.add_argument(
         '-c', '--config', default=None,
         help="Use CONFIG for configuration rather than ~/.efjtkrc etc.")
@@ -50,12 +51,13 @@ def _config(filename: Optional[str]) -> str:
     return ""
 
 
-_func_map = {
+_func_map: dict[str, Callable[[str, tuple[dt.date, dt.date]], str]] = {
     "expand": efjtk.modify.expand_efj,
     "night": efjtk.modify.add_night_data,
     "vfr": efjtk.modify.add_vfr_flag,
     "fo": efjtk.modify.add_fo_role_flag,
     "ins": efjtk.modify.add_ins_flag,
+    "gec": efjtk.gec.report,
 }
 
 
