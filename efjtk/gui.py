@@ -87,6 +87,22 @@ class TextWithSyntaxHighlighting(tk.Text):
                        (r"\[[\w.]+\]\n", "grayed")):
             self.__highlight(r, tag)
 
+    def search_next(self, s):
+        next_ = self.search(s, self.index("insert+1chars"),
+                            forwards=True, nocase=True)
+        if next_:
+            self.mark_set("insert", next_)
+            self.see(self.index("insert"))
+            self.focus()
+
+    def search_prev(self, s):
+        prev = self.search(s, self.index("insert"),
+                           backwards=True, nocase=True)
+        if prev:
+            self.mark_set("insert", prev)
+            self.see(self.index("insert"))
+            self.focus()
+
 
 class ConfigDialog(tk.Toplevel):
 
@@ -213,7 +229,6 @@ class MainWindow(tk.Tk):
     def __make_widgets(self):
         self.columnconfigure(0, weight=1)
         self.rowconfigure(1, weight=1)
-        self.search = SearchBar(self)
         sbx = ttk.Scrollbar(self, orient='horizontal')
         sby = ttk.Scrollbar(self, orient='vertical')
         sbx.grid(row=2, column=0, sticky=tk.EW)
@@ -227,6 +242,7 @@ class MainWindow(tk.Tk):
         sby.config(command=self.txt.yview)
         self.txt.config(xscrollcommand=sbx.set)
         self.txt.config(yscrollcommand=sby.set)
+        self.search = SearchBar(self, self.txt)
         statusbar = ttk.Frame(self)
         statusbar.grid(row=3, column=0, columnspan=2, sticky=tk.EW)
         self.status = ttk.Label(statusbar, anchor="e",
@@ -506,10 +522,12 @@ class MainWindow(tk.Tk):
 
 class SearchBar(ttk.Frame):
 
-    def __init__(self, parent):
+    def __init__(self, parent, target):
         ttk.Frame.__init__(self, parent, padding=2)
         self.search_term = tk.StringVar()
+        self.target = target
         self.__make_widgets()
+        self.entry.bind("<Return>", lambda _: self.__next())
 
     def __make_widgets(self):
         ttk.Label(self, text="Search for:"
@@ -528,10 +546,10 @@ class SearchBar(ttk.Frame):
         self.grid_remove()
 
     def __next(self):
-        print("Next")
+        self.target.search_next(self.search_term.get())
 
     def __previous(self):
-        print("Prev")
+        self.target.search_prev(self.search_term.get())
 
     def grab_focus(self):
         self.entry.focus()
