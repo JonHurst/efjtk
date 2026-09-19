@@ -223,8 +223,14 @@ class MainWindow(tk.Tk):
             json.dump(self.settings, f, indent=4)
         if self.txt.edit_modified():
             if messagebox.askyesno("Save", "Save before quitting?"):
-                self.__save()
-        self.quit()
+                if self.filename:
+                    self.__save()
+                else:
+                    self.__save_as()
+            else:
+                self.quit()
+        else:
+            self.quit()
 
     def __make_widgets(self):
         self.columnconfigure(0, weight=1)
