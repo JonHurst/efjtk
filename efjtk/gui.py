@@ -212,22 +212,23 @@ class MainWindow(tk.Tk):
 
     def __make_widgets(self):
         self.columnconfigure(0, weight=1)
-        self.rowconfigure(0, weight=1)
+        self.rowconfigure(1, weight=1)
+        self.search = SearchBar(self)
         sbx = ttk.Scrollbar(self, orient='horizontal')
         sby = ttk.Scrollbar(self, orient='vertical')
-        sbx.grid(row=1, column=0, sticky=tk.EW)
-        sby.grid(row=0, column=1, rowspan=2, sticky=tk.NS)
+        sbx.grid(row=2, column=0, sticky=tk.EW)
+        sby.grid(row=1, column=1, rowspan=2, sticky=tk.NS)
         self.txt = TextWithSyntaxHighlighting(
             self, "efj", autoseparators=False)
         self.txt.bind('<KeyRelease>', self.__update_status, '+')
         self.txt.bind('<ButtonRelease>', self.__update_status, '+')
-        self.txt.grid(row=0, column=0, sticky=tk.NSEW)
+        self.txt.grid(row=1, column=0, sticky=tk.NSEW)
         sbx.config(command=self.txt.xview)
         sby.config(command=self.txt.yview)
         self.txt.config(xscrollcommand=sbx.set)
         self.txt.config(yscrollcommand=sby.set)
         statusbar = ttk.Frame(self)
-        statusbar.grid(row=2, column=0, columnspan=2, sticky=tk.EW)
+        statusbar.grid(row=3, column=0, columnspan=2, sticky=tk.EW)
         self.status = ttk.Label(statusbar, anchor="e",
                                 padding=(16, 0), text=" ")
         ttk.Sizegrip(statusbar).pack(side=tk.RIGHT, anchor=tk.SE)
@@ -255,10 +256,11 @@ class MainWindow(tk.Tk):
             ('Copy', self.__copy, "Ctrl+C", None, 1),
             ('Paste', self.__paste, "Ctrl+V", None, 0),
             ("", None),
-            ('Select All', self.__select_all),
+            ('Select All', self.__select_all, None, None, 7),
             ('Clear', self.__clear),
             ("", None),
             ('Goto Line', self.__goto_line, "Ctrl+G", "<Control-Key-g>", 1),
+            ('Search', self.__search),
         ))
         self.__make_menu_section(top, "Modify", (
             ('Expand', self.__expand),
@@ -496,6 +498,43 @@ class MainWindow(tk.Tk):
             index = f"{line}.0"
             self.txt.mark_set("insert", index)
             self.txt.see(index)
+
+    def __search(self):
+        self.search.grid(row=0, column=0, columnspan=2, sticky=tk.EW)
+        self.search.grab_focus()
+
+
+class SearchBar(ttk.Frame):
+
+    def __init__(self, parent):
+        ttk.Frame.__init__(self, parent, padding=2)
+        self.search_term = tk.StringVar()
+        self.__make_widgets()
+
+    def __make_widgets(self):
+        ttk.Label(self, text="Search for:"
+                  ).grid(row=0, column=1)
+        self.entry = ttk.Entry(self, textvariable=self.search_term)
+        self.entry.grid(row=0, column=2, sticky=tk.EW, padx="10p")
+        ttk.Button(self, text="Prev", command=self.__previous
+                   ).grid(row=0, column=3, padx="2p")
+        ttk.Button(self, text="Next", command=self.__next
+                   ).grid(row=0, column=4, padx="2p")
+        ttk.Button(self, text="Close", command=self.__remove
+                   ).grid(row=0, column=5, padx=["10p", 0])
+        self.grid_columnconfigure(2, weight=1)
+
+    def __remove(self):
+        self.grid_remove()
+
+    def __next(self):
+        print("Next")
+
+    def __previous(self):
+        print("Prev")
+
+    def grab_focus(self):
+        self.entry.focus()
 
 
 def daterange_dialog(
