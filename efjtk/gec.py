@@ -62,13 +62,13 @@ def report(efj: str, date_range: tuple[dt.date, dt.date]) -> str:
         output.append("Overlapping\n===========")
         for o in so:
             output.append(o)
-    missing, anomolous = velocity_anomaly(sorted_sectors)
+    missing, anomalous = velocity_anomaly(sorted_sectors)
     if missing:
-        output.append("\nMissing\n=======")
+        output.append("\nUnknown Airfields\n=======")
         for m in missing:
             output.append(m)
-    if anomolous:
-        output.append("\nAnomolous Velocity\n==================")
-        for a in anomolous:
+    if anomalous:
+        output.append("\nAnomalous Velocity\n==================")
+        for a in anomalous:
             output.append(a)
     return "\n".join(output)
