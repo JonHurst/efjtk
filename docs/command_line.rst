@@ -7,9 +7,23 @@ The command line interface works as a filter program, i.e. input comes from
 STDIN, output goes to STDOUT and error messages are sent to STDERR.
 
 There are two categories of tools: those that output a modified version of the
-input and those that output a file in a different format. For example the first
+input and those that output a file in a different format. For example, the first
 category includes the ability to insert calculated night flying into the eFJ,
 whereas the latter includes the ability to output an HTML logbook.
+
+The ``‑‑from`` and ``‑‑to`` switches specify the range of dates to be
+considered. These take an ISO 8601 date of the form ``2026‑09‑21``. Entries
+dated on or after the ``‑‑from`` date but before the ``‑‑to`` date are included.
+If the ``‑‑from`` switch is omitted, it is set to the first date in the source
+text. If the ``‑‑to`` switch is omitted, it is set to the day after the last
+date in the source text. For tools that modify the input, all entries falling
+outside this range will pass through unchanged. Tools that output a file in a
+different format will only include dates within the range in the output.
+
+The logbook, cumulative totals and summary tools produce standalone HTML files.
+These files have no dependencies, so can be copied and moved around at will.
+They can be opened in any reasonably modern web browser, spreadsheet or word
+processing program. The gross error check tool produces simple text output.
 
 In the examples below, replace ``efj_file`` with the path to your eFJ. It is
 assumed that the toolkit has been installed with ``pip`` or ``pipx`` and as such
@@ -107,7 +121,8 @@ When no role flag is included, it is assumed that the role was p1. This means
 that First Officers must mark each sector as ``p1s``, ``p2`` or ``put``.
 Captains, on the other hand, just have to mark sectors where they were PM for
 the landing with ``m``. This tool allows First Officers to use ``m`` and then
-auto-fill the roles as ``p1s`` or ``p2``. ::
+auto-fill the roles as ``p1s`` or ``p2`` by assuming their role was p1s if they
+landed the aircraft and p2 if they did not. ::
 
   $ efj fo < efj_file
 
@@ -155,35 +170,31 @@ Conversion
 FCL.050 Logbook
 ^^^^^^^^^^^^^^^
 
-The Acceptable Means of Compliance (AMC) concerning recording of flight time can
-be found `on EASA's website
+The EASA Acceptable Means of Compliance with regards to the recording of
+personal flight records can be found `in section FCL.050 of EASA's website
 <https://www.easa.europa.eu/en/document-library/easy-access-rules/online-publications/easy-access-rules-aircrew-regulation-eu-no?page=5#_Toc522628396>`_.
-This tool converts the eFJ into a standalone HTML file with the suggested
-layout, minus the simulator columns. The created file can then be viewed in any
-web browser and, since it has no external dependencies, can be moved around at
-will. It is also simple enough that it can be successfully imported into
-spreadsheets, word processors et cetera. If you would like a PDF it can be
-created with your browser's print function, but I would recommend `Prince XML
-<https://www.princexml.com>`_ for this purpose; it produces very high quality
-output and is free for personal use.
+This format has also been adopted by the UK CAA.
+
+The logbook tool converts the eFJ into a standalone HTML file containing flight
+records in the FCL.050 layout.
 
 The AMC for FCL.050 requires that each sector is classified as single pilot,
-single engine; single pilot, multi engine; or multi crew. The eFJ scheme allows
-this information to be recorded on a sector by sector basis but does not specify
-a default value to use when no classification flag is added. The expectation is
-that these flags will nearly always be omitted, requiring that the
-classification is inferred from the aircraft type by the external tool that is
-processing the eFJ.
+single engine; single pilot, multi engine; or multi crew. The classification
+associated with a given type is usually encoded into the eFJ on the first
+occasion that a new type is flown using the extended aircraft syntax, e.g.
+``G-ABCD:A320:mc`` recorded on the first occasion an A320 is flown results in a
+future sector preceded by ``G-EFGH:A320`` also being classified as multi-crew.
 
-The command line interface uses an INI file to supply the required extra
-information. This INI file can either be referenced with a command line switch
-(see below) or placed in one of the default locations: these are ``~/.efjtkrc``
-or ``~/.config/efjtkrc``. A template for the INI file can be created by running
-the eFJ you are intending to turn into a logbook through the command::
+To allow for processing of eFJ fragments that do not include an entry with the
+extended syntax, a secondary mechanism for linking types to classifications is
+available. This uses an INI format file, which can either be referenced with the
+``‑‑config`` command line switch or placed in one of the default locations:
+these are ``~/.efjtkrc`` or ``~/.config/efjtkrc``. A template for this INI file
+can be created with the command::
 
   $ efj config < efj_file
 
-This produces a file that looks something like this::
+This produces output that looks something like this::
 
   [aircraft.classes]
   c152 = spse
@@ -203,51 +214,68 @@ template would therefore need to be modified to::
   737 = mc
   a320 = mc
 
-If the INI file is saved to one of the default locations, the HTML logbook can
-be produced with::
+The command for creating an FCL.050 compliant standalone HTML logbook is::
 
   $ efj logbook < efj_file
 
-If you want to keep the INI file in a non-default location, use::
-
-  $ efj logbook --config my_ini_path < efj_file
 
 Cumulative Totals
 ^^^^^^^^^^^^^^^^^
 
-The cumulative totals tool provides the cumulative totals for every entry in the
-FCL.050 logbook as a standalone HTML file. This file may be moved around at will
-and can be opened in any modern web browser or spreadsheet application.
+The cumulative totals tool provides the cumulative totals for every entry in an
+FCL.050 logbook as a standalone HTML file.
 
-The instructions for creating and using an INI file to specify aircraft classes
-as described above for the logbook tool also apply to the cumulative totals
+When a date range is specified, this only restricts the dates included in the
+output; the calculation still includes all entries.
+
+The instructions for creating and using an INI file to specify aircraft classes,
+as described above for the logbook tool, also apply to the cumulative totals
 tool.
 
 The command for the cumulative total tool is::
 
   $ efj cumulative < efj_file
 
-or if your INI file is in a non-default location::
-
-  $ efj cumulative --config my_in_path < efj_file
 
 Summary
 ^^^^^^^
 
 The summary tool provides various statistics for the eFJ as a standalone HTML
-file, which can be viewed in any web browser. Since this has no external
-dependencies it may be moved at will. It is also simple enough that it can be
-imported by spreadsheets, word processors, et cetera.
+file.
 
-The results are in the form of three tables: Roles; Conditions; and Landings:
+The results include a breakdown of flying roles, aircraft classes, conditions
+and landings by aircraft type, and all relevant totals.
 
-* The Roles table gives a breakdown of flying hours by role (i.e. p1, p1s, p2,
-  put) and aircraft type.
-* The Conditions table gives a breakdown of flying hours by flight conditions
-  (i.e. VFR vs IFR and day vs night) and aircraft type.
-* The Landings table gives a breakdown of the number of day and night landings by
-  aircraft type.
+The instructions for creating and using an INI file to specify aircraft classes,
+as described above for the logbook tool, also apply to the summary tool.
 
-::
+The command for the summary tool is::
 
-   $ efj summary < efj_file
+  $ efj summary < efj_file
+
+
+Gross Error Check
+^^^^^^^^^^^^^^^^^
+
+The gross error check tool flags up sectors with suspicious turn-around times,
+airfields or average velocities.
+
+The “Overlapping” section highlights any sector with a turn-around time of less
+than 15 minutes. The date and time of the sector, along with the calculated
+turn-around time from the previous sector are provided.
+
+The “Unknown Airfields” section lists airfields with ICAO or IATA codes that are
+not in the tool's database. This is often due to an airfield that has
+subsequently been closed leading to the IATA (three letter) code being
+discontinued; the ICAO (four letter) code for these airfields usually remain
+valid.
+
+The “Anomalous Velocity” section highlights any sector over 100nm where the
+average velocity, found by dividing the great circle distance between the
+airfields by sector time, is not between 50kt and 500kt. The date, times,
+destinations, great circle distances and average velocities for these sectors
+are tabulated.
+
+The command for the gross error check tool is::
+
+  $ efj gec < efj_file
