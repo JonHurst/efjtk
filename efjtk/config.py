@@ -64,5 +64,5 @@ def aircraft_classes(config: str) -> cp.SectionProxy:
         parser = _parse_config(config)
     except cp.Error:
         parser = cp.ConfigParser()
-        parser.add_section("aircraft_classes")
+        parser.add_section("aircraft.classes")
     return parser["aircraft.classes"]

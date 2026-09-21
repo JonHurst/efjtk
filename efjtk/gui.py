@@ -196,7 +196,7 @@ class ConfigDialog(tk.Toplevel):
         except OSError:
             config_str = ""
         try:
-            config_str = efjtk.config.build_config(text, config_str, True)
+            config_str = efjtk.config.build_config(text, config_str)
             self.txt.insert("1.0", config_str)
             self.txt.edit_reset()
             self.update_idletasks()
