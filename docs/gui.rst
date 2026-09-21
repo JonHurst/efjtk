@@ -152,59 +152,67 @@ becomes::
 Export
 ------
 
-This menu activates tools that convert the eFJ into other useful formats:
+The tools on this menu produce standalone HTML files. These files have no
+dependencies, so can be copied and moved around at will. They can be opened in
+any reasonably modern web browser, spreadsheet or word processing program.
 
 .. _logbook:
 
 FCL.050 Logbook
 ^^^^^^^^^^^^^^^
 
-The Acceptable Means of Compliance (AMC) concerning recording of flight time can
-be found `on EASA's website
+The EASA Acceptable Means of Compliance with regards to the recording of
+personal flight records can be found `in section FCL.050 of EASA's website
 <https://www.easa.europa.eu/en/document-library/easy-access-rules/online-publications/easy-access-rules-aircrew-regulation-eu-no?page=5#_Toc522628396>`_.
-This tool converts the eFJ into a standalone HTML file with the suggested
-layout, minus the simulator columns. The created file can then be viewed in any
-web browser and, since it has no external dependencies, can be moved around at
-will. It is also simple enough that it can be successfully imported into
-spreadsheets, word processors et cetera. If you would like a PDF it can be
-created with your browser's print function, but I would recommend `Prince XML
-<https://www.princexml.com>`_ for this purpose; it produces very high quality
-output and is free for personal use.
+This format has also been adopted by the UK CAA.
+
+The logbook tool converts the eFJ into a standalone HTML file containing flight
+records in the FCL.050 layout. When the tool is activated a dialog is presented
+to allow the dates included in the output file to be restricted; these dates are
+initially set to include all entries in the input file.
 
 The AMC for FCL.050 requires that each sector is classified as single pilot,
-single engine; single pilot, multi engine; or multi crew. The eFJ scheme allows
-this information to be recorded on a sector by sector basis but does not specify
-a default value to use when no classification flag is added. The expectation is
-that these flags will nearly always be omitted, requiring that the
-classification is inferred from the aircraft type by the external tool that is
-processing the eFJ.
+single engine; single pilot, multi engine; or multi crew. The classification
+associated with a given type is usually encoded into the eFJ on the first
+occasion that a new type is flown using the extended aircraft syntax, e.g.
+``G-ABCD:A320:mc`` recorded on the first occasion an A320 is flown results in a
+future sector preceded by ``G-EFGH:A320`` also being classified as multi-crew.
 
-The GUI interface deals with this by using an INI format file stored as
-``.efjtkrc`` in your home/user directory. When you activate this tool, a check
-is made for any types that are in the eFJ but not in the INI file and an editor
-is presented to gather any required information. Any unknown types are initially
-classified as ``spse`` (single pilot, single engine) — just change ``spse`` to
-``spme`` (single pilot, multi engine) or ``mc`` (multi crew) as appropriate then
-click "Save". You can edit this file at any time by selecting "File|Edit
-Config". If it gets corrupted, just delete ``.efjtkrc`` from your home/user
-directory and it will be recreated next time the tool is activated.
+To allow for processing of eFJ fragments that do not include an entry with the
+extended syntax, a secondary mechanism for linking types to classifications is
+available. This uses an INI format file stored as ``.efjtkrc`` in your home/user
+directory. When you activate the logbook tool, an attempt is made to look up any
+unclassified types in this INI file. If this fails a dialog presents an updated
+INI file with the type initially classified as ``spse`` — just change
+``spse`` to ``spme`` (single pilot, multi engine) or ``mc`` (multi crew) if
+appropriate then click "Save". You can edit this file at any time by selecting
+"File|Edit Config". If it gets corrupted, just delete ``.efjtkrc`` from your
+home/user directory and it will be recreated next time the tool is activated.
 
 Summary
 ^^^^^^^
 
-The "Summary" tool provides various statistics for the eFJ as a standalone HTML
-file, which can be viewed in any web browser. Since this has no external
-dependencies it may be moved at will. It is also simple enough that it can be
-imported by spreadsheets, word processors, et cetera.
+The summary tool provides various statistics for the eFJ as a standalone HTML
+file.
 
-The results are in the form of three tables: Roles; Conditions; and Landings:
+The results include a breakdown of flying roles, aircraft classes, conditions
+and landings by aircraft type, and all relevant totals.
 
-* The Roles table gives a breakdown of flying hours by role (i.e. p1, p1s, p2,
-  put) and aircraft type.
-* The Conditions table gives a breakdown of flying hours by flight conditions
-  (i.e. VFR vs IFR and day vs night) and aircraft type.
-* The Landings table gives a breakdown of the number of day and night landings by
-  aircraft type.
+The instructions for creating and using an INI file to specify aircraft classes,
+as described above for the logbook tool, also apply to the summary tool.
+
+Cumulative Totals
+^^^^^^^^^^^^^^^^^
+
+The cumulative totals tool provides the cumulative totals for every entry in an
+FCL.050 logbook as a standalone HTML file.
+
+When a date range is specified, this only restricts the dates included in the
+output; the calculation still includes all entries.
+
+The instructions for creating and using an INI file to specify aircraft classes,
+as described above for the logbook tool, also apply to the cumulative totals
+tool.
 
 
 Help
