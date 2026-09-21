@@ -106,11 +106,13 @@ class TextWithSyntaxHighlighting(tk.Text):
 
 class ConfigDialog(tk.Toplevel):
 
-    def __init__(self):
+    def __init__(self, parent):
         tk.Toplevel.__init__(self)
+        self.parent = parent
+        self.callback = None
         self.title("Config Editor")
+        self.transient(parent)
         self.__make_widgets()
-        self.retval = False
 
     def __make_widgets(self):
         buttons_frm = tk.Frame(self, padx="2m", pady="1m")
@@ -178,35 +180,45 @@ class ConfigDialog(tk.Toplevel):
                 return
         with open(CONFIG_FILE, "w") as f:
             parser.write(f)
-        self.retval = True
         self.destroy()
+        if self.callback:
+            self.callback()
 
     def __help(self):
         webbrowser.open(HELP_URL)
 
-    def do_modal(self):
+    def do_modal(self, text, callback=None):
+        self.callback = callback
         try:
             with open(CONFIG_FILE) as f:
-                self.txt.insert("1.0", f.read())
+                config_str = f.read()
         except OSError:
-            self.txt.insert("1.0", "[aircraft.classes]\n")
+            config_str = ""
+        config_str = efjtk.config.build_config(text, config_str, True)
+        self.txt.insert("1.0", config_str)
         self.txt.edit_reset()
+        self.withdraw()
+        self.update_idletasks()
+        c_x = self.parent.winfo_x() + self.parent.winfo_width() // 2
+        c_y = self.parent.winfo_y() + self.parent.winfo_height() // 2
+        self.geometry(f"+{c_x - self.winfo_reqwidth() // 2}"
+                      f"+{c_y - self.winfo_reqheight() // 2}")
+        self.deiconify()
         self.focus_set()
         self.grab_set()
-        self.wait_window()
-        return self.retval
 
 
 class MainWindow(tk.Tk):
 
     def __init__(self):
+        tk.Tk.__init__(self)
+        self.title(f"efjtk (v{efjtk.version.VERSION})")
         try:
             with open(SETTINGS_FILE) as f:
                 self.settings = json.load(f)
         except Exception:
             self.settings = {}
-        tk.Tk.__init__(self)
-        self.title(f"efjtk (v{efjtk.version.VERSION})")
+        self.ac = self.__load_aircraft_classes()
         self.filename = None
         self.menus = {}
         self.__make_menu()
@@ -231,6 +243,14 @@ class MainWindow(tk.Tk):
                 self.quit()
         else:
             self.quit()
+
+    def __load_aircraft_classes(self):
+        try:
+            with open(CONFIG_FILE) as fc:
+                config_str = fc.read()
+        except OSError:
+            config_str = ""
+        return efjtk.config.aircraft_classes(config_str)
 
     def __make_widgets(self):
         self.columnconfigure(0, weight=1)
@@ -266,7 +286,7 @@ class MainWindow(tk.Tk):
             ('Save', self.__save, "Ctrl+S", "<Control-Key-s>", 0),
             ('Save As', self.__save_as, "Ctrl+A", "<Control-Key-a>", 5),
             ("", None),
-            ('Edit Config', self.__config),
+            ('Update Config', self.__update_config),
             ("", None),
             ('Quit', self.destroy, "Ctrl+Q", "<Control-Key-q>", 0),
         ))
@@ -363,8 +383,14 @@ class MainWindow(tk.Tk):
             self.filename = fn
             self.txt.edit_modified(False)
 
-    def __config(self):
-        return ConfigDialog().do_modal()
+    def __update_config(self, callback=None):
+
+        def update_ac_classes():
+            self.ac = self.__load_aircraft_classes()
+            if callback:
+                callback()
+        text = self.txt.get("1.0", tk.END)
+        ConfigDialog(self).do_modal(text, update_ac_classes)
 
     def __expand(self):
         self.__modify(efjtk.modify.expand_efj)
@@ -455,16 +481,6 @@ class MainWindow(tk.Tk):
             self.menus["file"].entryconfigure("Save", state="disabled")
             self.title("efjtk")
 
-    def __add_unknown_aircraft_to_config(self, text, config_str):
-        try:
-            config_str = efjtk.config.build_config(text, config_str, True)
-            with open(CONFIG_FILE, "w") as fc:
-                fc.write(config_str)
-        except cp.Error:
-            messagebox.showerror(
-                "Config Error",
-                "Bad config file. Please correct it!")
-
     def __export_logbook(self):
         self.__export(efjtk.convert.build_logbook)
 
@@ -475,17 +491,11 @@ class MainWindow(tk.Tk):
         self.__export(efjtk.convert.build_cumulative)
 
     def __export(self, fn):
-        try:
-            with open(CONFIG_FILE) as fc:
-                config_str = fc.read()
-        except OSError:
-            config_str = ""
-        ac = efjtk.config.aircraft_classes(config_str)
         text = self.txt.get("1.0", tk.END)
 
         def callback(daterange):
             try:
-                result = fn(text, ac, daterange)
+                result = fn(text, self.ac, daterange)
                 path = self.settings.get('exportPath')
                 if fname := filedialog.asksaveasfilename(
                         filetypes=(("HTML", "*.html"), ("All", "*")),
@@ -495,9 +505,7 @@ class MainWindow(tk.Tk):
                     with open(fname, "w", encoding="utf-8") as f:
                         f.write(result)
             except efjtk.convert.UnknownAircraftType:
-                self.__add_unknown_aircraft_to_config(text, config_str)
-                if self.__config():
-                    callback(daterange)
+                self.__update_config(lambda: callback(daterange))
             except VE as e:
                 messagebox.showerror("Parse Error", str(e))
         DateRangeDialog(self).show_modal(text, callback)
