@@ -366,8 +366,7 @@ class MainWindow(tk.Tk):
             self.__update_status()
 
     def __save(self):
-        if not self.filename:
-            return
+        assert self.filename
         with open(self.filename, "w", encoding="utf-8") as f:
             f.write(self.txt.get("1.0", tk.END))
             self.txt.edit_modified(False)
