@@ -474,35 +474,33 @@ class MainWindow(tk.Tk):
     def __export_cumulative(self):
         self.__export(efjtk.convert.build_cumulative)
 
-    def __export(self, fn, daterange=None):
-        if not (text := self.txt.get("1.0", tk.END)):
-            return
+    def __export(self, fn):
         try:
             with open(CONFIG_FILE) as fc:
                 config_str = fc.read()
         except OSError:
             config_str = ""
         ac = efjtk.config.aircraft_classes(config_str)
-        try:
-            daterange = daterange or DateRangeDialog(self).show_modal(text)
-            if daterange is None:
-                return
-            result = fn(text, ac, daterange)
-            path = self.settings.get('exportPath')
-            if not (fname := filedialog.asksaveasfilename(
-                    filetypes=(("HTML", "*.html"), ("All", "*")),
-                    defaultextension=".html",
-                    initialdir=path)):
-                return
-            self.settings['exportPath'] = os.path.dirname(fname)
-            with open(fname, "w", encoding="utf-8") as f:
-                f.write(result)
-        except efjtk.convert.UnknownAircraftType:
-            self.__add_unknown_aircraft_to_config(text, config_str)
-            if self.__config():
-                self.__export(fn, daterange)
-        except VE as e:
-            messagebox.showerror("Parse Error", str(e))
+        text = self.txt.get("1.0", tk.END)
+
+        def callback(daterange):
+            try:
+                result = fn(text, ac, daterange)
+                path = self.settings.get('exportPath')
+                if fname := filedialog.asksaveasfilename(
+                        filetypes=(("HTML", "*.html"), ("All", "*")),
+                        defaultextension=".html",
+                        initialdir=path):
+                    self.settings['exportPath'] = os.path.dirname(fname)
+                    with open(fname, "w", encoding="utf-8") as f:
+                        f.write(result)
+            except efjtk.convert.UnknownAircraftType:
+                self.__add_unknown_aircraft_to_config(text, config_str)
+                if self.__config():
+                    callback(daterange)
+            except VE as e:
+                messagebox.showerror("Parse Error", str(e))
+        DateRangeDialog(self).show_modal(text, callback)
 
     def __help(self):
         webbrowser.open(HELP_URL)
@@ -612,8 +610,9 @@ class DateRangeDialog(tk.Toplevel):
             return None
         return (min(dates), max(dates) + dt.timedelta(days=1))
 
-    def show_modal(self, efj):
+    def show_modal(self, efj, callback):
         if r := self.efj_full_range(efj):
+            self.callback = callback
             self.tk_from.set(r[0].isoformat())
             self.tk_to.set(r[1].isoformat())
             self.withdraw()
@@ -625,21 +624,17 @@ class DateRangeDialog(tk.Toplevel):
             self.deiconify()
             self.grab_set()
             self.focus_set()
-            self.retval = None
-            self.wait_window()
         else:
+            self.destroy()
             messagebox.showerror("Invalid Data", "No dates found")
-            return None
-        return self.retval
 
     def ok(self):
         try:
-            self.retval = (
-                dt.date.fromisoformat(self.tk_from.get()),
-                dt.date.fromisoformat(self.tk_to.get()))
+            daterange = (dt.date.fromisoformat(self.tk_from.get()),
+                         dt.date.fromisoformat(self.tk_to.get()))
             self.destroy()
+            self.callback(daterange)
         except ValueError as e:
-            self.retval = None
             messagebox.showerror("Invalid Data", str(e))
 
     def validate(self, s):
