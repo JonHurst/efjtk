@@ -27,7 +27,7 @@ def add_night_data(in_: str, daterange: DateRange = (None, None)) -> str:
         marked night flying is left unmodified.
     """
     out = []
-    re_sec = re.compile(r"\A(\w*/\w* \d{4}/\d{4})(.*)\Z")
+    re_sec = re.compile(r"\A(\w*/\w*\s+\d{4}/\d{4})(.*)\Z")
 
     def callback(line, line_num, type_, ret):
         if (type_ != "sector" or
@@ -92,7 +92,7 @@ def expand_efj(in_: str, daterange: DateRange = (None, None)) -> str:
 
 def add_fo_role_flag(in_: str, daterange: DateRange = (None, None)) -> str:
     out = []
-    re_sec = re.compile(r"\A(\w*/\w* \d{4}/\d{4})\s*(.*)\Z")
+    re_sec = re.compile(r"\A(\w*/\w*\s+\d{4}/\d{4})\s*(.*)\Z")
 
     def callback(line, line_num, type_, ret):
         if (type_ != "sector" or
@@ -112,7 +112,7 @@ def add_fo_role_flag(in_: str, daterange: DateRange = (None, None)) -> str:
 
 def add_ins_flag(in_: str, daterange: DateRange = (None, None)) -> str:
     out = []
-    re_sec = re.compile(r"\A(\w*/\w* \d{4}/\d{4})\s*(.*)\Z")
+    re_sec = re.compile(r"\A(\w*/\w*\s+\d{4}/\d{4})\s*(.*)\Z")
 
     def callback(line, line_num, type_, ret):
         if (type_ != "sector" or
@@ -129,7 +129,7 @@ def add_ins_flag(in_: str, daterange: DateRange = (None, None)) -> str:
 
 def add_vfr_flag(in_: str, daterange: DateRange = (None, None)) -> str:
     out = []
-    re_sec = re.compile(r"\A(\w*/\w* \d{4}/\d{4})\s*(.*)\Z")
+    re_sec = re.compile(r"\A(\w*/\w*\s+\d{4}/\d{4})\s*(.*)\Z")
 
     def callback(line, line_num, type_, ret):
         if (type_ != "sector" or
