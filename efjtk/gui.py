@@ -376,13 +376,14 @@ class MainWindow(tk.Tk):
         fn = filedialog.asksaveasfilename(
             filetypes=(("All", "*"),),
             initialdir=path)
-        if not fn:
-            return
-        self.settings['savePath'] = os.path.dirname(fn)
-        with open(fn, "w", encoding="utf-8") as f:
-            f.write(self.txt.get("1.0", tk.END))
-            self.filename = fn
-            self.txt.edit_modified(False)
+        if fn:
+            self.settings['savePath'] = os.path.dirname(fn)
+            with open(fn, "w", encoding="utf-8") as f:
+                f.write(self.txt.get("1.0", tk.END))
+                self.filename = fn
+                self.txt.edit_modified(False)
+                return True
+        return False
 
     def __update_config(self, callback=None):
 
