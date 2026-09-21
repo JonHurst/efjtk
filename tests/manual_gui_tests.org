@@ -1,0 +1,50 @@
+* File Menu
++ Quit
+  - Window closes
++ Window close button
+  - Window closes
++ Add random text
+  - Check Save is grayed out
++ Select Quit, then No
+  - Closes without saving
++ Add random text, then Quit, then Yes
+  - Save As dialog shown
++ Select cancel
+  - Window does not close
++ Window close button, then Yes,
+  - Save As dialog shown
++ Select a file, then Save
+  - Window closes
+  - Selected file contains random text
++ Add random text, select "Save As" then Cancel
+  - Window does not close
++ Select "Save As" then Save
+  - Text is saved to file
++ Add more random text
+  - Save is not grayed out
++ Select Save
+  - New text saved to file
+  - Save grayed out again
++ Delete ~/.efjtkrc, then select Update Config
+  - Parse Error messagebox shown
+  - Dialog not displayed
++ Clear text, then select Update Config
+  - Dialog displayed with just header
++ Cancel dialog
+  - ~/.efjtkrc does not exist
++ Select Update Config then Save
+  - text of dialog saved to ~/.efjtkrc
++ Add random text to config then Save
+  - Bad INI format messagebox shown
++ Cancel, then Update Config, add test = test
+  - Bad aircraft class messagebox shown
++ Correct to test = mc and Save
+  - ~/.efjtkrc now has "test = mc"
++ Select Update Config
+  - "test = mc" now shown
++ Select Help button
+  - Help opens in browser
++ Open guitest.efj, then select Update Config
+  - 320 = spse shown
++ Change to 320 = mc and Save
+  - 320 now in ~/.efjtkrc
