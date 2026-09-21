@@ -242,11 +242,9 @@ class MainWindow(tk.Tk):
                 if self.filename:
                     self.__save()
                 else:
-                    self.__save_as()
-            else:
-                self.quit()
-        else:
-            self.quit()
+                    if not self.__save_as():
+                        return  # don't quit if "save as" is cancelled
+        self.quit()
 
     def __load_aircraft_classes(self):
         try:
