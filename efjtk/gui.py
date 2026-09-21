@@ -484,9 +484,9 @@ class MainWindow(tk.Tk):
             config_str = ""
         ac = efjtk.config.aircraft_classes(config_str)
         try:
+            daterange = daterange or DateRangeDialog(self).show_modal(text)
             if daterange is None:
-                if (daterange := daterange_dialog(self, text)) is None:
-                    return
+                return
             result = fn(text, ac, daterange)
             path = self.settings.get('exportPath')
             if not (fname := filedialog.asksaveasfilename(
@@ -562,67 +562,88 @@ class SearchBar(ttk.Frame):
         self.entry.focus()
 
 
-def daterange_dialog(
-        parent, efj: str
-) -> tuple[dt.date | None, dt.date | None] | None:
-    PADDING = 5
-    retval = None  # will return None unless OK is clicked
-    # search for full date range within efj
-    dates: list[dt.date] = []
-    for line in efj.splitlines():
-        if mo := re.match(r"\s*(\d{4}-\d{2}-\d{2})|([+]+)", line):
-            if mo.group(1):
-                try:
-                    dates.append(dt.date.fromisoformat(mo.group(1)))
-                except ValueError:
-                    continue
-            elif dates and mo.group(2):
-                dates.append(dates[-1] + dt.timedelta(days=len(mo.group(2))))
-    if len(dates) == 0:
-        messagebox.showerror("Invalid Data", "No dates found")
-        return None
-    end = max(dates) + dt.timedelta(days=1)
-    from_date = tk.StringVar(parent, min(dates).isoformat())
-    to_date = tk.StringVar(parent, end.isoformat())
-    dr_dlg = tk.Toplevel(padx=PADDING, pady=PADDING)
+class DateRangeDialog(tk.Toplevel):
 
-    def ok_clicked():
-        try:
-            nonlocal retval
-            retval = (dt.date.fromisoformat(from_date.get()),
-                      dt.date.fromisoformat(to_date.get()))
-            dr_dlg.destroy()
-        except ValueError as e:
-            messagebox.showerror("Invalid Data", str(e))
+    def __init__(self, parent):
+        tk.Toplevel.__init__(self, padx=5, pady=5)
+        self.parent = parent
 
-    def validate(s):
-        return False if re.search(r"[^\d-]", s) else True
-    tk_validate = dr_dlg.register(validate)
-    # date entry frames
-    for label_text, variable in (("From (inclusive):", from_date),
-                                 ("To (exclusive):", to_date)):
-        f = ttk.Frame(dr_dlg)
+        self.title("Date Range")
+        self.resizable(False, False)
+        self.transient(parent)
+
+        self.tk_from = tk.StringVar(parent)
+        self.tk_to = tk.StringVar(parent)
+        tk_validate = self.register(self.validate)
+
+        PADDING = 5
+        f = ttk.Frame(self)
         f.pack(padx=PADDING, pady=PADDING)
-        ttk.Label(f, width=15, text=label_text).pack(side=tk.LEFT)
-        ttk.Entry(f, width=20, justify="center", textvariable=variable,
+        ttk.Label(f, width=15, text="From (inclusive): ").pack(side=tk.LEFT)
+        ttk.Entry(f, width=20, justify="center", textvariable=self.tk_from,
                   validate="key", validatecommand=(tk_validate, "%P"),
                   ).pack(side=tk.RIGHT)
-    # buttons
-    buttons = ttk.Frame(dr_dlg)
-    buttons.pack(fill=tk.X, padx=PADDING, pady=PADDING)
-    ttk.Button(buttons, width=10, text="OK", command=ok_clicked
-               ).pack(side=tk.RIGHT, padx=PADDING)
-    ttk.Button(buttons, width=10, text="Cancel", command=dr_dlg.destroy
-               ).pack(side=tk.RIGHT, padx=PADDING)
-    # show modal dialog
-    dr_dlg.title("Date Range")
-    dr_dlg.resizable(False, False)
-    dr_dlg.transient(parent)
-    dr_dlg.wait_visibility()
-    dr_dlg.focus_set()
-    dr_dlg.grab_set()
-    dr_dlg.wait_window()
-    return retval
+        f = ttk.Frame(self)
+        f.pack(padx=PADDING, pady=PADDING)
+        ttk.Label(f, width=15, text="To (exclusive): ").pack(side=tk.LEFT)
+        ttk.Entry(f, width=20, justify="center", textvariable=self.tk_to,
+                  validate="key", validatecommand=(tk_validate, "%P"),
+                  ).pack(side=tk.RIGHT)
+        buttons = ttk.Frame(self)
+        buttons.pack(fill=tk.X, padx=PADDING, pady=PADDING)
+        ttk.Button(buttons, width=10, text="OK", command=self.ok
+                   ).pack(side=tk.RIGHT, padx=PADDING)
+        ttk.Button(buttons, width=10, text="Cancel", command=self.destroy
+                   ).pack(side=tk.RIGHT, padx=PADDING)
+
+    def efj_full_range(self, efj):
+        dates: list[dt.date] = []
+        for line in efj.splitlines():
+            if mo := re.match(r"\s*(\d{4}-\d{2}-\d{2})|([+]+)", line):
+                if mo.group(1):
+                    try:
+                        dates.append(dt.date.fromisoformat(mo.group(1)))
+                    except ValueError:
+                        continue
+                elif dates and mo.group(2):
+                    dates.append(dates[-1] +
+                                 dt.timedelta(days=len(mo.group(2))))
+        if len(dates) == 0:
+            return None
+        return (min(dates), max(dates) + dt.timedelta(days=1))
+
+    def show_modal(self, efj):
+        if r := self.efj_full_range(efj):
+            self.tk_from.set(r[0].isoformat())
+            self.tk_to.set(r[1].isoformat())
+            self.withdraw()
+            self.update_idletasks()
+            c_x = self.parent.winfo_x() + self.parent.winfo_width() // 2
+            c_y = self.parent.winfo_y() + self.parent.winfo_height() // 2
+            self.geometry(f"+{c_x - self.winfo_reqwidth() // 2}"
+                          f"+{c_y - self.winfo_reqheight() // 2}")
+            self.deiconify()
+            self.grab_set()
+            self.focus_set()
+            self.retval = None
+            self.wait_window()
+        else:
+            messagebox.showerror("Invalid Data", "No dates found")
+            return None
+        return self.retval
+
+    def ok(self):
+        try:
+            self.retval = (
+                dt.date.fromisoformat(self.tk_from.get()),
+                dt.date.fromisoformat(self.tk_to.get()))
+            self.destroy()
+        except ValueError as e:
+            self.retval = None
+            messagebox.showerror("Invalid Data", str(e))
+
+    def validate(self, s):
+        return False if re.search(r"[^\d-]", s) else True
 
 
 def goto_line_dialog(parent, maxvalue) -> int | None:
