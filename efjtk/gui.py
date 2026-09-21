@@ -189,23 +189,27 @@ class ConfigDialog(tk.Toplevel):
 
     def do_modal(self, text, callback=None):
         self.callback = callback
+        self.withdraw()
         try:
             with open(CONFIG_FILE) as f:
                 config_str = f.read()
         except OSError:
             config_str = ""
-        config_str = efjtk.config.build_config(text, config_str, True)
-        self.txt.insert("1.0", config_str)
-        self.txt.edit_reset()
-        self.withdraw()
-        self.update_idletasks()
-        c_x = self.parent.winfo_x() + self.parent.winfo_width() // 2
-        c_y = self.parent.winfo_y() + self.parent.winfo_height() // 2
-        self.geometry(f"+{c_x - self.winfo_reqwidth() // 2}"
-                      f"+{c_y - self.winfo_reqheight() // 2}")
-        self.deiconify()
-        self.focus_set()
-        self.grab_set()
+        try:
+            config_str = efjtk.config.build_config(text, config_str, True)
+            self.txt.insert("1.0", config_str)
+            self.txt.edit_reset()
+            self.update_idletasks()
+            c_x = self.parent.winfo_x() + self.parent.winfo_width() // 2
+            c_y = self.parent.winfo_y() + self.parent.winfo_height() // 2
+            self.geometry(f"+{c_x - self.winfo_reqwidth() // 2}"
+                          f"+{c_y - self.winfo_reqheight() // 2}")
+            self.deiconify()
+            self.focus_set()
+            self.grab_set()
+        except VE as e:
+            messagebox.showerror("Parse Error", str(e))
+            self.destroy()
 
 
 class MainWindow(tk.Tk):
