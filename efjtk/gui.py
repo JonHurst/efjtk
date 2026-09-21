@@ -431,6 +431,7 @@ class MainWindow(tk.Tk):
                 self.txt.insert('1.0', result)
                 self.txt.see(tk.END)
         except VE as e:
+            self.busy_forget()
             messagebox.showerror("Parse Error", str(e))
         finally:
             self.busy_forget()
