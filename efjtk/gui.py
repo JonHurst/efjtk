@@ -521,12 +521,13 @@ class MainWindow(tk.Tk):
         self.status.configure(text=f"Line {line}, Column {col}")
 
     def __goto_line(self):
-        last = int(self.txt.index("end-1 chars").split(".")[0])
-        line = goto_line_dialog(self, last)
-        if line:
+
+        def callback(line):
             index = f"{line}.0"
             self.txt.mark_set("insert", index)
             self.txt.see(index)
+        last = int(self.txt.index("end-1 chars").split(".")[0])
+        GotoLineDialog(self).do_modal(last, callback)
 
     def __search(self):
         self.search.grid(row=0, column=0, columnspan=2, sticky=tk.EW)
@@ -649,52 +650,59 @@ class DateRangeDialog(tk.Toplevel):
         return False if re.search(r"[^\d-]", s) else True
 
 
-def goto_line_dialog(parent, maxvalue) -> int | None:
-    PADDING = 5
-    retval = None  # will return None unless OK is clicked
-    gl_dlg = tk.Toplevel(padx=PADDING, pady=PADDING)
-    tk_line = tk.StringVar(parent, "")
+class GotoLineDialog(tk.Toplevel):
 
-    def ok_clicked(_=None):
+    def __init__(self, parent):
+        tk.Toplevel.__init__(self)
+        self.parent = parent
+        tk_validate = self.register(self.validate)
+        self.tk_line = tk.StringVar(parent, "")
+
+        PADDING = 5
+        f = ttk.Frame(self)
+        f.pack(padx=PADDING, pady=PADDING)
+        ttk.Label(f, width=10, text="Go to line: ").pack(side=tk.LEFT)
+        self.entry = ttk.Entry(
+            f, width=20, justify="center", textvariable=self.tk_line,
+            validate="key", validatecommand=(tk_validate, "%P"))
+        self.entry.pack(side=tk.RIGHT)
+        self.entry.bind("<Return>", self.ok)
+        self.entry.bind("<Escape>", lambda _: self.destroy())
+        buttons = ttk.Frame(self)
+        buttons.pack(fill=tk.X, padx=PADDING, pady=PADDING)
+        ttk.Button(buttons, width=10, text="OK", command=self.ok
+                   ).pack(side=tk.RIGHT, padx=PADDING)
+        ttk.Button(buttons, width=10, text="Cancel", command=self.destroy
+                   ).pack(side=tk.RIGHT, padx=PADDING)
+
+    def validate(self, s):
+        return False if re.search(r"[^\d]", s) else True
+
+    def ok(self, _):
         try:
-            nonlocal retval
             try:
-                line = int(tk_line.get())
+                line = int(self.tk_line.get())
             except ValueError:
-                raise ValueError(f"{tk_line.get()} is not valid")
-            if line > maxvalue:
-                raise ValueError(f"Last line is {maxvalue}")
-            retval = line
-            gl_dlg.destroy()
+                raise ValueError(f"{self.tk_line.get()} is not valid")
+            if line > self.maxvalue:
+                raise ValueError(f"Last line is {self.maxvalue}")
+            self.callback(line)
+            self.destroy()
         except ValueError as e:
             messagebox.showerror("Invalid Data", str(e))
 
-    def validate(s):
-        return False if re.search(r"[^\d]", s) else True
-    tk_validate = gl_dlg.register(validate)
-    # add widgets
-    f = ttk.Frame(gl_dlg)
-    f.pack(padx=PADDING, pady=PADDING)
-    ttk.Label(f, width=10, text="Go to line: ").pack(side=tk.LEFT)
-    entry = ttk.Entry(f, width=20, justify="center", textvariable=tk_line,
-                      validate="key", validatecommand=(tk_validate, "%P"))
-    entry.pack(side=tk.RIGHT)
-    entry.bind("<Return>", ok_clicked)
-    entry.bind("<Escape>", lambda _: gl_dlg.destroy())
-    buttons = ttk.Frame(gl_dlg)
-    buttons.pack(fill=tk.X, padx=PADDING, pady=PADDING)
-    ttk.Button(buttons, width=10, text="OK", command=ok_clicked
-               ).pack(side=tk.RIGHT, padx=PADDING)
-    ttk.Button(buttons, width=10, text="Cancel", command=gl_dlg.destroy
-               ).pack(side=tk.RIGHT, padx=PADDING)
-    gl_dlg.title("Go To Line")
-    gl_dlg.resizable(False, False)
-    gl_dlg.transient(parent)
-    gl_dlg.wait_visibility()
-    entry.focus_set()
-    gl_dlg.grab_set()
-    gl_dlg.wait_window()
-    return retval
+    def do_modal(self, maxvalue, callback):
+        self.callback = callback
+        self.maxvalue = maxvalue
+        self.withdraw()
+        self.update_idletasks()
+        c_x = self.parent.winfo_x() + self.parent.winfo_width() // 2
+        c_y = self.parent.winfo_y() + self.parent.winfo_height() // 2
+        self.geometry(f"+{c_x - self.winfo_reqwidth() // 2}"
+                      f"+{c_y - self.winfo_reqheight() // 2}")
+        self.deiconify()
+        self.grab_set()
+        self.entry.focus_set()
 
 
 def main():
