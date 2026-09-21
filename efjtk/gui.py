@@ -474,7 +474,7 @@ class MainWindow(tk.Tk):
     def __export_cumulative(self):
         self.__export(efjtk.convert.build_cumulative)
 
-    def __export(self, fn):
+    def __export(self, fn, daterange=None):
         if not (text := self.txt.get("1.0", tk.END)):
             return
         try:
@@ -484,8 +484,9 @@ class MainWindow(tk.Tk):
             config_str = ""
         ac = efjtk.config.aircraft_classes(config_str)
         try:
-            if (daterange := daterange_dialog(self, text)) is None:
-                return
+            if daterange is None:
+                if (daterange := daterange_dialog(self, text)) is None:
+                    return
             result = fn(text, ac, daterange)
             path = self.settings.get('exportPath')
             if not (fname := filedialog.asksaveasfilename(
@@ -499,7 +500,7 @@ class MainWindow(tk.Tk):
         except efjtk.convert.UnknownAircraftType:
             self.__add_unknown_aircraft_to_config(text, config_str)
             if self.__config():
-                self.__export(fn)
+                self.__export(fn, daterange)
         except VE as e:
             messagebox.showerror("Parse Error", str(e))
 
