@@ -75,7 +75,6 @@ async function process(action) {
 
 function push_history() {
     history.push(ID("output").value);
-    console.log(history);
 }
 
 
@@ -91,29 +90,72 @@ async function copy_output_to_clipboard() {
 }
 
 
-async function post(efj, action) {
-    ID("working").classList.remove("hidden");
-    let response;
-    try {
-        response = await fetch(EFJTOOL_URL, {
-            method: "POST",
-            body: JSON.stringify({
-                "efj": efj,
-                "action": action
-            }),
-            cache: "no-cache"
-        });
-        ID("working").classList.add("hidden");
-        if(!response.ok) {
-            show_error(`HTTP error: ${response.status}`);
-            return null;
+function get_full_date_range(efj) {
+    let dates = [];
+    for(let line of efj.split("\n")) {
+        let match = /\s*(\d{4}-\d{2}-\d{2})|([+]+)/.exec(line);
+        if(match && match.length == 3) {
+            if(match[1]) {
+                dates.push(new Date(match[1]));
+            } else if(match[2] && dates.length > 0) {
+                let date = new Date(dates[dates.length - 1]);
+                date.setDate(date.getDate() + match[2].length);
+                dates.push(date);
+            }
         }
-    } catch (error) {
-        ID("working").classList.add("hidden");
-        show_error("Network error");
+    }
+    if(dates.length == 0) {
         return null;
     }
-    return await response.json();
+    let to_date = dates[dates.length - 1];
+    to_date.setDate(to_date.getDate() + 1);
+    return [dates[0].toISOString().slice(0, 10),
+            to_date.toISOString().slice(0, 10)];
+
+}
+
+
+async function post(efj, action) {
+    return new Promise((resolve, reject) => {
+        let full_date_range = get_full_date_range(efj);
+        if(full_date_range && full_date_range.length == 2) {
+            ID("dr_from").value = full_date_range[0];
+            ID("dr_to").value = full_date_range[1];
+        }
+        ID("date_range_dialog").showModal();
+        ID("dr_ok").onclick = async () => {
+            ID("date_range_dialog").close();
+            let from = ID("dr_from").value;
+            let to = ID("dr_to").value;
+            let daterange = null;
+            if(from && to) {
+                daterange = [from, to];
+            }
+            ID("working").classList.remove("hidden");
+            let response;
+            try {
+                response = await fetch(EFJTOOL_URL, {
+                    method: "POST",
+                    body: JSON.stringify({
+                        "efj": efj,
+                        "action": action,
+                        "daterange": daterange
+                    }),
+                    cache: "no-cache"
+                });
+                ID("working").classList.add("hidden");
+                if(!response.ok) {
+                    show_error(`HTTP error: ${response.status}`);
+                    reject(Error(`HTTP error: ${response.status}`));
+                }
+            } catch (error) {
+                ID("working").classList.add("hidden");
+                show_error("Network error");
+                reject(Error("Network error"));
+            }
+            resolve(response.json());
+        };
+    });
 }
 
 

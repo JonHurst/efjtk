@@ -1,8 +1,10 @@
 import json
+import datetime as dt
 
 from efjtk.convert import build_logbook, build_summary, build_cumulative
 from efj_parser import ValidationError
 import efjtk.modify
+
 
 
 _func_map = {
@@ -21,10 +23,14 @@ def lambda_handler(event, context):
     data = json.loads(event["body"])
     in_ = data["efj"]
     action = data["action"]
+    try:
+        daterange = tuple(dt.date.fromisoformat(X) for X in data["daterange"])
+    except:
+        daterange = None
     status = "failed"
     try:
         if action in _func_map:
-            out = _func_map[action](in_)
+            out = _func_map[action](in_, daterange)
             status = "success"
         else:
             out = "Not implemented"
@@ -44,7 +50,7 @@ if __name__ == "__main__":
         "body": json.dumps({
             "efj": open("/home/jon/data/logbook").read(),
             "action": "summary",
-            "config": ""
+            "daterange": ["2020-01-01", "2021-01-01"]
         })
     }
     print(lambda_handler(event, ""))
