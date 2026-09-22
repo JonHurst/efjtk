@@ -107,6 +107,7 @@ function get_full_date_range(efj) {
     if(dates.length == 0) {
         return null;
     }
+    dates.sort();
     let to_date = dates[dates.length - 1];
     to_date.setDate(to_date.getDate() + 1);
     return [dates[0].toISOString().slice(0, 10),
@@ -144,16 +145,15 @@ async function post(efj, action) {
                     cache: "no-cache"
                 });
                 ID("working").classList.add("hidden");
-                if(!response.ok) {
-                    show_error(`HTTP error: ${response.status}`);
+                if(response.ok) {
+                    resolve(response.json());
+                } else {
                     reject(Error(`HTTP error: ${response.status}`));
                 }
             } catch (error) {
                 ID("working").classList.add("hidden");
-                show_error("Network error");
                 reject(Error("Network error"));
             }
-            resolve(response.json());
         };
     });
 }
@@ -211,7 +211,7 @@ function main() {
         () => {push_history(ID("output").value); ID("output").value = "";});
     ID("back").addEventListener(
         "click",
-        () => {console.log(history); if(history.length) ID("output").value = history.pop();});
+        () => {if(history.length) ID("output").value = history.pop();});
     ID("save").addEventListener(
         "click",
         () => save_output_to_file());
