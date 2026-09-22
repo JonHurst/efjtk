@@ -58,8 +58,6 @@ class TextWithSyntaxHighlighting(tk.Text):
             self.tag_remove(tag, "1.0", "end")
         if self.highlight_mode == 'efj':
             self.highlight_efj()
-        elif self.highlight_mode == 'config':
-            self.highlight_config()
         self.highlight_timer = None
 
     def __highlight(self, re, tag):
@@ -77,11 +75,6 @@ class TextWithSyntaxHighlighting(tk.Text):
                        (r"\d{4}/\d{4}", "datetime"),
                        ("CP:|FO:|PU:|FA:", "keyword"),
                        (r"#.*", "grayed")):
-            self.__highlight(r, tag)
-
-    def highlight_config(self):
-        for r, tag in ((r"(spse|spme|mc)\s", "keyword"),
-                       (r"\[[\w.]+\]\n", "grayed")):
             self.__highlight(r, tag)
 
     def search_next(self, s):
