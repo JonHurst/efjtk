@@ -303,7 +303,8 @@ class MainWindow(tk.Tk):
             self.busy_forget()
             messagebox.showerror("Parse Error", str(e))
         finally:
-            self.busy_forget()
+            if self.busy_status():
+                self.busy_forget()
 
     def __undo(self):
         if self.txt.edit("canundo"):
