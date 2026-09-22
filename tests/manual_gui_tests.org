@@ -54,3 +54,45 @@
   - Cursor moves backwards to start of search text
 + Close
   - Search bar closes
+** Other
++ Add random text
++ Select All
+  - All text selected
++ Click in window
+  - Text deselected
++ Clear
+  - All text removed
++ Undo
+  - Text restored
++ Redo
+  - Text removed
+
+* Modify menu
++ Load expand_test_input
++ Expand
+  - Correct text expansion
++ Check Undo/Redo
++ Night
+  - Night hours and landing inserted for Keflavik
++ FO
+  - p1s and p2 correctly inserted
++ VFR
+  - Parse Error -- no Captain
++ Insert Captain, then VFR
+  - VFR flags added
++ Select last two sectors, then Instructor
+  - ins flags added to last two sectors only
+
+* Export menu
++ Load guitest.efj
++ Export Logbook, Cancel dialog
+  - Nothing done
++ Export Logbook, date range 23rd to 24th
+  - Logbook exported correctly as 2 sectors on 23rd
++ Export Cumulative, date range 23rd to 24th
+  - Cumulative exported correctly, accounting for all data
++ Export Summary, full date range
+  - Summary exported correctly
+
+* Help menu
++ Check help items open correct page in browser
