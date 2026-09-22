@@ -1,30 +1,8 @@
 import json
-import configparser as cp
 
-from efjtk.convert import build_logbook, UnknownAircraftType, build_summary
-from efjtk.config import build_config
+from efjtk.convert import build_logbook, build_summary
 from efj_parser import ValidationError
 import efjtk.modify
-
-
-def call_with_config_check(fn, in_, config):
-    out = ""
-    status = "failed"
-    ac_classes = {}
-    if config:
-        try:
-            parser = cp.ConfigParser()
-            parser.read_string(config)
-            ac_classes = parser["aircraft.classes"]
-        except (KeyError, cp.Error):
-            config = ""
-    try:
-        out = fn(in_, ac_classes)
-        status = "success"
-    except UnknownAircraftType:
-        out = build_config(in_, config)
-        status = "config"
-    return out, status
 
 
 _func_map = {
@@ -33,6 +11,8 @@ _func_map = {
     "vfr": efjtk.modify.add_vfr_flag,
     "fo": efjtk.modify.add_fo_role_flag,
     "ins": efjtk.modify.add_ins_flag,
+    "logbook": build_logbook,
+    "summary": build_summary,
 }
 
 
@@ -42,13 +22,7 @@ def lambda_handler(event, context):
     action = data["action"]
     status = "failed"
     try:
-        if action == "logbook":
-            out, status = call_with_config_check(
-                build_logbook, in_, data["config"])
-        elif action == "summary":
-            out, status = call_with_config_check(
-                build_summary, in_, data["config"])
-        elif action in _func_map:
+        if action in _func_map:
             out = _func_map[action](in_)
             status = "success"
         else:
