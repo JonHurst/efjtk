@@ -9,11 +9,8 @@ import json
 import webbrowser
 import datetime as dt
 import re
-import configparser as cp
-
 import efjtk.modify
 import efjtk.convert
-import efjtk.config
 import efjtk.version
 from efj_parser import ValidationError as VE
 
@@ -104,114 +101,6 @@ class TextWithSyntaxHighlighting(tk.Text):
             self.focus()
 
 
-class ConfigDialog(tk.Toplevel):
-
-    def __init__(self, parent):
-        tk.Toplevel.__init__(self)
-        self.parent = parent
-        self.callback = None
-        self.title("Config Editor")
-        self.transient(parent)
-        self.__make_widgets()
-
-    def __make_widgets(self):
-        buttons_frm = tk.Frame(self, padx="2m", pady="1m")
-        tk.Button(buttons_frm, text="Save", width="7", command=self.__save
-                  ).pack(side=tk.RIGHT)
-        tk.Button(buttons_frm, text="Cancel", width="7", command=self.destroy
-                  ).pack(side=tk.RIGHT, padx="1m")
-        tk.Button(buttons_frm, text="Help", width="7", command=self.__help
-                  ).pack(side=tk.LEFT)
-        buttons_frm.pack(side=tk.BOTTOM, fill=tk.X)
-
-        tk.Frame(self, height="2m").pack(side=tk.BOTTOM)  # Spacer
-
-        self.msg = TextWithSyntaxHighlighting(
-            self, "config", width=35, height=3)
-        self.msg.insert("1.0",
-                        "spse : single pilot single engine\n"
-                        "spme : single pilot multi engine\n"
-                        "mc   : multi crew")
-        self.msg.config(state="disabled", bg="#E0E0E0")
-        self.msg.pack(side=tk.BOTTOM, fill=tk.X)
-
-        tk.Frame(self, height="2m").pack(side=tk.BOTTOM)  # Spacer
-
-        text_frm = tk.Frame(self)
-        text_frm.columnconfigure(0, weight=1)
-        text_frm.rowconfigure(0, weight=1)
-        sbx = ttk.Scrollbar(text_frm, orient='horizontal')
-        sby = ttk.Scrollbar(text_frm, orient='vertical')
-        sbx.grid(row=1, column=0, sticky=tk.EW)
-        sby.grid(row=0, column=1, sticky=tk.NS)
-        self.txt = TextWithSyntaxHighlighting(
-            text_frm, "config", width=30,  height=20)
-        self.txt.grid(row=0, column=0, sticky=tk.NSEW)
-        sbx.config(command=self.txt.xview)
-        sby.config(command=self.txt.yview)
-        self.txt.config(xscrollcommand=sbx.set)
-        self.txt.config(yscrollcommand=sby.set)
-        self.txt.focus()
-        text_frm.pack(fill=tk.BOTH, expand=tk.YES)
-
-    def __save(self):
-        parser = cp.ConfigParser()
-        try:
-            parser.read_string(self.txt.get("1.0", tk.END))
-        except cp.Error as e:
-            messagebox.showerror(
-                "Bad INI format",
-                str(e),
-                parent=self)
-            return
-        if "aircraft.classes" not in parser.sections():
-            messagebox.showerror(
-                "Missing Section",
-                "[aircraft.classes] not found",
-                parent=self)
-            return
-        for key in parser["aircraft.classes"]:
-            if parser["aircraft.classes"][key] not in {"spse", "spme", "mc"}:
-                messagebox.showerror(
-                    "Bad aircraft class",
-                    f"{parser['aircraft.classes'][key]} is not a class\n"
-                    f"Must be one of spse, spme or mc",
-                    parent=self)
-                return
-        with open(CONFIG_FILE, "w") as f:
-            parser.write(f)
-        self.destroy()
-        if self.callback:
-            self.callback()
-
-    def __help(self):
-        webbrowser.open(HELP_URL)
-
-    def do_modal(self, text, callback=None):
-        self.callback = callback
-        self.withdraw()
-        try:
-            with open(CONFIG_FILE) as f:
-                config_str = f.read()
-        except OSError:
-            config_str = ""
-        try:
-            config_str = efjtk.config.build_config(text, config_str)
-            self.txt.insert("1.0", config_str)
-            self.txt.edit_reset()
-            self.update_idletasks()
-            c_x = self.parent.winfo_x() + self.parent.winfo_width() // 2
-            c_y = self.parent.winfo_y() + self.parent.winfo_height() // 2
-            self.geometry(f"+{c_x - self.winfo_reqwidth() // 2}"
-                          f"+{c_y - self.winfo_reqheight() // 2}")
-            self.deiconify()
-            self.focus_set()
-            self.grab_set()
-        except VE as e:
-            messagebox.showerror("Parse Error", str(e))
-            self.destroy()
-
-
 class MainWindow(tk.Tk):
 
     def __init__(self):
@@ -222,7 +111,6 @@ class MainWindow(tk.Tk):
                 self.settings = json.load(f)
         except Exception:
             self.settings = {}
-        self.ac = self.__load_aircraft_classes()
         self.filename = None
         self.menus = {}
         self.__make_menu()
@@ -245,14 +133,6 @@ class MainWindow(tk.Tk):
                     if not self.__save_as():
                         return  # don't quit if "save as" is cancelled
         self.quit()
-
-    def __load_aircraft_classes(self):
-        try:
-            with open(CONFIG_FILE) as fc:
-                config_str = fc.read()
-        except OSError:
-            config_str = ""
-        return efjtk.config.aircraft_classes(config_str)
 
     def __make_widgets(self):
         self.columnconfigure(0, weight=1)
@@ -287,8 +167,6 @@ class MainWindow(tk.Tk):
             ('Open', self.__open, "Ctrl+O", "<Control-Key-o>", 0),
             ('Save', self.__save, "Ctrl+S", "<Control-Key-s>", 0),
             ('Save As', self.__save_as, "Ctrl+A", "<Control-Key-a>", 5),
-            ("", None),
-            ('Update Config', self.__update_config),
             ("", None),
             ('Quit', self.destroy, "Ctrl+Q", "<Control-Key-q>", 0),
         ))
@@ -384,15 +262,6 @@ class MainWindow(tk.Tk):
                 self.txt.edit_modified(False)
                 return True
         return False
-
-    def __update_config(self, callback=None):
-
-        def update_ac_classes():
-            self.ac = self.__load_aircraft_classes()
-            if callback:
-                callback()
-        text = self.txt.get("1.0", tk.END)
-        ConfigDialog(self).do_modal(text, update_ac_classes)
 
     def __expand(self):
         self.__modify(efjtk.modify.expand_efj)
@@ -498,7 +367,7 @@ class MainWindow(tk.Tk):
 
         def callback(daterange):
             try:
-                result = fn(text, self.ac, daterange)
+                result = fn(text, daterange)
                 path = self.settings.get('exportPath')
                 if fname := filedialog.asksaveasfilename(
                         filetypes=(("HTML", "*.html"), ("All", "*")),
@@ -507,8 +376,6 @@ class MainWindow(tk.Tk):
                     self.settings['exportPath'] = os.path.dirname(fname)
                     with open(fname, "w", encoding="utf-8") as f:
                         f.write(result)
-            except efjtk.convert.UnknownAircraftType:
-                self.__update_config(lambda: callback(daterange))
             except VE as e:
                 messagebox.showerror("Parse Error", str(e))
         DateRangeDialog(self).show_modal(text, callback)
@@ -658,6 +525,7 @@ class GotoLineDialog(tk.Toplevel):
     def __init__(self, parent):
         tk.Toplevel.__init__(self)
         self.parent = parent
+        self.transient(parent)
         tk_validate = self.register(self.validate)
         self.tk_line = tk.StringVar(parent, "")
 
@@ -669,7 +537,7 @@ class GotoLineDialog(tk.Toplevel):
             f, width=20, justify="center", textvariable=self.tk_line,
             validate="key", validatecommand=(tk_validate, "%P"))
         self.entry.pack(side=tk.RIGHT)
-        self.entry.bind("<Return>", self.ok)
+        self.entry.bind("<Return>", lambda _: self.ok())
         self.entry.bind("<Escape>", lambda _: self.destroy())
         buttons = ttk.Frame(self)
         buttons.pack(fill=tk.X, padx=PADDING, pady=PADDING)
@@ -681,7 +549,7 @@ class GotoLineDialog(tk.Toplevel):
     def validate(self, s):
         return False if re.search(r"[^\d]", s) else True
 
-    def ok(self, _):
+    def ok(self):
         try:
             try:
                 line = int(self.tk_line.get())
