@@ -13,6 +13,19 @@
 + Select a file, then Save
   - efjgui closes
   - Selected file contains random text
+** Open without save protection
++ start efj, add random text, then Open
+  - dialog offers to save before changing file
++ Select Yes
+  - Save As dialog opens
++ Select Save
+  - Text saved to file
+  - Open dialog opens
++ Select Cancel
+  - All dialogs close, open not actioned
++ Add more random text, then Open, then Yes, then Open
+  - Text saved to file
+  - New file opened
 ** Save and Save As management
 + start efjgui, add random text, select "Save As" then Cancel
   - ejfgui does not close

@@ -226,6 +226,13 @@ class MainWindow(tk.Tk):
         top.add_cascade(label=label, menu=menu, underline=underline)
 
     def __open(self):
+        if self.txt.edit_modified():
+            if messagebox.askyesno("Save", "Save before opening new file?"):
+                if self.filename:
+                    self.__save()
+                else:
+                    if not self.__save_as():
+                        return  # don't open new file if "save as" is cancelled
         path = self.settings.get('openPath')
         fn = filedialog.askopenfilename(
             filetypes=(("Text", "*.txt"), ("Text", "*.efj"), ("All", "*")),
