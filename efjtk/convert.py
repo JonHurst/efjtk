@@ -1,4 +1,3 @@
-import configparser as cp
 import importlib.resources as res
 import datetime as dt
 
@@ -6,13 +5,6 @@ from typing import Optional
 from html import escape
 
 import efj_parser as ep
-
-
-class UnknownAircraftType(Exception):
-    """Aircraft type with no matching class encountered"""
-
-    def __init__(self, type_):
-        self.missing_type = type_
 
 
 DateRange = tuple[Optional[dt.date], Optional[dt.date]]
@@ -53,31 +45,18 @@ def _duration(minutes: int) -> str:
     return ""
 
 
-def _ac_class_tuple(
-        s: ep.Sector,
-        ac_classes: cp.SectionProxy
-) -> tuple[int, int, int]:
+def _ac_class_tuple(s: ep.Sector) -> tuple[int, int, int]:
     """Get minutes alloted to aircraft classes.
 
     :param s: The sector to process
 
-    :param ac_classes: Effectively a case-insensitive dict mapping aircraft
-        type to aircraft class (spse, spme or mc)
-
     :returns: A tuple of the form (SPSE, SPME, MC) where each cell is the
         minutes (as an integer) to allot to the associated class.
 
-    :raises UnknownAircraftType: Raised if the class associated with a type is
-        not available from the Sector object, nor from the ac_classes mapping.
-
     """
-    if s.aircraft.class_:  # will be "" if no class assigned by parser
+    aircraft_class = "mc"  # default class is multi-crew
+    if s.aircraft.class_:
         aircraft_class = s.aircraft.class_
-    else:
-        try:
-            aircraft_class = ac_classes[s.aircraft.type_]
-        except KeyError:
-            raise UnknownAircraftType(s.aircraft.type_)
     spse, spme, mc = (s.total if aircraft_class == X else 0
                       for X in ("spse", "spme", "mc"))
     return (spse, spme, mc)
@@ -98,27 +77,16 @@ def _row(cells: tuple[str, ...], class_: str = "") -> str:
     return f"<tr{c}>{inner}</tr>"
 
 
-def build_logbook(
-        efj: str,
-        ac_classes: cp.SectionProxy,
-        daterange: DateRange = (None, None)
-) -> str:
+def build_logbook(efj: str, daterange: DateRange = (None, None)) -> str:
     """Build a standalone HTML FCL.050 compliant logbook from an efj
 
     :param efj: The efj as a string
-
-    :param ac_classes: A configparser SectionProxy object, which behaves like a
-        case-insensitive dict with an aircraft type as key and one of "spse",
-        "spme", or "mc" as value.
 
     :param daterange: A tuple of two optional datetime.date objects specifying
         a half-open interval (right hand excluded) of dates to include in the
         output.
 
     :returns: A string containing a standalone HTML FCL.050 compliant logbook
-
-    :raises UnknownAircraftType: Raised if the class of an encountered aircraft
-        type can neither be determined from the sector nor from ac_classes.
 
     """
     _, sectors = ep.Parser().parse(efj)
@@ -128,7 +96,7 @@ def build_logbook(
             continue
         if daterange[1] and s.start.date() >= daterange[1]:
             break
-        ac_class_t = _ac_class_tuple(s, ac_classes)
+        ac_class_t = _ac_class_tuple(s)
         cells = (
             f"{s.start:%d/%m/%Y}",  # Date
             s.airports.origin,  # Departure Place
@@ -187,17 +155,10 @@ def summary_table1(sectors: list[ep.Sector]) -> list[str]:
     return rows
 
 
-def summary_table2(
-        sectors: list[ep.Sector],
-        ac_classes: cp.SectionProxy
-) -> list[str]:
+def summary_table2(sectors: list[ep.Sector]) -> list[str]:
     """Build the rows of the second summary table
 
     :param sectors: The list of sectors to process into a summary
-
-    :param ac_classes: A configparser SectionProxy object, which behaves like a
-        case-insensitive dict with an aircraft type as key and one of "spse",
-        "spme", or "mc" as value.
 
     :returns: A list of HTML table rows as strings
 
@@ -207,7 +168,7 @@ def summary_table2(
         if s.aircraft.type_ not in cells_for_type:
             cells_for_type[s.aircraft.type_] = [0] * 9
         sector_cells = (
-            *_ac_class_tuple(s, ac_classes),  # SPSE, SPME, MC
+            *_ac_class_tuple(s),  # SPSE, SPME, MC
             s.total - s.conditions.ifr,  # VFR
             s.conditions.ifr,  # IFR
             s.total - s.conditions.night,  # Day
@@ -233,18 +194,10 @@ def summary_table2(
     return rows
 
 
-def build_summary(
-        efj: str,
-        ac_classes: cp.SectionProxy,
-        daterange: DateRange = (None, None)
-) -> str:
+def build_summary(efj: str, daterange: DateRange = (None, None)) -> str:
     """Build an standalone HTML summary table
 
     :param in_: An EFJ format text file as a string
-
-    :param ac_classes: A configparser SectionProxy object, which behaves like a
-        case-insensitive dict with an aircraft type as key and one of "spse",
-        "spme", or "mc" as value.
 
     :param daterange: A tuple of the form (FROM, TO) where FROM and TO are
         datetime dates. Sectors commencing on a date on or after FROM but
@@ -262,31 +215,20 @@ def build_summary(
             sectors.append(s)
     return _get_template("summary-template.html").format(
         table1_body="\n".join(summary_table1(sectors)),
-        table2_body="\n".join(summary_table2(sectors, ac_classes))
+        table2_body="\n".join(summary_table2(sectors))
     )
 
 
-def build_cumulative(
-        efj: str,
-        ac_classes: cp.SectionProxy,
-        daterange: DateRange = (None, None)
-) -> str:
+def build_cumulative(efj: str, daterange: DateRange = (None, None)) -> str:
     """Build cumulative totals for an FCL.050 logbook as standalone HTML
 
     :param efj: The efj as a string
-
-    :param ac_classes: A configparser SectionProxy object, which behaves like a
-        case-insensitive dict with an aircraft type as key and one of "spse",
-        "spme", or "mc" as value.
 
     :param daterange: A tuple of two optional datetime.date objects specifying
         a half-open interval (right hand excluded) of dates to include in the
         output.
 
     :returns: A string containing a cumulative totals as standalone HTML
-
-    :raises UnknownAircraftType: Raised if the class of an encountered aircraft
-        type can neither be determined from the sector nor from ac_classes.
 
     """
     _, sectors = ep.Parser().parse(efj)
@@ -297,7 +239,7 @@ def build_cumulative(
         if daterange[1] and end.date() >= daterange[1]:
             break
         sector_cells = (
-            *_ac_class_tuple(s, ac_classes),  # SPSE, SPME, MC minutes
+            *_ac_class_tuple(s),  # SPSE, SPME, MC minutes
             s.total,  # Total minutes
             s.landings.day,  # Day landings
             s.landings.night,  # Night landings

@@ -2,15 +2,13 @@
 
 import sys
 import argparse
-from typing import Optional, Callable
-import os.path
+from typing import Callable
 import datetime as dt
 
 import efj_parser
 import efjtk.convert
 import efjtk.modify
 import efjtk.gec
-from efjtk.config import build_config, aircraft_classes
 from efjtk.version import VERSION
 
 
@@ -25,10 +23,7 @@ def _args():
     parser.add_argument('format',
                         choices=['expand', 'night', 'vfr', 'ins', 'fo',
                                  'logbook',  'summary', 'cumulative',
-                                 'config', 'version', 'gec'])
-    parser.add_argument(
-        '-c', '--config', default=None,
-        help="Use CONFIG for configuration rather than ~/.efjtkrc etc.")
+                                 'version', 'gec'])
     parser.add_argument(
         '-f', '--from', dest='from_', metavar="FROM", default=None,
         help="Restrict output to dates including and after FROM")
@@ -38,19 +33,6 @@ def _args():
     return parser.parse_args()
 
 
-def _config(filename: Optional[str]) -> str:
-    if filename and os.path.exists(filename):
-        with open(filename) as f:
-            return f.read()
-    else:
-        for filename in (os.path.expanduser("~/.efjtkrc"),
-                         os.path.expanduser("~/.config/efjtkrc")):
-            if os.path.exists(filename):
-                with open(filename) as f:
-                    return f.read()
-    return ""
-
-
 _func_map: dict[str, Callable[[str, tuple[dt.date, dt.date]], str]] = {
     "expand": efjtk.modify.expand_efj,
     "night": efjtk.modify.add_night_data,
@@ -58,6 +40,9 @@ _func_map: dict[str, Callable[[str, tuple[dt.date, dt.date]], str]] = {
     "fo": efjtk.modify.add_fo_role_flag,
     "ins": efjtk.modify.add_ins_flag,
     "gec": efjtk.gec.report,
+    "logbook": efjtk.convert.build_logbook,
+    "cumulative": efjtk.convert.build_cumulative,
+    "summary": efjtk.convert.build_summary,
 }
 
 
@@ -75,29 +60,14 @@ def main() -> int:
     date_range = (date_from, date_to)
     data = sys.stdin.read()
     try:
-        if args.format == "logbook":
-            ac_classes = aircraft_classes(_config(args.config))
-            print(efjtk.convert.build_logbook(data, ac_classes, date_range))
-        elif args.format == "cumulative":
-            ac_classes = aircraft_classes(_config(args.config))
-            print(efjtk.convert.build_cumulative(data, ac_classes, date_range))
-        elif args.format == "summary":
-            ac_classes = aircraft_classes(_config(args.config))
-            print(efjtk.convert.build_summary(data, ac_classes, date_range))
-        elif args.format == "config":
-            sys.stdout.write(
-                build_config(data, _config(args.config)))
-        elif args.format in _func_map:
+        if args.format in _func_map:
             print(_func_map[args.format](data, date_range))
+            return 0
         else:
             return -1
-        return 0
     except efj_parser.ValidationError as ve:
         print(str(ve), file=sys.stderr)
         return -1
-    except efjtk.convert.UnknownAircraftType as t:
-        print(f"No class for type: {t}", file=sys.stderr)
-        return -3
 
 
 if __name__ == "__main__":
