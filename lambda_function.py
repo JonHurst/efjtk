@@ -1,6 +1,6 @@
 import json
 
-from efjtk.convert import build_logbook, build_summary
+from efjtk.convert import build_logbook, build_summary, build_cumulative
 from efj_parser import ValidationError
 import efjtk.modify
 
@@ -13,6 +13,7 @@ _func_map = {
     "ins": efjtk.modify.add_ins_flag,
     "logbook": build_logbook,
     "summary": build_summary,
+    "cumulative": build_cumulative,
 }
 
 

@@ -34,6 +34,13 @@ which has also been adopted by the UK CAA, details the format required for
 personal flight records. The logbook tool converts an eFJ into a compliant,
 standalone, HTML file.
 
+Cumulative Totals
+^^^^^^^^^^^^^^^^^
+
+The cumulative totals tool provides the cumulative totals for every entry in an
+FCL.050 logbook as a standalone HTML file. This can be very useful if a paper
+logbook is being kept updated in parallel with the eFJ.
+
 Summary
 ^^^^^^^
 
