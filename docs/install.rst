@@ -26,6 +26,21 @@ search for "Python" and ensure the provider is the Python Software Foundation.
 
 Mac users should visit https://www.python.org to download an installer.
 
+GUI single file install
+^^^^^^^^^^^^^^^^^^^^^^^
+
+The graphical interface can be installed by downloading
+https://hursts.org.uk/shiv/efjgui.pyw and copying to a location of your
+choosing.
+
+With a suitable Python interpreter installed, Windows users can just double
+click on this to run it. Linux and Mac users need to set the executable
+permission on the file and can then run it as they would any other script.
+
+Uninstalling just requires deleting the file. You can also delete the cache
+directory, ``.shiv`` at any time — this is found in your home/user directory and
+is used to reduce startup time.
+
 Installation with pip
 ^^^^^^^^^^^^^^^^^^^^^
 
@@ -38,19 +53,3 @@ This installs two entry points, ``efj`` for command line use and ``efjgui`` to
 run the graphical interface. Note pip’s warning to adjust your PATH
 environmental variable if installing on Windows with the Microsoft Store version
 of the Python interpreter.
-
-Single file install
-^^^^^^^^^^^^^^^^^^^
-
-The graphical interface can be installed by downloading
-https://hursts.org.uk/shiv/efjgui.pyw and copying to a location of your
-choosing.
-
-Windows users can just double click on this to run it. Linux and Mac users need
-to set the executable permission on the file and can then run it as they would
-any other script.
-
-Uninstalling just requires deleting the file and deleting the files ``.efjtkrc``
-and ``.efjtkguirc`` from your home/user directory if they exist. You can also
-delete the cache directory, ``.shiv`` at any time — this is also found in your
-home/user directory and is used to reduce startup time.
