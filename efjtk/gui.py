@@ -100,6 +100,11 @@ class TextWithSyntaxHighlighting(tk.Text):
             self.see(self.index("insert"))
             self.focus()
 
+    def goto_line(self, line):
+        self.mark_set("insert", f"{line}.0")
+        self.see(self.index("insert"))
+        self.focus()
+
 
 class MainWindow(tk.Tk):
 
@@ -118,7 +123,7 @@ class MainWindow(tk.Tk):
         self.menus["edit"].entryconfigure("Undo", state="disabled")
         self.menus["edit"].entryconfigure("Redo", state="disabled")
         self.__make_widgets()
-        self.__update_status()
+        self.update_status()
         self.txt.bind("<<UndoStack>>", self.__manage_undo)
         self.txt.bind("<<Modified>>", self.__manage_modified)
 
@@ -136,23 +141,24 @@ class MainWindow(tk.Tk):
 
     def __make_widgets(self):
         self.columnconfigure(0, weight=1)
-        self.rowconfigure(1, weight=1)
+        self.rowconfigure(2, weight=1)
         sbx = ttk.Scrollbar(self, orient='horizontal')
         sby = ttk.Scrollbar(self, orient='vertical')
-        sbx.grid(row=2, column=0, sticky=tk.EW)
-        sby.grid(row=1, column=1, rowspan=2, sticky=tk.NS)
+        sbx.grid(row=3, column=0, sticky=tk.EW)
+        sby.grid(row=2, column=1, rowspan=2, sticky=tk.NS)
         self.txt = TextWithSyntaxHighlighting(
             self, "efj", autoseparators=False)
-        self.txt.bind('<KeyRelease>', self.__update_status, '+')
-        self.txt.bind('<ButtonRelease>', self.__update_status, '+')
-        self.txt.grid(row=1, column=0, sticky=tk.NSEW)
+        self.txt.bind('<KeyRelease>', self.update_status, '+')
+        self.txt.bind('<ButtonRelease>', self.update_status, '+')
+        self.txt.grid(row=2, column=0, sticky=tk.NSEW)
         sbx.config(command=self.txt.xview)
         sby.config(command=self.txt.yview)
         self.txt.config(xscrollcommand=sbx.set)
         self.txt.config(yscrollcommand=sby.set)
-        self.search = SearchBar(self, self.txt)
+        self.searchbar = SearchBar(self, self.txt)
+        self.gotobar = GotoBar(self, self.txt)
         statusbar = ttk.Frame(self)
-        statusbar.grid(row=3, column=0, columnspan=2, sticky=tk.EW)
+        statusbar.grid(row=4, column=0, columnspan=2, sticky=tk.EW)
         self.status = ttk.Label(statusbar, anchor="e",
                                 padding=(16, 0), text=" ")
         ttk.Sizegrip(statusbar).pack(side=tk.RIGHT, anchor=tk.SE)
@@ -181,7 +187,7 @@ class MainWindow(tk.Tk):
             ('Select All', self.__select_all, None, None, 7),
             ('Clear', self.__clear),
             ("", None),
-            ('Goto Line', self.__goto_line, "Ctrl+G", "<Control-Key-g>", 1),
+            ('Go to Line', self.__goto_line, "Ctrl+G", "<Control-Key-g>", 1),
             ('Search', self.__search),
         ))
         self.__make_menu_section(top, "Modify", (
@@ -248,7 +254,7 @@ class MainWindow(tk.Tk):
             self.txt.see(tk.END)
             self.txt.edit_modified(False)
             self.txt.edit_reset()
-            self.__update_status()
+            self.update_status()
 
     def __save(self):
         assert self.filename
@@ -394,36 +400,33 @@ class MainWindow(tk.Tk):
     def __efj_help(self):
         webbrowser.open(HELP_EFJ)
 
-    def __update_status(self, _=None):
+    def update_status(self, _=None):
         line, col = self.txt.index("insert").split(".")
         self.status.configure(text=f"Line {line}, Column {col}")
 
     def __goto_line(self):
-
-        def callback(line):
-            index = f"{line}.0"
-            self.txt.mark_set("insert", index)
-            self.txt.see(index)
-        last = int(self.txt.index("end-1 chars").split(".")[0])
-        GotoLineDialog(self).do_modal(last, callback)
+        self.gotobar.grid(row=0, column=0, columnspan=2, sticky=tk.EW)
+        self.gotobar.grab_focus()
 
     def __search(self):
-        self.search.grid(row=0, column=0, columnspan=2, sticky=tk.EW)
-        self.search.grab_focus()
+        self.searchbar.grid(row=1, column=0, columnspan=2, sticky=tk.EW)
+        self.searchbar.grab_focus()
 
 
 class SearchBar(ttk.Frame):
 
     def __init__(self, parent, target):
         ttk.Frame.__init__(self, parent, padding=2)
+        self.parent = parent
         self.search_term = tk.StringVar()
         self.target = target
         self.__make_widgets()
         self.entry.bind("<Return>", lambda _: self.__next())
+        self.entry.bind("<Escape>", lambda _: self.__remove())
 
     def __make_widgets(self):
-        ttk.Label(self, text="Search for:"
-                  ).grid(row=0, column=1)
+        ttk.Label(self, text="Search for:", width="10"
+                  ).grid(row=0, column=1, padx="5p")
         self.entry = ttk.Entry(self, textvariable=self.search_term)
         self.entry.grid(row=0, column=2, sticky=tk.EW, padx="10p")
         ttk.Button(self, text="Prev", command=self.__previous
@@ -439,12 +442,54 @@ class SearchBar(ttk.Frame):
 
     def __next(self):
         self.target.search_next(self.search_term.get())
+        self.parent.update_status()
 
     def __previous(self):
         self.target.search_prev(self.search_term.get())
+        self.parent.update_status()
 
     def grab_focus(self):
         self.entry.focus()
+
+
+class GotoBar(ttk.Frame):
+
+    def __init__(self, parent, target):
+        ttk.Frame.__init__(self, parent, padding=2)
+        self.parent = parent
+        self.line = tk.StringVar()
+        self.line.set("")
+        self.target = target
+        self.tk_validate = self.register(self.validate)
+        self.__make_widgets()
+        self.entry.bind("<Return>", lambda _: self.__go())
+        self.entry.bind("<Escape>", lambda _: self.__remove())
+
+    def __make_widgets(self):
+        ttk.Label(self, text="Go to line:", width="10"
+                  ).grid(row=0, column=1, padx="5p")
+        self.entry = ttk.Entry(
+            self, textvariable=self.line,
+            validate="key", validatecommand=(self.tk_validate, "%P"))
+        self.entry.grid(row=0, column=2, sticky=tk.EW, padx="10p")
+        ttk.Button(self, text="Go", command=self.__go
+                   ).grid(row=0, column=3, padx="2p")
+        ttk.Button(self, text="Close", command=self.__remove
+                   ).grid(row=0, column=5, padx=["10p", 0])
+        self.grid_columnconfigure(2, weight=1)
+
+    def __go(self):
+        self.target.goto_line(int(self.line.get()))
+        self.parent.update_status()
+
+    def __remove(self):
+        self.grid_remove()
+
+    def grab_focus(self):
+        self.entry.focus()
+
+    def validate(self, s):
+        return False if re.search(r"[^\d]", s) else True
 
 
 class DateRangeDialog(tk.Toplevel):
@@ -526,62 +571,6 @@ class DateRangeDialog(tk.Toplevel):
 
     def validate(self, s):
         return False if re.search(r"[^\d-]", s) else True
-
-
-class GotoLineDialog(tk.Toplevel):
-
-    def __init__(self, parent):
-        tk.Toplevel.__init__(self)
-        self.parent = parent
-        self.transient(parent)
-        tk_validate = self.register(self.validate)
-        self.tk_line = tk.StringVar(parent, "")
-
-        PADDING = 5
-        f = ttk.Frame(self)
-        f.pack(padx=PADDING, pady=PADDING)
-        ttk.Label(f, width=10, text="Go to line: ").pack(side=tk.LEFT)
-        self.entry = ttk.Entry(
-            f, width=20, justify="center", textvariable=self.tk_line,
-            validate="key", validatecommand=(tk_validate, "%P"))
-        self.entry.pack(side=tk.RIGHT)
-        self.entry.bind("<Return>", lambda _: self.ok())
-        self.entry.bind("<Escape>", lambda _: self.destroy())
-        buttons = ttk.Frame(self)
-        buttons.pack(fill=tk.X, padx=PADDING, pady=PADDING)
-        ttk.Button(buttons, width=10, text="OK", command=self.ok
-                   ).pack(side=tk.RIGHT, padx=PADDING)
-        ttk.Button(buttons, width=10, text="Cancel", command=self.destroy
-                   ).pack(side=tk.RIGHT, padx=PADDING)
-
-    def validate(self, s):
-        return False if re.search(r"[^\d]", s) else True
-
-    def ok(self):
-        try:
-            try:
-                line = int(self.tk_line.get())
-            except ValueError:
-                raise ValueError(f"{self.tk_line.get()} is not valid")
-            if line > self.maxvalue:
-                raise ValueError(f"Last line is {self.maxvalue}")
-            self.callback(line)
-            self.destroy()
-        except ValueError as e:
-            messagebox.showerror("Invalid Data", str(e))
-
-    def do_modal(self, maxvalue, callback):
-        self.callback = callback
-        self.maxvalue = maxvalue
-        self.withdraw()
-        self.update_idletasks()
-        c_x = self.parent.winfo_x() + self.parent.winfo_width() // 2
-        c_y = self.parent.winfo_y() + self.parent.winfo_height() // 2
-        self.geometry(f"+{c_x - self.winfo_reqwidth() // 2}"
-                      f"+{c_y - self.winfo_reqheight() // 2}")
-        self.deiconify()
-        self.grab_set()
-        self.entry.focus_set()
 
 
 def main():
