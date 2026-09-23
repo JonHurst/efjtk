@@ -583,21 +583,20 @@ class UI(NamedTuple):
 @dataclass
 class Model():
     filename: str = ""
-    paths = {"open": "", "save": "", "export": ""}
+    paths: dict[str, str] = {"open": "", "save": "", "export": ""}
+    highlight_timer: str | None = None
 
 
 UpdateFunc = Callable[[str], None]
 
 
 def update(model: Model, ui: UI, msg: str) -> None:
-    if msg == "initialise":
+    if msg in ["initialise", "key", "modified"]:
         draw(model, ui)
     elif msg in ["open", "save", "saveas", "quit"]:
         file_operation(model, ui, msg)
         if msg != "quit":
             draw(model, ui)
-    elif msg == "modified":
-        draw(model, ui)
 
 
 def draw(model: Model, ui: UI) -> None:
@@ -605,6 +604,30 @@ def draw(model: Model, ui: UI) -> None:
     if ui.text.edit_modified():
         modified = " *"
     ui.root.title(f"efjtk (v{efjtk.version.VERSION}){modified}")
+    highlight_syntax(ui.text, True)
+    if model.highlight_timer:
+        ui.root.after_cancel(model.highlight_timer)
+    model.highlight_timer = ui.root.after(
+        1000,
+        lambda: highlight_syntax(ui.text, False))
+
+
+def highlight_syntax(t: tk.Text, local) -> None:
+    region = ("1.0", tk.END)
+    if local:
+        region = (t.index("insert - 10 lines linestart"),
+                  t.index("insert + 10 lines lineend"))
+    for tag in ("keyword", "datetime", "grayed"):
+        t.tag_remove(tag, *region)
+    count = tk.IntVar()
+    for r, tag in ((r"(\d{4}-\d{2}-\d{2})|(\d{4}/\d{4})", "datetime"),
+                   (r"CP:|FO:|PU:|FA:", "keyword"),
+                   (r"#[\w ]+", "grayed")):
+        start_idx = region[0]
+        while (idx := t.search(r, start_idx, regexp=True,
+                               stopindex=region[1], count=count)):
+            start_idx = t.index(f"{idx} + {count.get()} chars")
+            t.tag_add(tag, idx, start_idx)
 
 
 def file_operation(model: Model, ui: UI, msg: str) -> None:
@@ -618,7 +641,7 @@ def file_operation(model: Model, ui: UI, msg: str) -> None:
         if msg == "saveas" or not model.filename:
             fn = filedialog.asksaveasfilename(
                 filetypes=(("All", "*"),),
-                initialdir="/home/jon/downloads")
+                initialdir="/home/jon/data")
             if not fn:  # dialog was cancelled
                 return
         model.filename = fn
@@ -628,7 +651,7 @@ def file_operation(model: Model, ui: UI, msg: str) -> None:
     if msg == "open":
         fn = filedialog.askopenfilename(
             filetypes=(("Text", "*.txt"), ("Text", "*.efj"), ("All", "*")),
-            initialdir="/home/jon/downloads")
+            initialdir="/home/jon/data")
         if not fn:  # dialog was cancelled
             return
         else:
@@ -638,6 +661,7 @@ def file_operation(model: Model, ui: UI, msg: str) -> None:
                 ui.text.insert("1.0", newtext)
                 ui.text.edit_modified(False)
                 ui.text.edit_reset()
+                ui.text.see("insert")
     if msg == "quit":
         ui.root.destroy()
 
@@ -660,6 +684,9 @@ def initialise_ui(root: tk.Tk) -> UI:
     sbx = ttk.Scrollbar(root, orient='horizontal')
     sby = ttk.Scrollbar(root, orient='vertical')
     text = tk.Text(root, background='white', font=font, wrap="none")
+    text.tag_configure("grayed", foreground="#707070")
+    text.tag_configure("keyword", foreground="green")
+    text.tag_configure("datetime", foreground="blue")
     sbx.config(command=text.xview)
     sby.config(command=text.yview)
     text.config(xscrollcommand=sbx.set)
@@ -739,6 +766,7 @@ def main():
     ui.text.focus()
     root.protocol("WM_DELETE_WINDOW", lambda: _update("quit"))
     ui.text.bind("<<Modified>>", lambda _: _update("modified"))
+    ui.text.bind("<KeyRelease>", lambda _: _update("key"))
     root.mainloop()
 
 
