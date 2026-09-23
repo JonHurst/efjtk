@@ -402,7 +402,8 @@ class MainWindow(tk.Tk):
         self.gotobar.grab_focus()
 
     def __search(self):
-        self.searchbar.grid(row=1, column=0, columnspan=2, sticky=tk.EW)
+        self.gotobar.remove()
+        self.searchbar.grid(row=0, column=0, columnspan=2, sticky=tk.EW)
         self.searchbar.grab_focus()
 
 
@@ -456,7 +457,7 @@ class GotoBar(ttk.Frame):
         self.tk_validate = self.register(self.validate)
         self.__make_widgets()
         self.entry.bind("<Return>", lambda _: self.__go())
-        self.entry.bind("<Escape>", lambda _: self.__remove())
+        self.entry.bind("<Escape>", lambda _: self.remove())
 
     def __make_widgets(self):
         ttk.Label(self, text="Go to line:", width="10"
@@ -467,15 +468,16 @@ class GotoBar(ttk.Frame):
         self.entry.grid(row=0, column=2, sticky=tk.EW, padx="10p")
         ttk.Button(self, text="Go", command=self.__go
                    ).grid(row=0, column=3, padx="2p")
-        ttk.Button(self, text="Close", command=self.__remove
+        ttk.Button(self, text="Cancel", command=self.remove
                    ).grid(row=0, column=5, padx=["10p", 0])
         self.grid_columnconfigure(2, weight=1)
 
     def __go(self):
         self.target.goto_line(int(self.line.get()))
         self.parent.update_status()
+        self.remove()
 
-    def __remove(self):
+    def remove(self):
         self.grid_remove()
 
     def grab_focus(self):
