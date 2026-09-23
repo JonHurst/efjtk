@@ -578,31 +578,43 @@ class UI(NamedTuple):
     text: tk.Text
     status: ttk.Label
     em: Callable[[int], int]
+    menus: dict["str", tk.Menu]
 
 
 @dataclass
 class Model():
-    filename: str = ""
-    paths: dict[str, str] = {"open": "", "save": "", "export": ""}
+    paths: dict[str, str]
     highlight_timer: str | None = None
+    filename: str = ""
 
 
 UpdateFunc = Callable[[str], None]
 
 
 def update(model: Model, ui: UI, msg: str) -> None:
-    if msg in ["initialise", "key", "modified"]:
-        draw(model, ui)
-    elif msg in ["open", "save", "saveas", "quit"]:
+    if msg in ["open", "save", "saveas", "quit"]:
         file_operation(model, ui, msg)
-        if msg != "quit":
-            draw(model, ui)
+    elif msg == "undo":
+        ui.text.edit_undo()
+    elif msg == "undo":
+        ui.text.edit_redo()
+    if msg != "quit":
+        draw(model, ui)
 
 
 def draw(model: Model, ui: UI) -> None:
-    modified = ""
     if ui.text.edit_modified():
         modified = " *"
+    else:
+        modified = ""
+    if ui.text.edit("canundo"):
+        ui.menus["edit"].entryconfigure("Undo", state="normal")
+    else:
+        ui.menus["edit"].entryconfigure("Undo", state="disabled")
+    if ui.text.edit("canredo"):
+        ui.menus["edit"].entryconfigure("Redo", state="normal")
+    else:
+        ui.menus["edit"].entryconfigure("Redo", state="disabled")
     ui.root.title(f"efjtk (v{efjtk.version.VERSION}){modified}")
     highlight_syntax(ui.text, True)
     if model.highlight_timer:
@@ -683,7 +695,7 @@ def initialise_ui(root: tk.Tk) -> UI:
 
     sbx = ttk.Scrollbar(root, orient='horizontal')
     sby = ttk.Scrollbar(root, orient='vertical')
-    text = tk.Text(root, background='white', font=font, wrap="none")
+    text = tk.Text(root, background='white', font=font, wrap="none", undo=True)
     text.tag_configure("grayed", foreground="#707070")
     text.tag_configure("keyword", foreground="green")
     text.tag_configure("datetime", foreground="blue")
@@ -701,11 +713,12 @@ def initialise_ui(root: tk.Tk) -> UI:
     sbx.grid(row=3, column=0, sticky=tk.EW)
     sby.grid(row=2, column=1, rowspan=2, sticky=tk.NS)
     statusbar.grid(row=4, column=0, columnspan=2, sticky=tk.EW)
-    return UI(root, text, status, em)
+
+    return UI(root, text, status, em, {})
 
 
 def initialise_menus(ui: UI, update: UpdateFunc) -> None:
-    top = tk.Menu(ui.root)
+    top = tk.Menu()
     ui.root.config(menu=top)
 
     file_menu = tk.Menu(top, tearoff=0)
@@ -719,6 +732,7 @@ def initialise_menus(ui: UI, update: UpdateFunc) -> None:
     file_menu.add_command(label="Quit", underline=0,
                           command=lambda: update("quit"))
     top.add_cascade(label="File", underline=0, menu=file_menu)
+    ui.menus["file"] = file_menu
 
     edit_menu = tk.Menu(top, tearoff=0)
     edit_menu.add_command(label="Undo", underline=0)
@@ -734,6 +748,7 @@ def initialise_menus(ui: UI, update: UpdateFunc) -> None:
     edit_menu.add_command(label="Goto", underline=0)
     edit_menu.add_command(label="Search", underline=0)
     top.add_cascade(label="Edit", underline=0, menu=edit_menu)
+    ui.menus["edit"] = edit_menu
 
     modify_menu = tk.Menu(top, tearoff=0)
     modify_menu.add_command(label="Expand", underline=0)
@@ -760,7 +775,7 @@ def main():
         ctypes.windll.shcore.SetProcessDpiAwareness(1)
     root = tk.Tk()
     ui = initialise_ui(root)
-    _update = partial(update, Model(), ui)
+    _update = partial(update, Model({}), ui)
     initialise_menus(ui, _update)
     _update("initialise")
     ui.text.focus()
