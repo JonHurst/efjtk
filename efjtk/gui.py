@@ -269,9 +269,9 @@ def main():
     ui.text.bind("<<Selection>>", lambda _: _update("selection"))
     ui.text.bind("<<HighlightSyntax>>", lambda _: highlight_syntax(ui.text))
     ui.text.bind("<KeyRelease>",
-                 lambda _:ui.status(ui.text.index("insert")))
+                 lambda _: ui.status(ui.text.index("insert")))
     ui.text.bind("<ButtonPress>",
-                 lambda _:ui.status(ui.text.index("insert")))
+                 lambda _: ui.status(ui.text.index("insert")))
 
     root.mainloop()
 
