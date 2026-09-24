@@ -2,7 +2,6 @@ import unittest
 import datetime as dt
 
 import efjtk.convert
-import efjtk.config
 
 
 class TestLogbook(unittest.TestCase):
