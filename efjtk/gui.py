@@ -35,7 +35,7 @@ class Menus(NamedTuple):
 class UI(NamedTuple):
     root: tk.Tk
     text: tk.Text
-    status: ttk.Label
+    status: Callable[[str], None]
     em: Callable[[int], int]
     menus: Menus
 
@@ -96,7 +96,7 @@ def draw(model: Model, ui: UI) -> None:
         state="normal" if ui.text.tag_ranges("sel") else "disabled")
     modified = " *" if model.dirty else ""
     ui.root.title(f"efjtk (v{efjtk.version.VERSION}){modified}")
-    ui.status.config(text=ui.text.index("insert"))
+    ui.status(ui.text.index("insert"))
 
 
 def highlight_syntax(t: tk.Text) -> None:
@@ -171,14 +171,15 @@ def initialise_ui(root: tk.Tk) -> UI:
     root.columnconfigure(0, weight=1)
     root.rowconfigure(2, weight=1)
 
-    sbx = ttk.Scrollbar(root, orient='horizontal')
-    sby = ttk.Scrollbar(root, orient='vertical')
     text = tk.Text(root, background='white', font=font, wrap="none",
                    undo=True, autoseparators=True, exportselection=True)
     text.mark_set("sh-end", "end")
     text.tag_configure("grayed", foreground="#707070")
     text.tag_configure("keyword", foreground="green")
     text.tag_configure("datetime", foreground="blue")
+
+    sbx = ttk.Scrollbar(root, orient='horizontal')
+    sby = ttk.Scrollbar(root, orient='vertical')
     sbx.config(command=text.xview)
     sby.config(command=text.yview)
     text.config(xscrollcommand=sbx.set)
@@ -188,6 +189,10 @@ def initialise_ui(root: tk.Tk) -> UI:
     status = ttk.Label(statusbar, anchor="e", padding=(em(2), 0), text=" ")
     ttk.Sizegrip(statusbar).pack(side=tk.RIGHT, anchor=tk.SE)
     status.pack(fill=tk.X)
+
+    def status_func(index: str) -> None:
+        row, col = index.split(".")
+        status.config(text=f"Row: {row} Column: {col}")
 
     top = tk.Menu()
     menus = Menus(*(tk.Menu(top, tearoff=0) for _ in range(5)))
@@ -203,12 +208,13 @@ def initialise_ui(root: tk.Tk) -> UI:
     sby.grid(row=2, column=1, rowspan=2, sticky=tk.NS)
     statusbar.grid(row=4, column=0, columnspan=2, sticky=tk.EW)
 
-    return UI(root, text, status, em, menus)
+    return UI(root, text, status_func, em, menus)
 
 
 def initialise_menus(ui: UI, update: UpdateFunc) -> None:
-    ui.menus.file_.add_command(label="Open", underline=0,
-                               command=lambda: update("open"))
+    ui.menus.file_.add_command(label="Open", accelerator="Ctrl-O",
+                               underline=0, command=lambda: update("open"))
+    ui.root.bind("<Control-Key-o>", lambda _: update("open"))
     ui.menus.file_.add_command(label="Save", underline=0,
                                command=lambda: update("save"))
     ui.menus.file_.add_command(label="Save As", underline=5,
@@ -262,6 +268,11 @@ def main():
     ui.text.bind("<<Modified>>", lambda _: _update("modified"))
     ui.text.bind("<<Selection>>", lambda _: _update("selection"))
     ui.text.bind("<<HighlightSyntax>>", lambda _: highlight_syntax(ui.text))
+    ui.text.bind("<KeyRelease>",
+                 lambda _:ui.status(ui.text.index("insert")))
+    ui.text.bind("<ButtonPress>",
+                 lambda _:ui.status(ui.text.index("insert")))
+
     root.mainloop()
 
 
