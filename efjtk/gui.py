@@ -71,10 +71,14 @@ def update(model: Model, ui: UI, msg: str) -> None:
             model.dirty = True
     elif msg == "selection":
         pass
+    elif msg == "clear":
+        ui.text.delete("1.0", tk.END)
+    elif msg == "selectall":
+        ui.text.tag_add("sel", "1.0", tk.END)
     if msg in {"open", "initialise"}:
         ui.text.mark_set("sh-end", "end")
         ui.text.event_generate("<<HighlightSyntax>>", when="tail")
-    if msg not in {"quit"}:
+    if msg not in {"quit", "clear", "selectall"}:
         draw(model, ui)
 
 
@@ -235,8 +239,10 @@ def initialise_menus(ui: UI, update: UpdateFunc) -> None:
     ui.menus.edit.add_command(label="Paste", underline=0,
                               command=lambda: update("paste"))
     ui.menus.edit.add_separator()
-    ui.menus.edit.add_command(label="Select All", underline=7)
-    ui.menus.edit.add_command(label="Clear", underline=0)
+    ui.menus.edit.add_command(label="Select All", underline=7,
+                              command=lambda: update("selectall"))
+    ui.menus.edit.add_command(label="Clear", underline=0,
+                              command=lambda: update("clear"))
     ui.menus.edit.add_separator()
     ui.menus.edit.add_command(label="Goto", underline=0)
     ui.menus.edit.add_command(label="Search", underline=0)
