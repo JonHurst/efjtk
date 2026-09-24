@@ -9,10 +9,10 @@ import ctypes
 # import webbrowser
 # import datetime as dt
 # import re
-# import efjtk.modify
+import efjtk.modify
 # import efjtk.convert
 import efjtk.version
-# from efj_parser import ValidationError as VE
+from efj_parser import ValidationError as VE
 from functools import partial
 from dataclasses import dataclass
 from typing import NamedTuple
@@ -54,6 +54,8 @@ UpdateFunc = Callable[[str], None]
 def update(model: Model, ui: UI, msg: str) -> None:
     if msg in {"open", "save", "saveas", "quit"}:
         file_operation(model, ui, msg)
+    elif msg.startswith("modify_"):
+        modify(model, ui, msg)
     elif msg in {"cut", "copy", "paste"}:
         ui.text.event_generate({
             "cut": "<<Cut>>",
@@ -143,7 +145,7 @@ def file_operation(model: Model, ui: UI, msg: str) -> None:
     if msg == "open":
         fn = filedialog.askopenfilename(
             filetypes=(("Text", "*.txt"), ("Text", "*.efj"), ("All", "*")),
-            initialdir="/home/jon/data")
+            initialdir="/home/jon/proj/efj/toolkit/tests")
         if not fn:  # dialog was cancelled
             return
         else:
@@ -153,11 +155,46 @@ def file_operation(model: Model, ui: UI, msg: str) -> None:
                 ui.text.insert("1.0", newtext)
                 ui.text.edit_reset()
                 ui.text.see("insert")
+                ui.text.edit_reset()
                 ui.text.edit_modified(False)
                 model.dirty = False
                 model.filename = fn
     if msg == "quit":
         ui.root.destroy()
+
+
+def modify(model: Model, ui: UI, msg: str) -> None:
+    fn = {"modify_expand": efjtk.modify.expand_efj,
+          "modify_night": efjtk.modify.add_night_data,
+          "modify_fo": efjtk.modify.add_fo_role_flag,
+          "modify_vfr": efjtk.modify.add_vfr_flag,
+          "modify_ins": efjtk.modify.add_ins_flag}
+    ui.root.busy(cursor="watch")
+    ui.root.update()
+    text = ui.text.get('1.0', 'end')
+    try:
+        result = fn[msg](text)
+        range_ = ui.text.tag_ranges("sel")
+        ui.text.edit_separator()
+        if range_:
+            start = f"{ui.text.index(range_[0])} linestart"
+            end = f"{ui.text.index(range_[1])} lineend"
+            start_line = int(ui.text.index(start).split(".")[0])
+            end_line = int(ui.text.index(end).split(".")[0])
+            result_lines = result.splitlines()
+            result = "\n".join(result_lines[start_line - 1:end_line])
+            ui.text.delete(start, end)
+            ui.text.insert(start, result)
+        else:
+            ui.text.delete('1.0', tk.END)
+            ui.text.insert('1.0', result)
+            ui.text.see(tk.END)
+    except VE as e:
+        ui.root.busy_forget()
+        messagebox.showerror("Parse Error", str(e))
+    finally:
+        if ui.root.busy_status():
+            ui.root.busy_forget()
 
 
 def initialise_ui(root: tk.Tk) -> UI:
@@ -176,7 +213,7 @@ def initialise_ui(root: tk.Tk) -> UI:
     root.rowconfigure(2, weight=1)
 
     text = tk.Text(root, background='white', font=font, wrap="none",
-                   undo=True, autoseparators=True, exportselection=True)
+                   undo=True, autoseparators=False, exportselection=True)
     text.mark_set("sh-end", "end")
     text.tag_configure("grayed", foreground="#707070")
     text.tag_configure("keyword", foreground="green")
@@ -247,11 +284,16 @@ def initialise_menus(ui: UI, update: UpdateFunc) -> None:
     ui.menus.edit.add_command(label="Goto", underline=0)
     ui.menus.edit.add_command(label="Search", underline=0)
 
-    ui.menus.modify.add_command(label="Expand", underline=0)
-    ui.menus.modify.add_command(label="Night", underline=0)
-    ui.menus.modify.add_command(label="First Officer", underline=0)
-    ui.menus.modify.add_command(label="VFR", underline=0)
-    ui.menus.modify.add_command(label="Instructor", underline=0)
+    ui.menus.modify.add_command(label="Expand", underline=0,
+                                command=lambda: update("modify_expand"))
+    ui.menus.modify.add_command(label="Night", underline=0,
+                                command=lambda: update("modify_night"))
+    ui.menus.modify.add_command(label="First Officer", underline=0,
+                                command=lambda: update("modify_fo"))
+    ui.menus.modify.add_command(label="VFR", underline=0,
+                                command=lambda: update("modify_vfr"))
+    ui.menus.modify.add_command(label="Instructor", underline=0,
+                                command=lambda: update("modify_ins"))
 
     ui.menus.export.add_command(label="FCL.050 Logbook", underline=0)
     ui.menus.export.add_command(label="Cumulative Totals", underline=0)
@@ -269,16 +311,16 @@ def main():
     _update = partial(update, Model({}), ui)
     initialise_menus(ui, _update)
     _update("initialise")
-    ui.text.focus()
+    # bindings
     root.protocol("WM_DELETE_WINDOW", lambda: _update("quit"))
     ui.text.bind("<<Modified>>", lambda _: _update("modified"))
     ui.text.bind("<<Selection>>", lambda _: _update("selection"))
     ui.text.bind("<<HighlightSyntax>>", lambda _: highlight_syntax(ui.text))
-    ui.text.bind("<KeyRelease>",
-                 lambda _: ui.status(ui.text.index("insert")))
-    ui.text.bind("<ButtonPress>",
-                 lambda _: ui.status(ui.text.index("insert")))
+    ui.text.bind("<KeyRelease>", lambda _: ui.status(ui.text.index("insert")))
+    ui.text.bind("<ButtonPress>", lambda _: ui.status(ui.text.index("insert")))
+    ui.text.bind("<Return>", lambda _: ui.text.edit_separator())
 
+    ui.text.focus()
     root.mainloop()
 
 
