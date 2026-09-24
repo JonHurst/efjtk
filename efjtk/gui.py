@@ -5,7 +5,7 @@ from tkinter import messagebox
 from tkinter import filedialog
 import os.path
 import ctypes
-# import json
+import json
 import webbrowser
 # import datetime as dt
 # import re
@@ -42,8 +42,7 @@ class UI(NamedTuple):
 
 @dataclass
 class Model():
-    paths: dict[str, str]
-    highlight_timer: str | None = None
+    settings: dict[str, str]
     filename: str = ""
     dirty: bool = False
 
@@ -137,22 +136,24 @@ def file_operation(model: Model, ui: UI, msg: str) -> None:
         if msg == "saveas" or not model.filename:
             fn = filedialog.asksaveasfilename(
                 filetypes=(("All", "*"),),
-                initialdir="/home/jon/data")
+                initialdir=model.settings.get("savePath"))
             if not fn:  # dialog was cancelled
                 return
             model.filename = fn
+            model.settings['savePath'] = os.path.dirname(fn)
         with open(model.filename, "w", encoding="utf-8") as f:
             f.write(ui.text.get("1.0", tk.END))
             model.dirty = False
     if msg == "open":
         fn = filedialog.askopenfilename(
             filetypes=(("Text", "*.txt"), ("Text", "*.efj"), ("All", "*")),
-            initialdir="/home/jon/proj/efj/toolkit/tests")
+            initialdir=model.settings.get("openPath"))
         if not fn:  # dialog was cancelled
             return
         else:
             with open(fn) as f:
                 newtext = f.read().strip()
+                model.settings['openPath'] = os.path.dirname(fn)
                 ui.text.delete("1.0", tk.END)
                 ui.text.insert("1.0", newtext)
                 ui.text.edit_reset()
@@ -162,6 +163,8 @@ def file_operation(model: Model, ui: UI, msg: str) -> None:
                 model.dirty = False
                 model.filename = fn
     if msg == "quit":
+        with open(SETTINGS_FILE, "w") as f:
+            json.dump(model.settings, f, indent=4)
         ui.root.destroy()
 
 
@@ -206,13 +209,13 @@ def export(model: Model, ui: UI, msg: str) -> None:
           "export_summary": efjtk.convert.build_summary}
     try:
         result = fn[msg](text)
-        path = "/home/jon/downloads"
         if fname := filedialog.asksaveasfilename(
                 filetypes=(("HTML", "*.html"), ("All", "*")),
                 defaultextension=".html",
-                initialdir=path):
+                initialdir=model.settings.get("exportPath")):
             with open(fname, "w", encoding="utf-8") as f:
                 f.write(result)
+            model.settings["exportPath"] = os.path.dirname(fname)
     except VE as e:
         messagebox.showerror("Parse Error", str(e))
 
@@ -329,9 +332,14 @@ def initialise_menus(ui: UI, update: UpdateFunc) -> None:
 def main():
     if "windll" in dir(ctypes):
         ctypes.windll.shcore.SetProcessDpiAwareness(1)
+    try:
+        with open(SETTINGS_FILE) as f:
+            settings = json.load(f)
+    except Exception:
+        settings = {}
     root = tk.Tk()
     ui = initialise_ui(root)
-    _update = partial(update, Model({}), ui)
+    _update = partial(update, Model(settings), ui)
     initialise_menus(ui, _update)
     _update("initialise")
     # bindings
