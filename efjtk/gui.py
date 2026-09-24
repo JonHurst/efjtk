@@ -193,6 +193,7 @@ def modify(model: Model, ui: UI, msg: str) -> None:
     ui.root.update()
     text = ui.text.get('1.0', 'end')
     try:
+        insert = ui.text.index("insert")
         result = fn[msg](text)
         range_ = ui.text.tag_ranges("sel")
         ui.text.edit_separator()
@@ -208,7 +209,8 @@ def modify(model: Model, ui: UI, msg: str) -> None:
         else:
             ui.text.delete('1.0', tk.END)
             ui.text.insert('1.0', result)
-            ui.text.see(tk.END)
+        ui.text.mark_set("insert", insert)
+        ui.text.see("insert")
     except VE as e:
         ui.root.busy_forget()
         messagebox.showerror("Parse Error", str(e))
