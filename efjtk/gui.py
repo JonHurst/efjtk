@@ -281,20 +281,21 @@ def initialise_menus(ui: UI, update: UpdateFunc) -> None:
     ui.menus.file_.add_command(label="Save As", underline=5,
                                command=lambda: update("saveas"))
     ui.menus.file_.add_separator()
-    ui.menus.file_.add_command(label="Quit", underline=0,
-                               command=lambda: update("quit"))
+    ui.menus.file_.add_command(label="Quit", accelerator="Ctrl-Q",
+                               underline=0, command=lambda: update("quit"))
+    ui.root.bind("<Control-Key-q>", lambda _: update("quit"))
 
-    ui.menus.edit.add_command(label="Undo", underline=0,
-                              command=lambda: update("undo"))
+    ui.menus.edit.add_command(label="Undo", accelerator="Ctrl-Z",
+                              underline=0, command=lambda: update("undo"))
     ui.menus.edit.add_command(label="Redo", underline=0,
                               command=lambda: update("redo"))
     ui.menus.edit.add_separator()
-    ui.menus.edit.add_command(label="Cut", underline=1,
-                              command=lambda: update("cut"))
-    ui.menus.edit.add_command(label="Copy", underline=1,
-                              command=lambda: update("copy"))
-    ui.menus.edit.add_command(label="Paste", underline=0,
-                              command=lambda: update("paste"))
+    ui.menus.edit.add_command(label="Cut", accelerator="Ctrl-X",
+                              underline=1, command=lambda: update("cut"))
+    ui.menus.edit.add_command(label="Copy", accelerator="Ctrl-C",
+                              underline=1, command=lambda: update("copy"))
+    ui.menus.edit.add_command(label="Paste", accelerator="Ctrl-V",
+                              underline=0, command=lambda: update("paste"))
     ui.menus.edit.add_separator()
     ui.menus.edit.add_command(label="Select All", underline=7,
                               command=lambda: update("selectall"))
