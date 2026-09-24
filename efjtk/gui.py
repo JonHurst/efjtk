@@ -121,9 +121,8 @@ def draw(model: Model, ui: UI) -> None:
 
 
 def highlight_syntax(t: tk.Text) -> None:
-    if (end := t.index("sh-end")) == "1.0":
-        return
-    start = f"{end} - 25 lines"
+    end = t.index("sh-end")
+    start = f"{end} - 40 lines"
     for tag in ("keyword", "datetime", "grayed"):
         t.tag_remove(tag, start, end)
     count = tk.IntVar()
@@ -136,7 +135,9 @@ def highlight_syntax(t: tk.Text) -> None:
             start_idx = t.index(f"{idx} + {count.get()} chars")
             t.tag_add(tag, idx, start_idx)
     t.mark_set("sh-end", start)
-    t.after(15, lambda: t.event_generate("<<HighlightSyntax>>", when="tail"))
+    if start != "1.0":
+        t.after(20, lambda: t.event_generate("<<HighlightSyntax>>",
+                                             when="tail"))
 
 
 def file_operation(model: Model, ui: UI, msg: str) -> None:
