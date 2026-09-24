@@ -54,6 +54,11 @@ UpdateFunc = Callable[[str], None]
 def update(model: Model, ui: UI, msg: str) -> None:
     if msg in {"open", "save", "saveas", "quit"}:
         file_operation(model, ui, msg)
+    elif msg in {"cut", "copy", "paste"}:
+        ui.text.event_generate({
+            "cut": "<<Cut>>",
+            "copy": "<<Copy>>",
+            "paste": "<<Paste>>"}[msg])
     elif msg == "undo":
         ui.text.edit_undo()
     elif msg == "redo":
@@ -64,6 +69,8 @@ def update(model: Model, ui: UI, msg: str) -> None:
             ui.text.mark_set("sh-end", "end")
             ui.text.event_generate("<<HighlightSyntax>>", when="tail")
             model.dirty = True
+    elif msg == "selection":
+        pass
     if msg in {"open", "initialise"}:
         ui.text.mark_set("sh-end", "end")
         ui.text.event_generate("<<HighlightSyntax>>", when="tail")
@@ -81,8 +88,15 @@ def draw(model: Model, ui: UI) -> None:
     ui.menus.edit.entryconfigure(
         "Redo",
         state="normal" if ui.text.edit("canredo") else "disabled")
+    ui.menus.edit.entryconfigure(
+        "Cut",
+        state="normal" if ui.text.tag_ranges("sel") else "disabled")
+    ui.menus.edit.entryconfigure(
+        "Copy",
+        state="normal" if ui.text.tag_ranges("sel") else "disabled")
     modified = " *" if model.dirty else ""
     ui.root.title(f"efjtk (v{efjtk.version.VERSION}){modified}")
+    ui.status.config(text=ui.text.index("insert"))
 
 
 def highlight_syntax(t: tk.Text) -> None:
@@ -160,7 +174,7 @@ def initialise_ui(root: tk.Tk) -> UI:
     sbx = ttk.Scrollbar(root, orient='horizontal')
     sby = ttk.Scrollbar(root, orient='vertical')
     text = tk.Text(root, background='white', font=font, wrap="none",
-                   undo=True, autoseparators=True)
+                   undo=True, autoseparators=True, exportselection=True)
     text.mark_set("sh-end", "end")
     text.tag_configure("grayed", foreground="#707070")
     text.tag_configure("keyword", foreground="green")
@@ -208,9 +222,12 @@ def initialise_menus(ui: UI, update: UpdateFunc) -> None:
     ui.menus.edit.add_command(label="Redo", underline=0,
                               command=lambda: update("redo"))
     ui.menus.edit.add_separator()
-    ui.menus.edit.add_command(label="Cut", underline=1)
-    ui.menus.edit.add_command(label="Copy", underline=1)
-    ui.menus.edit.add_command(label="Paste", underline=0)
+    ui.menus.edit.add_command(label="Cut", underline=1,
+                              command=lambda: update("cut"))
+    ui.menus.edit.add_command(label="Copy", underline=1,
+                              command=lambda: update("copy"))
+    ui.menus.edit.add_command(label="Paste", underline=0,
+                              command=lambda: update("paste"))
     ui.menus.edit.add_separator()
     ui.menus.edit.add_command(label="Select All", underline=7)
     ui.menus.edit.add_command(label="Clear", underline=0)
@@ -243,6 +260,7 @@ def main():
     ui.text.focus()
     root.protocol("WM_DELETE_WINDOW", lambda: _update("quit"))
     ui.text.bind("<<Modified>>", lambda _: _update("modified"))
+    ui.text.bind("<<Selection>>", lambda _: _update("selection"))
     ui.text.bind("<<HighlightSyntax>>", lambda _: highlight_syntax(ui.text))
     root.mainloop()
 
