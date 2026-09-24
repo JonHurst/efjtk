@@ -58,10 +58,6 @@ def update(model: Model, ui: UI, msg: str) -> None:
         modify(model, ui, msg)
     elif msg.startswith("export_"):
         export(model, ui, msg)
-    elif msg.startswith("help_"):
-        webbrowser.open(
-            {"help_online": HELP_URL,
-             "help_format": HELP_EFJ}[msg])
     elif msg in {"cut", "copy", "paste"}:
         ui.text.event_generate({
             "cut": "<<Cut>>",
@@ -86,8 +82,7 @@ def update(model: Model, ui: UI, msg: str) -> None:
         ui.text.event_generate("<<HighlightSyntax>>", when="tail")
 
     if msg not in {"quit", "clear", "selectall", "export_logbook",
-                   "export_summary", "export_cumulative",
-                   "help_online", "help_format"}:
+                   "export_summary", "export_cumulative"}:
         draw(model, ui)
 
 
@@ -325,9 +320,9 @@ def initialise_menus(ui: UI, update: UpdateFunc) -> None:
                                 command=lambda: update("export_summary"))
 
     ui.menus.help_.add_command(label="Online Help", underline=0,
-                               command=lambda: update("help_online"))
+                               command=lambda: webbrowser.open(HELP_URL))
     ui.menus.help_.add_command(label="eFJ Format", underline=0,
-                               command=lambda: update("help_format"))
+                               command=lambda: webbrowser.open(HELP_EFJ))
 
 
 def main():
