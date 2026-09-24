@@ -24,12 +24,20 @@ HELP_URL = "https://hursts.org.uk/efjtkdocs/gui.html"
 HELP_EFJ = "https://hursts.org.uk/efjdocs/format.html"
 
 
+class Menus(NamedTuple):
+    file_: tk.Menu
+    edit: tk.Menu
+    modify: tk.Menu
+    export: tk.Menu
+    help_: tk.Menu
+
+
 class UI(NamedTuple):
     root: tk.Tk
     text: tk.Text
     status: ttk.Label
     em: Callable[[int], int]
-    menus: dict["str", tk.Menu]
+    menus: Menus
 
 
 @dataclass
@@ -64,13 +72,13 @@ def update(model: Model, ui: UI, msg: str) -> None:
 
 
 def draw(model: Model, ui: UI) -> None:
-    ui.menus["file"].entryconfigure(
+    ui.menus.file_.entryconfigure(
         "Save",
         state="normal" if model.dirty and model.filename else "disabled")
-    ui.menus["edit"].entryconfigure(
+    ui.menus.edit.entryconfigure(
         "Undo",
         state="normal" if ui.text.edit("canundo") else "disabled")
-    ui.menus["edit"].entryconfigure(
+    ui.menus.edit.entryconfigure(
         "Redo",
         state="normal" if ui.text.edit("canredo") else "disabled")
     modified = " *" if model.dirty else ""
@@ -167,67 +175,61 @@ def initialise_ui(root: tk.Tk) -> UI:
     ttk.Sizegrip(statusbar).pack(side=tk.RIGHT, anchor=tk.SE)
     status.pack(fill=tk.X)
 
+    top = tk.Menu()
+    menus = Menus(*(tk.Menu(top, tearoff=0) for _ in range(5)))
+    top.add_cascade(label="File", underline=0, menu=menus.file_)
+    top.add_cascade(label="Edit", underline=0, menu=menus.edit)
+    top.add_cascade(label="Modify", underline=0, menu=menus.modify)
+    top.add_cascade(label="Export", underline=0, menu=menus.export)
+    top.add_cascade(label="Help", underline=0, menu=menus.help_)
+    root.config(menu=top)
+
     text.grid(row=2, column=0, stick=tk.NSEW)
     sbx.grid(row=3, column=0, sticky=tk.EW)
     sby.grid(row=2, column=1, rowspan=2, sticky=tk.NS)
     statusbar.grid(row=4, column=0, columnspan=2, sticky=tk.EW)
 
-    return UI(root, text, status, em, {})
+    return UI(root, text, status, em, menus)
 
 
 def initialise_menus(ui: UI, update: UpdateFunc) -> None:
-    top = tk.Menu()
-    ui.root.config(menu=top)
+    ui.menus.file_.add_command(label="Open", underline=0,
+                               command=lambda: update("open"))
+    ui.menus.file_.add_command(label="Save", underline=0,
+                               command=lambda: update("save"))
+    ui.menus.file_.add_command(label="Save As", underline=5,
+                               command=lambda: update("saveas"))
+    ui.menus.file_.add_separator()
+    ui.menus.file_.add_command(label="Quit", underline=0,
+                               command=lambda: update("quit"))
 
-    file_menu = tk.Menu(top, tearoff=0)
-    file_menu.add_command(label="Open", underline=0,
-                          command=lambda: update("open"))
-    file_menu.add_command(label="Save", underline=0,
-                          command=lambda: update("save"))
-    file_menu.add_command(label="Save As", underline=5,
-                          command=lambda: update("saveas"))
-    file_menu.add_separator()
-    file_menu.add_command(label="Quit", underline=0,
-                          command=lambda: update("quit"))
-    top.add_cascade(label="File", underline=0, menu=file_menu)
-    ui.menus["file"] = file_menu
+    ui.menus.edit.add_command(label="Undo", underline=0,
+                              command=lambda: update("undo"))
+    ui.menus.edit.add_command(label="Redo", underline=0,
+                              command=lambda: update("redo"))
+    ui.menus.edit.add_separator()
+    ui.menus.edit.add_command(label="Cut", underline=1)
+    ui.menus.edit.add_command(label="Copy", underline=1)
+    ui.menus.edit.add_command(label="Paste", underline=0)
+    ui.menus.edit.add_separator()
+    ui.menus.edit.add_command(label="Select All", underline=7)
+    ui.menus.edit.add_command(label="Clear", underline=0)
+    ui.menus.edit.add_separator()
+    ui.menus.edit.add_command(label="Goto", underline=0)
+    ui.menus.edit.add_command(label="Search", underline=0)
 
-    edit_menu = tk.Menu(top, tearoff=0)
-    edit_menu.add_command(label="Undo", underline=0,
-                          command=lambda: update("undo"))
-    edit_menu.add_command(label="Redo", underline=0,
-                          command=lambda: update("redo"))
-    edit_menu.add_separator()
-    edit_menu.add_command(label="Cut", underline=1)
-    edit_menu.add_command(label="Copy", underline=1)
-    edit_menu.add_command(label="Paste", underline=0)
-    edit_menu.add_separator()
-    edit_menu.add_command(label="Select All", underline=7)
-    edit_menu.add_command(label="Clear", underline=0)
-    edit_menu.add_separator()
-    edit_menu.add_command(label="Goto", underline=0)
-    edit_menu.add_command(label="Search", underline=0)
-    top.add_cascade(label="Edit", underline=0, menu=edit_menu)
-    ui.menus["edit"] = edit_menu
+    ui.menus.modify.add_command(label="Expand", underline=0)
+    ui.menus.modify.add_command(label="Night", underline=0)
+    ui.menus.modify.add_command(label="First Officer", underline=0)
+    ui.menus.modify.add_command(label="VFR", underline=0)
+    ui.menus.modify.add_command(label="Instructor", underline=0)
 
-    modify_menu = tk.Menu(top, tearoff=0)
-    modify_menu.add_command(label="Expand", underline=0)
-    modify_menu.add_command(label="Night", underline=0)
-    modify_menu.add_command(label="First Officer", underline=0)
-    modify_menu.add_command(label="VFR", underline=0)
-    modify_menu.add_command(label="Instructor", underline=0)
-    top.add_cascade(label="Modify", underline=0, menu=modify_menu)
+    ui.menus.export.add_command(label="FCL.050 Logbook", underline=0)
+    ui.menus.export.add_command(label="Cumulative Totals", underline=0)
+    ui.menus.export.add_command(label="Summary", underline=0)
 
-    export_menu = tk.Menu(top, tearoff=0)
-    export_menu.add_command(label="FCL.050 Logbook", underline=0)
-    export_menu.add_command(label="Cumulative Totals", underline=0)
-    export_menu.add_command(label="Summary", underline=0)
-    top.add_cascade(label="Export", underline=0, menu=export_menu)
-
-    help_menu = tk.Menu(top, tearoff=0)
-    help_menu.add_command(label="Online Help", underline=0)
-    help_menu.add_command(label="eFJ Format", underline=0)
-    top.add_cascade(label="Help", underline=0, menu=help_menu)
+    ui.menus.help_.add_command(label="Online Help", underline=0)
+    ui.menus.help_.add_command(label="eFJ Format", underline=0)
 
 
 def main():
