@@ -7,7 +7,7 @@ import os.path
 import ctypes
 import json
 import webbrowser
-# import datetime as dt
+import datetime as dt
 import re
 import efjtk.modify
 import efjtk.convert
@@ -35,18 +35,23 @@ class Menus(NamedTuple):
 class UI(NamedTuple):
     root: tk.Tk
     text: tk.Text
-    status: Callable[[str], None]
-    em: Callable[[int], int]
+    status: tk.StringVar
     menus: Menus
     goto_bar: tk.Frame
     goto_entry: tk.Entry
-    goto_line: tk.StringVar
+    goto_value: tk.StringVar
     goto_button: ttk.Button
+    daterange_bar: tk.Frame
+    daterange_button: ttk.Button
+    date_from: tk.StringVar
+    date_to: tk.StringVar
 
 
 @dataclass
 class Model():
     settings: dict[str, str]
+    date_from: dt.date | None = None
+    date_to: dt.date | None = None
     filename: str = ""
     dirty: bool = False
 
@@ -81,10 +86,16 @@ def update(model: Model, ui: UI, msg: str) -> None:
     elif msg == "selectall":
         ui.text.tag_add("sel", "1.0", tk.END)
     elif msg == "goto_bar":
+        ui.daterange_bar.grid_remove()
         ui.goto_bar.grid(row=1, column=0, columnspan=2, sticky=tk.EW)
         ui.goto_entry.focus()
+    elif msg == "daterange_bar":
+        ui.goto_bar.grid_remove()
+        show_daterange_bar(model, ui)
+    elif msg == "set_daterange":
+        process_daterange(model, ui)
     elif msg == "goto":
-        if (line := ui.goto_line.get()):
+        if (line := ui.goto_value.get()):
             ui.text.mark_set("insert", f"{line}.0")
             ui.text.see(ui.text.index("insert"))
             ui.goto_bar.grid_remove()
@@ -93,9 +104,9 @@ def update(model: Model, ui: UI, msg: str) -> None:
         ui.text.mark_set("sh-end", "end")
         ui.text.event_generate("<<HighlightSyntax>>", when="tail")
 
-    if msg not in {"quit", "clear", "selectall", "export_logbook",
-                   "export_summary", "export_cumulative",
-                   "goto_bar", "goto"}:
+    if msg not in {"quit", "clear", "selectall",
+                   "goto_bar", "goto", "daterange_bar",
+                   "export_logbook", "export_summary", "export_cumulative"}:
         draw(model, ui)
 
 
@@ -117,7 +128,11 @@ def draw(model: Model, ui: UI) -> None:
         state="normal" if ui.text.tag_ranges("sel") else "disabled")
     modified = " *" if model.dirty else ""
     ui.root.title(f"efjtk (v{efjtk.version.VERSION}){modified}")
-    ui.status(ui.text.index("insert"))
+    row, col = ui.text.index("insert").split(".")
+    ui.status.set(
+        f"Row: {row} | Column: {col} | "
+        f"Export From: {model.date_from if model.date_from else 'Not Set'} | "
+        f"Export To: {model.date_to if model.date_to else 'Not Set'}")
 
 
 def highlight_syntax(t: tk.Text) -> None:
@@ -225,7 +240,8 @@ def export(model: Model, ui: UI, msg: str) -> None:
           "export_cumulative": efjtk.convert.build_cumulative,
           "export_summary": efjtk.convert.build_summary}
     try:
-        result = fn[msg](text)
+        to = model.date_to + dt.timedelta(days=1) if model.date_to else None
+        result = fn[msg](text, (model.date_from, to))
         if fname := filedialog.asksaveasfilename(
                 filetypes=(("HTML", "*.html"), ("All", "*")),
                 defaultextension=".html",
@@ -235,6 +251,42 @@ def export(model: Model, ui: UI, msg: str) -> None:
             model.settings["exportPath"] = os.path.dirname(fname)
     except VE as e:
         messagebox.showerror("Parse Error", str(e))
+
+
+def process_daterange(model: Model, ui: UI) -> None:
+    try:
+        from_ = ui.date_from.get().strip()
+        model.date_from = dt.date.fromisoformat(from_) if from_ else None
+        to = ui.date_to.get().strip()
+        model.date_to = dt.date.fromisoformat(to) if to else None
+        ui.daterange_bar.grid_remove()
+        ui.text.focus()
+    except ValueError as e:
+        messagebox.showerror("Invalid Date", str(e))
+
+
+def show_daterange_bar(model: Model, ui: UI) -> None:
+    if model.date_to and model.date_from:
+        ui.date_to.set(model.date_to.isoformat())
+        ui.date_from.set(model.date_from.isoformat())
+    else:
+        dates: list[dt.date] = []
+        for line in ui.text.get("1.0", tk.END).splitlines():
+            if mo := re.match(r"\s*(\d{4}-\d{2}-\d{2})|([+]+)", line):
+                if mo.group(1):
+                    try:
+                        dates.append(dt.date.fromisoformat(mo.group(1)))
+                    except ValueError:
+                        continue
+                elif dates and mo.group(2):
+                    dates.append(
+                        dates[-1] + dt.timedelta(days=len(mo.group(2))))
+    if model.date_to is None:
+        ui.date_to.set(max(dates).isoformat() if len(dates) else "")
+    if model.date_from is None:
+        ui.date_from.set(min(dates).isoformat() if len(dates) else "")
+    ui.daterange_bar.grid(row=1, column=0, columnspan=2, sticky=tk.EW)
+    ui.daterange_button.focus()
 
 
 def initialise_ui(root: tk.Tk) -> UI:
@@ -267,13 +319,9 @@ def initialise_ui(root: tk.Tk) -> UI:
     text.config(yscrollcommand=sby.set)
 
     statusbar = ttk.Frame(root)
-    status = ttk.Label(statusbar, anchor="e", padding=(em(2), 0), text=" ")
+    status = tk.StringVar()
+    ttk.Label(statusbar, textvariable=status).pack(fill=tk.X, side=tk.LEFT)
     ttk.Sizegrip(statusbar).pack(side=tk.RIGHT, anchor=tk.SE)
-    status.pack(fill=tk.X)
-
-    def status_func(index: str) -> None:
-        row, col = index.split(".")
-        status.config(text=f"Row: {row} Column: {col}")
 
     top = tk.Menu()
     menus = Menus(*(tk.Menu(top, tearoff=0) for _ in range(5)))
@@ -284,30 +332,64 @@ def initialise_ui(root: tk.Tk) -> UI:
     top.add_cascade(label="Help", underline=0, menu=menus.help_)
     root.config(menu=top)
 
-    goto_line = tk.StringVar()
-    tk_validate_integer = root.register(validate_integer)
     goto_bar = tk.Frame(root, padx=em(1), pady=em(0.5))
+    tk_validate_integer = root.register(validate_integer)
+    goto_value = tk.StringVar()
     goto_bar.grid_columnconfigure(2, weight=1)
     ttk.Label(goto_bar, text="Goto line:").grid(row=0, column=1)
-    goto_entry = ttk.Entry(goto_bar, textvariable=goto_line, validate="key",
-                           validatecommand=(tk_validate_integer, "%P"))
+    goto_entry = ttk.Entry(
+        goto_bar, textvariable=goto_value, validate="key",
+        validatecommand=(tk_validate_integer, "%P"), justify="center")
     goto_entry.grid(row=0, column=2, sticky=tk.EW, padx=em(2))
     goto_button = ttk.Button(goto_bar, text="Go")
     goto_button.grid(row=0, column=3)
-    ttk.Button(goto_bar, text="Cancel", command=goto_bar.grid_remove
+    ttk.Button(goto_bar, text="Cancel",
+               command=lambda: grid_remove_bar(goto_bar, text)
                ).grid(row=0, column=5, padx=(em(0.5), 0))
+
+    daterange_bar = tk.Frame(root, padx=em(1), pady=em(0.5))
+    tk_validate_date = root.register(validate_date)
+    date_from = tk.StringVar()
+    date_to = tk.StringVar()
+    daterange_bar.grid_columnconfigure(1, weight=1)
+    daterange_bar.grid_columnconfigure(3, weight=1)
+    ttk.Label(daterange_bar, text="From:").grid(row=0, column=0)
+    ttk.Entry(daterange_bar, textvariable=date_from, justify="center",
+              validate="key", validatecommand=(tk_validate_date, "%P")
+              ).grid(row=0, column=1, sticky=tk.EW, padx=(em(1), em(2)))
+    ttk.Label(daterange_bar, text="To:").grid(row=0, column=2)
+    ttk.Entry(daterange_bar, textvariable=date_to, justify="center",
+              validate="key", validatecommand=(tk_validate_date, "%P")
+              ).grid(row=0, column=3, sticky=tk.EW, padx=(em(1), em(2)))
+    daterange_button = ttk.Button(daterange_bar, text="OK")
+    daterange_button.grid(row=0, column=4, padx=(em(1), 0))
+    ttk.Button(daterange_bar, text="Cancel",
+               command=lambda: grid_remove_bar(daterange_bar, text)
+               ).grid(row=0, column=5, padx=(em(1), 0))
 
     text.grid(row=2, column=0, sticky=tk.NSEW)
     sbx.grid(row=3, column=0, sticky=tk.EW)
     sby.grid(row=2, column=1, rowspan=2, sticky=tk.NS)
     statusbar.grid(row=4, column=0, columnspan=2, sticky=tk.EW)
 
-    return UI(root, text, status_func, em, menus,
-              goto_bar, goto_entry, goto_line, goto_button)
+    return UI(root=root, text=text, status=status, menus=menus,
+              goto_bar=goto_bar, goto_entry=goto_entry,
+              goto_value=goto_value, goto_button=goto_button,
+              daterange_bar=daterange_bar, daterange_button=daterange_button,
+              date_from=date_from, date_to=date_to)
+
+
+def grid_remove_bar(bar: tk.Frame, text: tk.Text) -> None:
+    bar.grid_remove()
+    text.focus()
 
 
 def validate_integer(s: str) -> bool:
     return False if re.search(r"[^\d]", s) else True
+
+
+def validate_date(s: str) -> bool:
+    return False if re.search(r"[^\d-]", s) else True
 
 
 def initialise_menus(ui: UI, update: UpdateFunc) -> None:
@@ -355,6 +437,9 @@ def initialise_menus(ui: UI, update: UpdateFunc) -> None:
     ui.menus.modify.add_command(label="Instructor", underline=0,
                                 command=lambda: update("modify_ins"))
 
+    ui.menus.export.add_command(label="Restrict Dates", underline=0,
+                                command=lambda: update("daterange_bar"))
+    ui.menus.export.add_separator()
     ui.menus.export.add_command(label="FCL.050 Logbook", underline=0,
                                 command=lambda: update("export_logbook"))
     ui.menus.export.add_command(label="Cumulative Totals", underline=0,
@@ -386,11 +471,12 @@ def main():
     ui.text.bind("<<Modified>>", lambda _: _update("modified"))
     ui.text.bind("<<Selection>>", lambda _: _update("selection"))
     ui.text.bind("<<HighlightSyntax>>", lambda _: highlight_syntax(ui.text))
-    ui.text.bind("<KeyRelease>", lambda _: ui.status(ui.text.index("insert")))
-    ui.text.bind("<ButtonPress>", lambda _: ui.status(ui.text.index("insert")))
+    ui.text.bind("<KeyRelease>", lambda _: _update("status"))
+    ui.text.bind("<ButtonPress>", lambda _: _update("status"))
     ui.text.bind("<Return>", lambda _: ui.text.edit_separator())
     ui.goto_entry.bind("<Return>", lambda _: _update("goto"))
     ui.goto_button.config(command=lambda: _update("goto"))
+    ui.daterange_button.config(command=lambda: _update("set_daterange"))
     ui.text.focus()
     root.mainloop()
 
