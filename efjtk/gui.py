@@ -10,7 +10,7 @@ import ctypes
 # import datetime as dt
 # import re
 import efjtk.modify
-# import efjtk.convert
+import efjtk.convert
 import efjtk.version
 from efj_parser import ValidationError as VE
 from functools import partial
@@ -56,6 +56,8 @@ def update(model: Model, ui: UI, msg: str) -> None:
         file_operation(model, ui, msg)
     elif msg.startswith("modify_"):
         modify(model, ui, msg)
+    elif msg.startswith("export_"):
+        export(model, ui, msg)
     elif msg in {"cut", "copy", "paste"}:
         ui.text.event_generate({
             "cut": "<<Cut>>",
@@ -197,6 +199,24 @@ def modify(model: Model, ui: UI, msg: str) -> None:
             ui.root.busy_forget()
 
 
+def export(model: Model, ui: UI, msg: str) -> None:
+    text = ui.text.get("1.0", tk.END)
+    fn = {"export_logbook": efjtk.convert.build_logbook,
+          "export_cumulative": efjtk.convert.build_cumulative,
+          "export_summary": efjtk.convert.build_summary}
+    try:
+        result = fn[msg](text)
+        path = "/home/jon/downloads"
+        if fname := filedialog.asksaveasfilename(
+                filetypes=(("HTML", "*.html"), ("All", "*")),
+                defaultextension=".html",
+                initialdir=path):
+            with open(fname, "w", encoding="utf-8") as f:
+                f.write(result)
+    except VE as e:
+        messagebox.showerror("Parse Error", str(e))
+
+
 def initialise_ui(root: tk.Tk) -> UI:
     family = "Courier"
     if "IBM Plex Mono" in tkfont.families():
@@ -280,9 +300,6 @@ def initialise_menus(ui: UI, update: UpdateFunc) -> None:
                               command=lambda: update("selectall"))
     ui.menus.edit.add_command(label="Clear", underline=0,
                               command=lambda: update("clear"))
-    ui.menus.edit.add_separator()
-    ui.menus.edit.add_command(label="Goto", underline=0)
-    ui.menus.edit.add_command(label="Search", underline=0)
 
     ui.menus.modify.add_command(label="Expand", underline=0,
                                 command=lambda: update("modify_expand"))
@@ -295,9 +312,12 @@ def initialise_menus(ui: UI, update: UpdateFunc) -> None:
     ui.menus.modify.add_command(label="Instructor", underline=0,
                                 command=lambda: update("modify_ins"))
 
-    ui.menus.export.add_command(label="FCL.050 Logbook", underline=0)
-    ui.menus.export.add_command(label="Cumulative Totals", underline=0)
-    ui.menus.export.add_command(label="Summary", underline=0)
+    ui.menus.export.add_command(label="FCL.050 Logbook", underline=0,
+                                command=lambda: update("export_logbook"))
+    ui.menus.export.add_command(label="Cumulative Totals", underline=0,
+                                command=lambda: update("export_cumulative"))
+    ui.menus.export.add_command(label="Summary", underline=0,
+                                command=lambda: update("export_summary"))
 
     ui.menus.help_.add_command(label="Online Help", underline=0)
     ui.menus.help_.add_command(label="eFJ Format", underline=0)
