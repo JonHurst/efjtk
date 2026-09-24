@@ -8,7 +8,7 @@ import ctypes
 import json
 import webbrowser
 # import datetime as dt
-# import re
+import re
 import efjtk.modify
 import efjtk.convert
 import efjtk.version
@@ -38,6 +38,10 @@ class UI(NamedTuple):
     status: Callable[[str], None]
     em: Callable[[int], int]
     menus: Menus
+    goto_bar: tk.Frame
+    goto_entry: tk.Entry
+    goto_line: tk.StringVar
+    goto_button: ttk.Button
 
 
 @dataclass
@@ -76,12 +80,22 @@ def update(model: Model, ui: UI, msg: str) -> None:
         ui.text.delete("1.0", tk.END)
     elif msg == "selectall":
         ui.text.tag_add("sel", "1.0", tk.END)
+    elif msg == "goto_bar":
+        ui.goto_bar.grid(row=1, column=0, columnspan=2, sticky=tk.EW)
+        ui.goto_entry.focus()
+    elif msg == "goto":
+        if (line := ui.goto_line.get()):
+            ui.text.mark_set("insert", f"{line}.0")
+            ui.text.see(ui.text.index("insert"))
+            ui.goto_bar.grid_remove()
+            ui.text.focus()
     if msg in {"open", "initialise"}:
         ui.text.mark_set("sh-end", "end")
         ui.text.event_generate("<<HighlightSyntax>>", when="tail")
 
     if msg not in {"quit", "clear", "selectall", "export_logbook",
-                   "export_summary", "export_cumulative"}:
+                   "export_summary", "export_cumulative",
+                   "goto_bar", "goto"}:
         draw(model, ui)
 
 
@@ -109,7 +123,7 @@ def draw(model: Model, ui: UI) -> None:
 def highlight_syntax(t: tk.Text) -> None:
     if (end := t.index("sh-end")) == "1.0":
         return
-    start = f"{end} - 10 lines"
+    start = f"{end} - 25 lines"
     for tag in ("keyword", "datetime", "grayed"):
         t.tag_remove(tag, start, end)
     count = tk.IntVar()
@@ -122,7 +136,7 @@ def highlight_syntax(t: tk.Text) -> None:
             start_idx = t.index(f"{idx} + {count.get()} chars")
             t.tag_add(tag, idx, start_idx)
     t.mark_set("sh-end", start)
-    t.after(50, lambda: t.event_generate("<<HighlightSyntax>>", when="tail"))
+    t.after(15, lambda: t.event_generate("<<HighlightSyntax>>", when="tail"))
 
 
 def file_operation(model: Model, ui: UI, msg: str) -> None:
@@ -267,12 +281,30 @@ def initialise_ui(root: tk.Tk) -> UI:
     top.add_cascade(label="Help", underline=0, menu=menus.help_)
     root.config(menu=top)
 
-    text.grid(row=2, column=0, stick=tk.NSEW)
+    goto_line = tk.StringVar()
+    tk_validate_integer = root.register(validate_integer)
+    goto_bar = tk.Frame(root, padx=em(1), pady=em(0.5))
+    goto_bar.grid_columnconfigure(2, weight=1)
+    ttk.Label(goto_bar, text="Goto line:").grid(row=0, column=1)
+    goto_entry = ttk.Entry(goto_bar, textvariable=goto_line, validate="key",
+                           validatecommand=(tk_validate_integer, "%P"))
+    goto_entry.grid(row=0, column=2, sticky=tk.EW, padx=em(2))
+    goto_button = ttk.Button(goto_bar, text="Go")
+    goto_button.grid(row=0, column=3)
+    ttk.Button(goto_bar, text="Cancel", command=goto_bar.grid_remove
+               ).grid(row=0, column=5, padx=(em(0.5), 0))
+
+    text.grid(row=2, column=0, sticky=tk.NSEW)
     sbx.grid(row=3, column=0, sticky=tk.EW)
     sby.grid(row=2, column=1, rowspan=2, sticky=tk.NS)
     statusbar.grid(row=4, column=0, columnspan=2, sticky=tk.EW)
 
-    return UI(root, text, status_func, em, menus)
+    return UI(root, text, status_func, em, menus,
+              goto_bar, goto_entry, goto_line, goto_button)
+
+
+def validate_integer(s: str) -> bool:
+    return False if re.search(r"[^\d]", s) else True
 
 
 def initialise_menus(ui: UI, update: UpdateFunc) -> None:
@@ -304,6 +336,10 @@ def initialise_menus(ui: UI, update: UpdateFunc) -> None:
                               command=lambda: update("selectall"))
     ui.menus.edit.add_command(label="Clear", underline=0,
                               command=lambda: update("clear"))
+    ui.menus.edit.add_separator()
+    ui.menus.edit.add_command(label="Goto", accelerator="Ctrl-G",
+                              underline=0, command=lambda: update("goto_bar"))
+    ui.root.bind("<Control-Key-g>", lambda _: update("goto_bar"))
 
     ui.menus.modify.add_command(label="Expand", underline=0,
                                 command=lambda: update("modify_expand"))
@@ -350,7 +386,8 @@ def main():
     ui.text.bind("<KeyRelease>", lambda _: ui.status(ui.text.index("insert")))
     ui.text.bind("<ButtonPress>", lambda _: ui.status(ui.text.index("insert")))
     ui.text.bind("<Return>", lambda _: ui.text.edit_separator())
-
+    ui.goto_entry.bind("<Return>", lambda _: _update("goto"))
+    ui.goto_button.config(command=lambda: _update("goto"))
     ui.text.focus()
     root.mainloop()
 
