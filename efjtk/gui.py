@@ -47,13 +47,12 @@ class UI(NamedTuple):
     daterange_button_cancel: ttk.Button
     date_from: tk.StringVar
     date_to: tk.StringVar
-    far_bar: tk.Frame
-    far_from: tk.StringVar
-    far_to: tk.StringVar
-    far_button_next: ttk.Button
-    far_button_replace: ttk.Button
-    far_button_replace_all: ttk.Button
-    far_button_cancel: ttk.Button
+    fr_bar: tk.Frame
+    fr_from: tk.StringVar
+    fr_to: tk.StringVar
+    fr_button_next: ttk.Button
+    fr_button_replace: ttk.Button
+    fr_button_cancel: ttk.Button
 
 
 @dataclass
@@ -107,7 +106,7 @@ def update(
     elif msg in {"goto_bar", "daterange_bar", "far_bar"}:
         push_bar(model.bar_stack, {"goto_bar": ui.goto_bar,
                                    "daterange_bar": ui.daterange_bar,
-                                   "far_bar": ui.far_bar}[msg])
+                                   "far_bar": ui.fr_bar}[msg])
     elif msg == "popbar":
         pop_bar(model.bar_stack)
     elif msg == "goto":
@@ -123,8 +122,6 @@ def update(
             ui.text.focus()
     elif msg == "replace":
         replace(ui)
-    elif msg == "replace_all":
-        replace_all(ui)
     if msg in {"open", "initialise"}:
         ui.text.mark_set("sh-end", "end")
         ui.text.event_generate("<<HighlightSyntax>>", when="tail")
@@ -132,7 +129,7 @@ def update(
         return
     draw(DrawData(dirty=model.dirty,
                   canreplace=canreplace(ui),
-                  canreplaceall=bool(ui.far_from.get().strip()),
+                  canreplaceall=bool(ui.fr_from.get()),
                   cansave=bool(model.filename),
                   dates=(model.date_from, model.date_to),
                   bar=model.bar_stack[-1] if len(model.bar_stack) else None))
@@ -172,18 +169,20 @@ def draw(state: dict[str, Any], ui: UI, data: DrawData) -> None:
         else:
             ui.text.focus()
         state["current_bar"] = data.bar
-    ui.far_button_replace.config(
-        state="normal" if data.canreplace else "disabled")
-    ui.far_button_replace_all.config(
-        state="normal" if data.canreplaceall else "disabled")
+    if data.canreplace:
+        ui.fr_button_replace.config(text="Replace", state="normal")
+    elif data.canreplaceall:
+        ui.fr_button_replace.config(text="Replace All", state="normal")
+    else:
+        ui.fr_button_replace.config(text="Replace", state="disabled")
 
 
 def find_next(ui: UI) -> bool:
-    target = ui.far_from.get()
-    start = ui.text.index("insert") + " + 1 chars"
-    next_ = ui.text.search(target, start, nocase=True)
+    target = ui.fr_from.get()
+    start = ui.text.index("insert")
+    next_ = ui.text.search(target, start + " +1 chars", nocase=True)
     if not next_:
-        next_ = ui.text.search(target, "1.0", nocase=True)
+        next_ = ui.text.search(target, "1.0", stopindex=start, nocase=True, )
     if next_:
         ui.text.mark_set("insert", next_)
         ui.text.tag_remove("sel", "1.0", tk.END)
@@ -193,31 +192,28 @@ def find_next(ui: UI) -> bool:
 
 
 def replace(ui: UI) -> None:
-    selection = ui.text.tag_ranges("sel")[:2]
     if canreplace(ui):
         ui.text.edit_separator()
-        ui.text.replace(selection[0], selection[1], ui.far_to.get())
-
-
-def replace_all(ui: UI) -> None:
-    ui.text.edit_separator()
-    target = ui.far_from.get()
-    ui.text.mark_set("insert", "1.0")
-    while next_ := ui.text.search(
-            target, ui.text.index("insert"),
-            nocase=True, stopindex=tk.END):
-        ui.text.replace(
-            next_, f"{next_} + {len(target)} chars", ui.far_to.get())
-        ui.text.mark_set("insert",
-                         f"{next_} + {len(ui.far_to.get())} chars")
-    ui.text.see(ui.text.index("insert"))
-    ui.text.focus()
+        start, end = ui.text.tag_ranges("sel")[:2]
+        ui.text.replace(start, end, ui.fr_to.get())
+    elif target := ui.fr_from.get():  # can do replace all
+        ui.text.edit_separator()
+        ui.text.mark_set("insert", "1.0")
+        while next_ := ui.text.search(
+                target, ui.text.index("insert"),
+                nocase=True, stopindex=tk.END):
+            ui.text.replace(
+                next_, f"{next_} + {len(target)} chars", ui.fr_to.get())
+            ui.text.mark_set("insert",
+                             f"{next_} + {len(ui.fr_to.get())} chars")
+        ui.text.see(ui.text.index("insert"))
+        ui.text.focus()
 
 
 def canreplace(ui: UI) -> bool:
     retval = False
     if (selection := ui.text.tag_ranges("sel")) and len(selection) == 2:
-        retval = (ui.far_from.get().lower() ==
+        retval = (ui.fr_from.get().lower() ==
                   ui.text.get(*selection).lower())
     return retval
 
@@ -380,7 +376,7 @@ def initialise_ui(root: tk.Tk) -> UI:
 
     root.columnconfigure(0, weight=1)
     root.rowconfigure(2, weight=1)
-    root.minsize(em(90), em(40))
+    root.minsize(em(75), em(40))
 
     text = tk.Text(root, background='white', font=font, wrap="none",
                    undo=True, autoseparators=False, exportselection=True)
@@ -459,25 +455,23 @@ def initialise_ui(root: tk.Tk) -> UI:
     dr_ok.grid(row=0, column=4, padx=(em(1), 0))
     dr_cancel.grid(row=0, column=5, padx=(em(1), 0))
 
-    far_bar = tk.Frame(root, padx=em(0.5), pady=em(0.5))
-    far_from_val = tk.StringVar()
-    far_to_val = tk.StringVar()
-    far_from = ttk.Entry(far_bar, textvariable=far_from_val, width=15)
-    far_to = ttk.Entry(far_bar, textvariable=far_to_val, width=15)
-    far_next = ttk.Button(far_bar, text="Next")
-    far_replace = ttk.Button(far_bar, text="Replace")
-    far_replace_all = ttk.Button(far_bar, text="Replace All")
-    far_cancel = ttk.Button(far_bar, text="Close")
-    far_bar.grid_columnconfigure(1, weight=1)
-    far_bar.grid_columnconfigure(3, weight=1)
-    ttk.Label(far_bar, text="Find:").grid(row=0, column=0)
-    far_from.grid(row=0, column=1, sticky=tk.EW, padx=(em(1), em(1)))
-    ttk.Label(far_bar, text="Replace with:").grid(row=0, column=2)
-    far_to.grid(row=0, column=3, sticky=tk.EW, padx=(em(1), em(1)))
-    far_next.grid(row=0, column=5, padx=(em(1), 0))
-    far_replace.grid(row=0, column=6, padx=(em(1), 0))
-    far_replace_all.grid(row=0, column=7, padx=(em(0.5), 0))
-    far_cancel.grid(row=0, column=8, padx=(em(1), 0))
+    fr_bar = tk.Frame(root, padx=em(0.5), pady=em(0.5))
+    fr_from_val = tk.StringVar()
+    fr_to_val = tk.StringVar()
+    fr_from = ttk.Entry(fr_bar, textvariable=fr_from_val, width=15)
+    fr_to = ttk.Entry(fr_bar, textvariable=fr_to_val, width=15)
+    fr_next = ttk.Button(fr_bar, text="Next")
+    fr_replace = ttk.Button(fr_bar, text="Replace")
+    fr_cancel = ttk.Button(fr_bar, text="Close")
+    fr_bar.grid_columnconfigure(1, weight=1)
+    fr_bar.grid_columnconfigure(3, weight=1)
+    ttk.Label(fr_bar, text="Find:").grid(row=0, column=0)
+    fr_from.grid(row=0, column=1, sticky=tk.EW, padx=(em(1), em(1)))
+    ttk.Label(fr_bar, text="Replace with:").grid(row=0, column=2)
+    fr_to.grid(row=0, column=3, sticky=tk.EW, padx=(em(1), em(1)))
+    fr_next.grid(row=0, column=5, padx=(em(1), 0))
+    fr_replace.grid(row=0, column=6, padx=(em(1), 0))
+    fr_cancel.grid(row=0, column=7, padx=(em(1), 0))
 
     text.grid(row=2, column=0, sticky=tk.NSEW)
     sbx.grid(row=3, column=0, sticky=tk.EW)
@@ -492,9 +486,9 @@ def initialise_ui(root: tk.Tk) -> UI:
         goto_button_go=goto_go, goto_button_cancel=goto_cancel,
         daterange_bar=dr_bar, date_from=from_, date_to=to,
         daterange_button_ok=dr_ok, daterange_button_cancel=dr_cancel,
-        far_bar=far_bar, far_from=far_from_val, far_to=far_to_val,
-        far_button_next=far_next, far_button_replace=far_replace,
-        far_button_replace_all=far_replace_all, far_button_cancel=far_cancel)
+        fr_bar=fr_bar, fr_from=fr_from_val, fr_to=fr_to_val,
+        fr_button_next=fr_next, fr_button_replace=fr_replace,
+        fr_button_cancel=fr_cancel)
 
 
 def grid_remove_bar(bar: tk.Frame, text: tk.Text) -> None:
@@ -597,11 +591,10 @@ def main():
     ui.goto_button_cancel.config(command=lambda: _update("popbar"))
     ui.daterange_button_ok.config(command=lambda: _update("capture_daterange"))
     ui.daterange_button_cancel.config(command=lambda: _update("popbar"))
-    ui.far_button_cancel.config(command=lambda: _update("popbar"))
-    ui.far_button_next.config(command=lambda: _update("findnext"))
-    ui.far_button_replace.config(command=lambda: _update("replace"))
-    ui.far_button_replace_all.config(command=lambda: _update("replace_all"))
-    ui.far_from.trace_add("write", lambda *_: _update("find_changed"))
+    ui.fr_button_cancel.config(command=lambda: _update("popbar"))
+    ui.fr_button_next.config(command=lambda: _update("findnext"))
+    ui.fr_button_replace.config(command=lambda: _update("replace"))
+    ui.fr_from.trace_add("write", lambda *_: _update("find_changed"))
     _update("initialise")
     ui.text.focus()
     root.mainloop()
