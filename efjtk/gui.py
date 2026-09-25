@@ -15,7 +15,7 @@ import efjtk.version
 from efj_parser import ValidationError as VE
 from functools import partial
 from dataclasses import dataclass
-from typing import NamedTuple
+from typing import NamedTuple, Any
 from collections.abc import Callable
 import math
 
@@ -56,10 +56,18 @@ class Model():
     dirty: bool = False
 
 
+class DrawData(NamedTuple):
+    dirty: bool
+    cansave: bool
+    dates: tuple[dt.date | None, dt.date | None]
+
+
 UpdateFunc = Callable[[str], None]
 
 
-def update(model: Model, ui: UI, msg: str) -> None:
+def update(
+        model: Model, ui: UI, draw: Callable[[DrawData], None], msg: str
+) -> None:
     if msg in {"open", "save", "saveas", "quit"}:
         file_operation(model, ui, msg)
     elif msg.startswith("modify_"):
@@ -107,13 +115,15 @@ def update(model: Model, ui: UI, msg: str) -> None:
     if msg not in {"quit", "clear", "selectall",
                    "goto_bar", "goto", "daterange_bar",
                    "export_logbook", "export_summary", "export_cumulative"}:
-        draw(model, ui)
+        draw(DrawData(dirty=model.dirty,
+                      cansave=bool(model.filename),
+                      dates=(model.date_from, model.date_to)))
 
 
-def draw(model: Model, ui: UI) -> None:
+def draw(state: dict[str, Any], ui: UI, data: DrawData) -> None:
     ui.menus.file_.entryconfigure(
         "Save",
-        state="normal" if model.dirty and model.filename else "disabled")
+        state="normal" if data.dirty and data.cansave else "disabled")
     ui.menus.edit.entryconfigure(
         "Undo",
         state="normal" if ui.text.edit("canundo") else "disabled")
@@ -126,13 +136,12 @@ def draw(model: Model, ui: UI) -> None:
     ui.menus.edit.entryconfigure(
         "Copy",
         state="normal" if ui.text.tag_ranges("sel") else "disabled")
-    modified = " *" if model.dirty else ""
+    modified = " *" if data.dirty else ""
     ui.root.title(f"efjtk (v{efjtk.version.VERSION}){modified}")
     row, col = ui.text.index("insert").split(".")
     ui.status.set(
-        f"Row: {row} | Column: {col} | "
-        f"Export From: {model.date_from if model.date_from else 'Not Set'} | "
-        f"Export To: {model.date_to if model.date_to else 'Not Set'}")
+        f"{ui.text.index("insert")} | Export Dates: "
+        f"{data.dates[0] or 'Start'} to {data.dates[1] or 'End'}")
 
 
 def highlight_syntax(t: tk.Text) -> None:
@@ -463,7 +472,7 @@ def main():
         settings = {}
     root = tk.Tk()
     ui = initialise_ui(root)
-    _update = partial(update, Model(settings), ui)
+    _update = partial(update, Model(settings), ui, partial(draw, {}, ui))
     initialise_menus(ui, _update)
     _update("initialise")
     # bindings
