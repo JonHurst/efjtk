@@ -286,10 +286,9 @@ def export(model: Model, ui: UI, msg: str) -> None:
 
 def capture_daterange(model: Model, ui: UI) -> None:
     try:
-        from_ = ui.date_from.get().strip()
-        model.date_from = dt.date.fromisoformat(from_) if from_ else None
-        to = ui.date_to.get().strip()
-        model.date_to = dt.date.fromisoformat(to) if to else None
+        r = [dt.date.fromisoformat(X) if X else None for X in (
+            ui.date_from.get().strip(), ui.date_to.get().strip())]
+        model.date_from, model.date_to = r
         pop_bar(model.bar_stack)
     except ValueError as e:
         messagebox.showerror(
