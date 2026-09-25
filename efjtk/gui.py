@@ -69,6 +69,8 @@ class Model():
 class DrawData(NamedTuple):
     dirty: bool
     cansave: bool
+    canreplace: bool
+    canreplaceall: bool
     dates: tuple[dt.date | None, dt.date | None]
     bar: tk.Frame | None
 
@@ -103,11 +105,9 @@ def update(
     elif msg == "selectall":
         ui.text.tag_add("sel", "1.0", tk.END)
     elif msg in {"goto_bar", "daterange_bar", "far_bar"}:
-        push_bar(
-            model.bar_stack,
-            {"goto_bar": ui.goto_bar,
-             "daterange_bar": ui.daterange_bar,
-             "far_bar": ui.far_bar}[msg])
+        push_bar(model.bar_stack, {"goto_bar": ui.goto_bar,
+                                   "daterange_bar": ui.daterange_bar,
+                                   "far_bar": ui.far_bar}[msg])
     elif msg == "popbar":
         pop_bar(model.bar_stack)
     elif msg == "goto":
@@ -117,12 +117,22 @@ def update(
             pop_bar(model.bar_stack)
     elif msg == "capture_daterange":
         capture_daterange(model, ui)
+    elif msg == "findnext":
+        if find_next(ui):
+            ui.text.see(ui.text.index("insert"))
+            ui.text.focus()
+    elif msg == "replace":
+        replace(ui)
+    elif msg == "replace_all":
+        replace_all(ui)
     if msg in {"open", "initialise"}:
         ui.text.mark_set("sh-end", "end")
         ui.text.event_generate("<<HighlightSyntax>>", when="tail")
     if (msg in {"quit", "clear", "selectall"} or msg.startswith("export_")):
         return
     draw(DrawData(dirty=model.dirty,
+                  canreplace=canreplace(ui),
+                  canreplaceall=bool(ui.far_from.get().strip()),
                   cansave=bool(model.filename),
                   dates=(model.date_from, model.date_to),
                   bar=model.bar_stack[-1] if len(model.bar_stack) else None))
@@ -146,7 +156,6 @@ def draw(state: dict[str, Any], ui: UI, data: DrawData) -> None:
         state="normal" if ui.text.tag_ranges("sel") else "disabled")
     modified = " *" if data.dirty else ""
     ui.root.title(f"efjtk (v{efjtk.version.VERSION}){modified}")
-    row, col = ui.text.index("insert").split(".")
     ui.status_caretpos.set(ui.text.index('insert'))
     if any(data.dates):
         ui.status_daterange.set(
@@ -163,6 +172,54 @@ def draw(state: dict[str, Any], ui: UI, data: DrawData) -> None:
         else:
             ui.text.focus()
         state["current_bar"] = data.bar
+    ui.far_button_replace.config(
+        state="normal" if data.canreplace else "disabled")
+    ui.far_button_replace_all.config(
+        state="normal" if data.canreplaceall else "disabled")
+
+
+def find_next(ui: UI) -> bool:
+    target = ui.far_from.get()
+    start = ui.text.index("insert") + " + 1 chars"
+    next_ = ui.text.search(target, start, nocase=True)
+    if not next_:
+        next_ = ui.text.search(target, "1.0", nocase=True)
+    if next_:
+        ui.text.mark_set("insert", next_)
+        ui.text.tag_remove("sel", "1.0", tk.END)
+        ui.text.tag_add("sel", next_, f"{next_} + {len(target)} chars")
+        return True
+    return False
+
+
+def replace(ui: UI) -> None:
+    selection = ui.text.tag_ranges("sel")[:2]
+    if canreplace(ui):
+        ui.text.edit_separator()
+        ui.text.replace(selection[0], selection[1], ui.far_to.get())
+
+
+def replace_all(ui: UI) -> None:
+    ui.text.edit_separator()
+    target = ui.far_from.get()
+    ui.text.mark_set("insert", "1.0")
+    while next_ := ui.text.search(
+            target, ui.text.index("insert"),
+            nocase=True, stopindex=tk.END):
+        ui.text.replace(
+            next_, f"{next_} + {len(target)} chars", ui.far_to.get())
+        ui.text.mark_set("insert",
+                         f"{next_} + {len(ui.far_to.get())} chars")
+    ui.text.see(ui.text.index("insert"))
+    ui.text.focus()
+
+
+def canreplace(ui: UI) -> bool:
+    retval = False
+    if (selection := ui.text.tag_ranges("sel")) and len(selection) == 2:
+        retval = (ui.far_from.get().lower() ==
+                  ui.text.get(*selection).lower())
+    return retval
 
 
 def push_bar(stack: list[tk.Frame | None], bar: tk.Frame) -> None:
@@ -410,7 +467,7 @@ def initialise_ui(root: tk.Tk) -> UI:
     far_next = ttk.Button(far_bar, text="Next")
     far_replace = ttk.Button(far_bar, text="Replace")
     far_replace_all = ttk.Button(far_bar, text="Replace All")
-    far_cancel = ttk.Button(far_bar, text="Cancel")
+    far_cancel = ttk.Button(far_bar, text="Close")
     far_bar.grid_columnconfigure(1, weight=1)
     far_bar.grid_columnconfigure(3, weight=1)
     ttk.Label(far_bar, text="Find:").grid(row=0, column=0)
@@ -425,7 +482,8 @@ def initialise_ui(root: tk.Tk) -> UI:
     text.grid(row=2, column=0, sticky=tk.NSEW)
     sbx.grid(row=3, column=0, sticky=tk.EW)
     sby.grid(row=2, column=1, rowspan=2, sticky=tk.NS)
-    statusbar.grid(row=4, column=0, columnspan=2, sticky=tk.EW, padx=em(0.25))
+    statusbar.grid(row=4, column=0, columnspan=2, sticky=tk.EW,
+                   padx=em(0.25), pady=em(0.5))
 
     return UI(
         root=root, menus=menus, text=text,
@@ -533,14 +591,17 @@ def main():
     ui.text.bind("<<Selection>>", lambda _: _update("selection"))
     ui.text.bind("<<HighlightSyntax>>", lambda _: highlight_syntax(ui.text))
     ui.text.bind("<KeyRelease>", lambda _: _update("status"))
-    ui.text.bind("<ButtonPress>", lambda _: _update("status"))
+    ui.text.bind("<ButtonRelease>", lambda _: _update("status"))
     ui.text.bind("<Return>", lambda _: ui.text.edit_separator())
     ui.goto_button_go.config(command=lambda: _update("goto"))
     ui.goto_button_cancel.config(command=lambda: _update("popbar"))
     ui.daterange_button_ok.config(command=lambda: _update("capture_daterange"))
     ui.daterange_button_cancel.config(command=lambda: _update("popbar"))
     ui.far_button_cancel.config(command=lambda: _update("popbar"))
-
+    ui.far_button_next.config(command=lambda: _update("findnext"))
+    ui.far_button_replace.config(command=lambda: _update("replace"))
+    ui.far_button_replace_all.config(command=lambda: _update("replace_all"))
+    ui.far_from.trace_add("write", lambda *_: _update("find_changed"))
     _update("initialise")
     ui.text.focus()
     root.mainloop()
