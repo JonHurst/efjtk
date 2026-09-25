@@ -233,7 +233,7 @@ def pop_bar(stack: list[tk.Frame | None]) -> None:
 
 def highlight_syntax(t: tk.Text) -> None:
     end = t.index("sh-end")
-    start = f"{end} - 40 lines"
+    start = f"{end} - 20 lines"
     for tag in ("keyword", "datetime", "grayed"):
         t.tag_remove(tag, start, end)
     count = tk.IntVar()
@@ -247,8 +247,8 @@ def highlight_syntax(t: tk.Text) -> None:
             t.tag_add(tag, idx, start_idx)
     t.mark_set("sh-end", start)
     if start != "1.0":
-        t.after(20, lambda: t.event_generate("<<HighlightSyntax>>",
-                                             when="tail"))
+        t.after_idle(lambda: t.event_generate(
+            "<<HighlightSyntax>>", when="tail"))
 
 
 def file_operation(model: Model, ui: UI, msg: str) -> None:
