@@ -505,8 +505,9 @@ def initialise_menus(ui: UI, update: UpdateFunc) -> None:
     ui.menus.file_.add_command(label="Open", accelerator="Ctrl-O",
                                underline=0, command=lambda: update("open"))
     ui.root.bind("<Control-Key-o>", lambda _: update("open"))
-    ui.menus.file_.add_command(label="Save", underline=0,
-                               command=lambda: update("save"))
+    ui.menus.file_.add_command(label="Save", accelerator="Ctrl-S",
+                               underline=0, command=lambda: update("save"))
+    ui.root.bind("<Control-Key-s>", lambda _: update("save"))
     ui.menus.file_.add_command(label="Save As", underline=5,
                                command=lambda: update("saveas"))
     ui.menus.file_.add_separator()
@@ -531,14 +532,17 @@ def initialise_menus(ui: UI, update: UpdateFunc) -> None:
     ui.menus.edit.add_command(label="Clear", underline=0,
                               command=lambda: update("clear"))
     ui.menus.edit.add_separator()
-    ui.menus.edit.add_command(label="Find & Replace",
+    ui.menus.edit.add_command(label="Find & Replace", accelerator="Ctrl-F",
                               underline=0, command=lambda: update("far_bar"))
+    ui.root.bind("<Control-Key-f>", lambda _: update("far_bar"))
     ui.menus.edit.add_command(label="Goto", accelerator="Ctrl-G",
                               underline=0, command=lambda: update("goto_bar"))
     ui.root.bind("<Control-Key-g>", lambda _: update("goto_bar"))
 
-    ui.menus.modify.add_command(label="Expand", underline=0,
-                                command=lambda: update("modify_expand"))
+    ui.menus.modify.add_command(
+        label="Expand", accelerator="Ctrl-E", underline=0,
+        command=lambda: update("modify_expand"))
+    ui.root.bind("<Control-Key-e>", lambda _: update("modify_expand"))
     ui.menus.modify.add_command(label="Night", underline=0,
                                 command=lambda: update("modify_night"))
     ui.menus.modify.add_command(label="First Officer", underline=0,
