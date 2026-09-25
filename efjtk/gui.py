@@ -47,6 +47,13 @@ class UI(NamedTuple):
     daterange_button_cancel: ttk.Button
     date_from: tk.StringVar
     date_to: tk.StringVar
+    far_bar: tk.Frame
+    far_from: tk.StringVar
+    far_to: tk.StringVar
+    far_button_next: ttk.Button
+    far_button_replace: ttk.Button
+    far_button_replace_all: ttk.Button
+    far_button_cancel: ttk.Button
 
 
 @dataclass
@@ -95,11 +102,12 @@ def update(
         ui.text.delete("1.0", tk.END)
     elif msg == "selectall":
         ui.text.tag_add("sel", "1.0", tk.END)
-    elif msg in {"goto_bar", "daterange_bar"}:
+    elif msg in {"goto_bar", "daterange_bar", "far_bar"}:
         push_bar(
             model.bar_stack,
             {"goto_bar": ui.goto_bar,
-             "daterange_bar": ui.daterange_bar}[msg])
+             "daterange_bar": ui.daterange_bar,
+             "far_bar": ui.far_bar}[msg])
     elif msg == "popbar":
         pop_bar(model.bar_stack)
     elif msg == "goto":
@@ -315,6 +323,7 @@ def initialise_ui(root: tk.Tk) -> UI:
 
     root.columnconfigure(0, weight=1)
     root.rowconfigure(2, weight=1)
+    root.minsize(em(90), em(40))
 
     text = tk.Text(root, background='white', font=font, wrap="none",
                    undo=True, autoseparators=False, exportselection=True)
@@ -393,6 +402,26 @@ def initialise_ui(root: tk.Tk) -> UI:
     dr_ok.grid(row=0, column=4, padx=(em(1), 0))
     dr_cancel.grid(row=0, column=5, padx=(em(1), 0))
 
+    far_bar = tk.Frame(root, padx=em(0.5), pady=em(0.5))
+    far_from_val = tk.StringVar()
+    far_to_val = tk.StringVar()
+    far_from = ttk.Entry(far_bar, textvariable=far_from_val, width=15)
+    far_to = ttk.Entry(far_bar, textvariable=far_to_val, width=15)
+    far_next = ttk.Button(far_bar, text="Next")
+    far_replace = ttk.Button(far_bar, text="Replace")
+    far_replace_all = ttk.Button(far_bar, text="Replace All")
+    far_cancel = ttk.Button(far_bar, text="Cancel")
+    far_bar.grid_columnconfigure(1, weight=1)
+    far_bar.grid_columnconfigure(3, weight=1)
+    ttk.Label(far_bar, text="Find:").grid(row=0, column=0)
+    far_from.grid(row=0, column=1, sticky=tk.EW, padx=(em(1), em(1)))
+    ttk.Label(far_bar, text="Replace with:").grid(row=0, column=2)
+    far_to.grid(row=0, column=3, sticky=tk.EW, padx=(em(1), em(1)))
+    far_next.grid(row=0, column=5, padx=(em(1), 0))
+    far_replace.grid(row=0, column=6, padx=(em(1), 0))
+    far_replace_all.grid(row=0, column=7, padx=(em(0.5), 0))
+    far_cancel.grid(row=0, column=8, padx=(em(1), 0))
+
     text.grid(row=2, column=0, sticky=tk.NSEW)
     sbx.grid(row=3, column=0, sticky=tk.EW)
     sby.grid(row=2, column=1, rowspan=2, sticky=tk.NS)
@@ -404,7 +433,10 @@ def initialise_ui(root: tk.Tk) -> UI:
         goto_bar=goto_bar, goto_value=goto_val,
         goto_button_go=goto_go, goto_button_cancel=goto_cancel,
         daterange_bar=dr_bar, date_from=from_, date_to=to,
-        daterange_button_ok=dr_ok, daterange_button_cancel=dr_cancel)
+        daterange_button_ok=dr_ok, daterange_button_cancel=dr_cancel,
+        far_bar=far_bar, far_from=far_from_val, far_to=far_to_val,
+        far_button_next=far_next, far_button_replace=far_replace,
+        far_button_replace_all=far_replace_all, far_button_cancel=far_cancel)
 
 
 def grid_remove_bar(bar: tk.Frame, text: tk.Text) -> None:
@@ -450,6 +482,8 @@ def initialise_menus(ui: UI, update: UpdateFunc) -> None:
     ui.menus.edit.add_command(label="Clear", underline=0,
                               command=lambda: update("clear"))
     ui.menus.edit.add_separator()
+    ui.menus.edit.add_command(label="Find & Replace",
+                              underline=0, command=lambda: update("far_bar"))
     ui.menus.edit.add_command(label="Goto", accelerator="Ctrl-G",
                               underline=0, command=lambda: update("goto_bar"))
     ui.root.bind("<Control-Key-g>", lambda _: update("goto_bar"))
@@ -505,6 +539,7 @@ def main():
     ui.goto_button_cancel.config(command=lambda: _update("popbar"))
     ui.daterange_button_ok.config(command=lambda: _update("capture_daterange"))
     ui.daterange_button_cancel.config(command=lambda: _update("popbar"))
+    ui.far_button_cancel.config(command=lambda: _update("popbar"))
 
     _update("initialise")
     ui.text.focus()
