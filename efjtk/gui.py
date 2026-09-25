@@ -38,11 +38,12 @@ class UI(NamedTuple):
     status: tk.StringVar
     menus: Menus
     goto_bar: tk.Frame
-    goto_entry: tk.Entry
+    goto_button_go: ttk.Button
+    goto_button_cancel: ttk.Button
     goto_value: tk.StringVar
-    goto_button: ttk.Button
     daterange_bar: tk.Frame
-    daterange_button: ttk.Button
+    daterange_button_ok: ttk.Button
+    daterange_button_cancel: ttk.Button
     date_from: tk.StringVar
     date_to: tk.StringVar
 
@@ -50,6 +51,7 @@ class UI(NamedTuple):
 @dataclass
 class Model():
     settings: dict[str, str]
+    bar_stack: list[tk.Frame | None]
     date_from: dt.date | None = None
     date_to: dt.date | None = None
     filename: str = ""
@@ -60,6 +62,7 @@ class DrawData(NamedTuple):
     dirty: bool
     cansave: bool
     dates: tuple[dt.date | None, dt.date | None]
+    bar: tk.Frame | None
 
 
 UpdateFunc = Callable[[str], None]
@@ -75,10 +78,8 @@ def update(
     elif msg.startswith("export_"):
         export(model, ui, msg)
     elif msg in {"cut", "copy", "paste"}:
-        ui.text.event_generate({
-            "cut": "<<Cut>>",
-            "copy": "<<Copy>>",
-            "paste": "<<Paste>>"}[msg])
+        ui.text.event_generate(
+            {"cut": "<<Cut>>", "copy": "<<Copy>>", "paste": "<<Paste>>"}[msg])
     elif msg == "undo":
         ui.text.edit_undo()
     elif msg == "redo":
@@ -93,31 +94,29 @@ def update(
         ui.text.delete("1.0", tk.END)
     elif msg == "selectall":
         ui.text.tag_add("sel", "1.0", tk.END)
-    elif msg == "goto_bar":
-        ui.daterange_bar.grid_remove()
-        ui.goto_bar.grid(row=1, column=0, columnspan=2, sticky=tk.EW)
-        ui.goto_entry.focus()
-    elif msg == "daterange_bar":
-        ui.goto_bar.grid_remove()
-        show_daterange_bar(model, ui)
-    elif msg == "set_daterange":
-        process_daterange(model, ui)
+    elif msg in {"goto_bar", "daterange_bar"}:
+        push_bar(
+            model.bar_stack,
+            {"goto_bar": ui.goto_bar,
+             "daterange_bar": ui.daterange_bar}[msg])
+    elif msg == "popbar":
+        pop_bar(model.bar_stack)
     elif msg == "goto":
         if (line := ui.goto_value.get()):
             ui.text.mark_set("insert", f"{line}.0")
             ui.text.see(ui.text.index("insert"))
-            ui.goto_bar.grid_remove()
-            ui.text.focus()
+            pop_bar(model.bar_stack)
+    elif msg == "capture_daterange":
+        capture_daterange(model, ui)
     if msg in {"open", "initialise"}:
         ui.text.mark_set("sh-end", "end")
         ui.text.event_generate("<<HighlightSyntax>>", when="tail")
-
-    if msg not in {"quit", "clear", "selectall",
-                   "goto_bar", "goto", "daterange_bar",
-                   "export_logbook", "export_summary", "export_cumulative"}:
-        draw(DrawData(dirty=model.dirty,
-                      cansave=bool(model.filename),
-                      dates=(model.date_from, model.date_to)))
+    if (msg in {"quit", "clear", "selectall"} or msg.startswith("export_")):
+        return
+    draw(DrawData(dirty=model.dirty,
+                  cansave=bool(model.filename),
+                  dates=(model.date_from, model.date_to),
+                  bar=model.bar_stack[-1] if len(model.bar_stack) else None))
 
 
 def draw(state: dict[str, Any], ui: UI, data: DrawData) -> None:
@@ -142,6 +141,29 @@ def draw(state: dict[str, Any], ui: UI, data: DrawData) -> None:
     ui.status.set(
         f"{ui.text.index("insert")} | Export Dates: "
         f"{data.dates[0] or 'Start'} to {data.dates[1] or 'End'}")
+    current_bar = state.get("current_bar")
+    if data.bar != current_bar:
+        if current_bar:
+            current_bar.grid_remove()
+        if data.bar:
+            data.bar.grid(row=1, column=0, columnspan=2, sticky=tk.EW)
+            data.bar.event_generate("<<FocusChild>>")
+        else:
+            ui.text.focus()
+        state["current_bar"] = data.bar
+
+
+def push_bar(stack: list[tk.Frame | None], bar: tk.Frame) -> None:
+    if bar in stack:
+        stack[stack.index(bar)] = None
+    stack.append(bar)
+
+
+def pop_bar(stack: list[tk.Frame | None]) -> None:
+    if len(stack):
+        stack.pop()
+    while len(stack) and not stack[-1]:
+        stack.pop()
 
 
 def highlight_syntax(t: tk.Text) -> None:
@@ -262,40 +284,15 @@ def export(model: Model, ui: UI, msg: str) -> None:
         messagebox.showerror("Parse Error", str(e))
 
 
-def process_daterange(model: Model, ui: UI) -> None:
+def capture_daterange(model: Model, ui: UI) -> None:
     try:
         from_ = ui.date_from.get().strip()
         model.date_from = dt.date.fromisoformat(from_) if from_ else None
         to = ui.date_to.get().strip()
         model.date_to = dt.date.fromisoformat(to) if to else None
-        ui.daterange_bar.grid_remove()
-        ui.text.focus()
+        pop_bar(model.bar_stack)
     except ValueError as e:
         messagebox.showerror("Invalid Date", str(e))
-
-
-def show_daterange_bar(model: Model, ui: UI) -> None:
-    if model.date_to and model.date_from:
-        ui.date_to.set(model.date_to.isoformat())
-        ui.date_from.set(model.date_from.isoformat())
-    else:
-        dates: list[dt.date] = []
-        for line in ui.text.get("1.0", tk.END).splitlines():
-            if mo := re.match(r"\s*(\d{4}-\d{2}-\d{2})|([+]+)", line):
-                if mo.group(1):
-                    try:
-                        dates.append(dt.date.fromisoformat(mo.group(1)))
-                    except ValueError:
-                        continue
-                elif dates and mo.group(2):
-                    dates.append(
-                        dates[-1] + dt.timedelta(days=len(mo.group(2))))
-    if model.date_to is None:
-        ui.date_to.set(max(dates).isoformat() if len(dates) else "")
-    if model.date_from is None:
-        ui.date_from.set(min(dates).isoformat() if len(dates) else "")
-    ui.daterange_bar.grid(row=1, column=0, columnspan=2, sticky=tk.EW)
-    ui.daterange_button.focus()
 
 
 def initialise_ui(root: tk.Tk) -> UI:
@@ -343,49 +340,53 @@ def initialise_ui(root: tk.Tk) -> UI:
 
     goto_bar = tk.Frame(root, padx=em(1), pady=em(0.5))
     tk_validate_integer = root.register(validate_integer)
-    goto_value = tk.StringVar()
+    goto_val = tk.StringVar()
+    goto_entry = ttk.Entry(
+        goto_bar, textvariable=goto_val, validate="key",
+        validatecommand=(tk_validate_integer, "%P"), justify="center")
+    goto_bar.bind("<<FocusChild>>", lambda _: goto_entry.focus())
+    goto_go = ttk.Button(goto_bar, text="Go")
+    goto_entry.bind("<Return>", lambda _: goto_go.invoke())
+    goto_cancel = ttk.Button(goto_bar, text="Cancel")
+    goto_entry.bind("<Escape>", lambda _: goto_cancel.invoke())
     goto_bar.grid_columnconfigure(2, weight=1)
     ttk.Label(goto_bar, text="Goto line:").grid(row=0, column=1)
-    goto_entry = ttk.Entry(
-        goto_bar, textvariable=goto_value, validate="key",
-        validatecommand=(tk_validate_integer, "%P"), justify="center")
     goto_entry.grid(row=0, column=2, sticky=tk.EW, padx=em(2))
-    goto_button = ttk.Button(goto_bar, text="Go")
-    goto_button.grid(row=0, column=3)
-    ttk.Button(goto_bar, text="Cancel",
-               command=lambda: grid_remove_bar(goto_bar, text)
-               ).grid(row=0, column=5, padx=(em(0.5), 0))
+    goto_go.grid(row=0, column=3)
+    goto_cancel.grid(row=0, column=5, padx=(em(0.5), 0))
 
-    daterange_bar = tk.Frame(root, padx=em(1), pady=em(0.5))
-    tk_validate_date = root.register(validate_date)
-    date_from = tk.StringVar()
-    date_to = tk.StringVar()
-    daterange_bar.grid_columnconfigure(1, weight=1)
-    daterange_bar.grid_columnconfigure(3, weight=1)
-    ttk.Label(daterange_bar, text="From:").grid(row=0, column=0)
-    ttk.Entry(daterange_bar, textvariable=date_from, justify="center",
-              validate="key", validatecommand=(tk_validate_date, "%P")
-              ).grid(row=0, column=1, sticky=tk.EW, padx=(em(1), em(2)))
-    ttk.Label(daterange_bar, text="To:").grid(row=0, column=2)
-    ttk.Entry(daterange_bar, textvariable=date_to, justify="center",
-              validate="key", validatecommand=(tk_validate_date, "%P")
-              ).grid(row=0, column=3, sticky=tk.EW, padx=(em(1), em(2)))
-    daterange_button = ttk.Button(daterange_bar, text="OK")
-    daterange_button.grid(row=0, column=4, padx=(em(1), 0))
-    ttk.Button(daterange_bar, text="Cancel",
-               command=lambda: grid_remove_bar(daterange_bar, text)
-               ).grid(row=0, column=5, padx=(em(1), 0))
+    dr_bar = tk.Frame(root, padx=em(1), pady=em(0.5))
+    dr_validate = (root.register(validate_date), "%P")
+    from_ = tk.StringVar()
+    to = tk.StringVar()
+    dr_from = ttk.Entry(dr_bar, textvariable=from_, justify="center",
+                        validate="key", validatecommand=dr_validate)
+    dr_bar.bind("<<FocusChild>>", lambda _: dr_from.focus())
+    dr_to = ttk.Entry(dr_bar, textvariable=to, justify="center",
+                      validate="key", validatecommand=dr_validate)
+    dr_ok = ttk.Button(dr_bar, text="OK")
+    dr_cancel = ttk.Button(dr_bar, text="Cancel")
+    dr_bar.bind("<Escape>", lambda _: dr_cancel.invoke())
+    dr_bar.grid_columnconfigure(1, weight=1)
+    dr_bar.grid_columnconfigure(3, weight=1)
+    ttk.Label(dr_bar, text="From:").grid(row=0, column=0)
+    dr_from.grid(row=0, column=1, sticky=tk.EW, padx=(em(1), em(2)))
+    ttk.Label(dr_bar, text="To:").grid(row=0, column=2)
+    dr_to.grid(row=0, column=3, sticky=tk.EW, padx=(em(1), em(2)))
+    dr_ok.grid(row=0, column=4, padx=(em(1), 0))
+    dr_cancel.grid(row=0, column=5, padx=(em(1), 0))
 
     text.grid(row=2, column=0, sticky=tk.NSEW)
     sbx.grid(row=3, column=0, sticky=tk.EW)
     sby.grid(row=2, column=1, rowspan=2, sticky=tk.NS)
     statusbar.grid(row=4, column=0, columnspan=2, sticky=tk.EW)
 
-    return UI(root=root, text=text, status=status, menus=menus,
-              goto_bar=goto_bar, goto_entry=goto_entry,
-              goto_value=goto_value, goto_button=goto_button,
-              daterange_bar=daterange_bar, daterange_button=daterange_button,
-              date_from=date_from, date_to=date_to)
+    return UI(
+        root=root, text=text, status=status, menus=menus,
+        goto_bar=goto_bar, goto_value=goto_val,
+        goto_button_go=goto_go, goto_button_cancel=goto_cancel,
+        daterange_bar=dr_bar, date_from=from_, date_to=to,
+        daterange_button_ok=dr_ok, daterange_button_cancel=dr_cancel)
 
 
 def grid_remove_bar(bar: tk.Frame, text: tk.Text) -> None:
@@ -472,9 +473,8 @@ def main():
         settings = {}
     root = tk.Tk()
     ui = initialise_ui(root)
-    _update = partial(update, Model(settings), ui, partial(draw, {}, ui))
+    _update = partial(update, Model(settings, []), ui, partial(draw, {}, ui))
     initialise_menus(ui, _update)
-    _update("initialise")
     # bindings
     root.protocol("WM_DELETE_WINDOW", lambda: _update("quit"))
     ui.text.bind("<<Modified>>", lambda _: _update("modified"))
@@ -483,9 +483,12 @@ def main():
     ui.text.bind("<KeyRelease>", lambda _: _update("status"))
     ui.text.bind("<ButtonPress>", lambda _: _update("status"))
     ui.text.bind("<Return>", lambda _: ui.text.edit_separator())
-    ui.goto_entry.bind("<Return>", lambda _: _update("goto"))
-    ui.goto_button.config(command=lambda: _update("goto"))
-    ui.daterange_button.config(command=lambda: _update("set_daterange"))
+    ui.goto_button_go.config(command=lambda: _update("goto"))
+    ui.goto_button_cancel.config(command=lambda: _update("popbar"))
+    ui.daterange_button_ok.config(command=lambda: _update("capture_daterange"))
+    ui.daterange_button_cancel.config(command=lambda: _update("popbar"))
+
+    _update("initialise")
     ui.text.focus()
     root.mainloop()
 
