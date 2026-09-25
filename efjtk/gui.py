@@ -35,7 +35,8 @@ class Menus(NamedTuple):
 class UI(NamedTuple):
     root: tk.Tk
     text: tk.Text
-    status: tk.StringVar
+    status_caretpos: tk.StringVar
+    status_daterange: tk.StringVar
     menus: Menus
     goto_bar: tk.Frame
     goto_button_go: ttk.Button
@@ -138,9 +139,12 @@ def draw(state: dict[str, Any], ui: UI, data: DrawData) -> None:
     modified = " *" if data.dirty else ""
     ui.root.title(f"efjtk (v{efjtk.version.VERSION}){modified}")
     row, col = ui.text.index("insert").split(".")
-    ui.status.set(
-        f"{ui.text.index("insert")} | Export Dates: "
-        f"{data.dates[0] or 'Start'} to {data.dates[1] or 'End'}")
+    ui.status_caretpos.set(ui.text.index('insert'))
+    if any(data.dates):
+        ui.status_daterange.set(
+            f"{data.dates[0] or 'Start'} to {data.dates[1] or 'End'}")
+    else:
+        ui.status_daterange.set("All")
     current_bar = state.get("current_bar")
     if data.bar != current_bar:
         if current_bar:
@@ -327,9 +331,17 @@ def initialise_ui(root: tk.Tk) -> UI:
     text.config(yscrollcommand=sby.set)
 
     statusbar = ttk.Frame(root)
-    status = tk.StringVar()
-    ttk.Label(statusbar, textvariable=status).pack(fill=tk.X, side=tk.LEFT)
-    ttk.Sizegrip(statusbar).pack(side=tk.RIGHT, anchor=tk.SE)
+    status_caretpos = tk.StringVar()
+    status_daterange = tk.StringVar()
+    ttk.Label(statusbar, text="Cursor Position:").grid(row=0, column=1)
+    ttk.Label(statusbar, textvariable=status_caretpos, relief="sunken",
+              padding=(em(1), em(0.25))).grid(row=0, column=2, padx=em(1))
+    ttk.Label(statusbar, text="Date Range for Export:").grid(row=0, column=3)
+    ttk.Label(statusbar, textvariable=status_daterange, relief="sunken",
+              padding=(em(1), em(0.25))).grid(row=0, column=4, padx=em(1))
+    statusbar.grid_columnconfigure(5, weight=1)
+    ttk.Frame(statusbar).grid(row=0, column=5)
+    ttk.Sizegrip(statusbar).grid(row=0, column=6, sticky=tk.SE)
 
     top = tk.Menu()
     menus = Menus(*(tk.Menu(top, tearoff=0) for _ in range(5)))
@@ -384,10 +396,11 @@ def initialise_ui(root: tk.Tk) -> UI:
     text.grid(row=2, column=0, sticky=tk.NSEW)
     sbx.grid(row=3, column=0, sticky=tk.EW)
     sby.grid(row=2, column=1, rowspan=2, sticky=tk.NS)
-    statusbar.grid(row=4, column=0, columnspan=2, sticky=tk.EW)
+    statusbar.grid(row=4, column=0, columnspan=2, sticky=tk.EW, padx=em(0.25))
 
     return UI(
-        root=root, text=text, status=status, menus=menus,
+        root=root, menus=menus, text=text,
+        status_caretpos=status_caretpos, status_daterange=status_daterange,
         goto_bar=goto_bar, goto_value=goto_val,
         goto_button_go=goto_go, goto_button_cancel=goto_cancel,
         daterange_bar=dr_bar, date_from=from_, date_to=to,
