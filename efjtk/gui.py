@@ -292,7 +292,10 @@ def capture_daterange(model: Model, ui: UI) -> None:
         model.date_to = dt.date.fromisoformat(to) if to else None
         pop_bar(model.bar_stack)
     except ValueError as e:
-        messagebox.showerror("Invalid Date", str(e))
+        messagebox.showerror(
+            "Invalid Date",
+            f"{str(e)}\n\nDates must by in ISO 8601 format\n"
+            f"e.g. 2026-09-25")
 
 
 def initialise_ui(root: tk.Tk) -> UI:
