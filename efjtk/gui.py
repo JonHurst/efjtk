@@ -570,6 +570,28 @@ def initialise_menus(ui: UI, update: UpdateFunc) -> None:
                                 command=lambda: update("daterange_bar"))
 
 
+def initialise_bindings(ui: UI, update: UpdateFunc) -> None:
+    ui.root.protocol("WM_DELETE_WINDOW", lambda: update("quit"))
+
+    ui.text.bind("<<Modified>>", lambda _: update("modified"))
+    ui.text.bind("<<Selection>>", lambda _: update("selection"))
+    ui.text.bind("<<HighlightSyntax>>", lambda _: highlight_syntax(ui.text))
+    ui.text.bind("<KeyRelease>", lambda _: update("status"))
+    ui.text.bind("<ButtonRelease>", lambda _: update("status"))
+    ui.text.bind("<Return>", lambda _: ui.text.edit_separator())
+
+    ui.goto_button_go.config(command=lambda: update("goto"))
+    ui.goto_button_cancel.config(command=lambda: update("popbar"))
+
+    ui.daterange_button_ok.config(command=lambda: update("capture_daterange"))
+    ui.daterange_button_cancel.config(command=lambda: update("popbar"))
+
+    ui.fr_button_cancel.config(command=lambda: update("popbar"))
+    ui.fr_button_next.config(command=lambda: update("findnext"))
+    ui.fr_button_replace.config(command=lambda: update("replace"))
+    ui.fr_from.trace_add("write", lambda *_: update("find_changed"))
+
+
 def main():
     if "windll" in dir(ctypes):
         ctypes.windll.shcore.SetProcessDpiAwareness(1)
@@ -582,22 +604,7 @@ def main():
     ui = initialise_ui(root)
     _update = partial(update, Model(settings, []), ui, partial(draw, {}, ui))
     initialise_menus(ui, _update)
-    # bindings
-    root.protocol("WM_DELETE_WINDOW", lambda: _update("quit"))
-    ui.text.bind("<<Modified>>", lambda _: _update("modified"))
-    ui.text.bind("<<Selection>>", lambda _: _update("selection"))
-    ui.text.bind("<<HighlightSyntax>>", lambda _: highlight_syntax(ui.text))
-    ui.text.bind("<KeyRelease>", lambda _: _update("status"))
-    ui.text.bind("<ButtonRelease>", lambda _: _update("status"))
-    ui.text.bind("<Return>", lambda _: ui.text.edit_separator())
-    ui.goto_button_go.config(command=lambda: _update("goto"))
-    ui.goto_button_cancel.config(command=lambda: _update("popbar"))
-    ui.daterange_button_ok.config(command=lambda: _update("capture_daterange"))
-    ui.daterange_button_cancel.config(command=lambda: _update("popbar"))
-    ui.fr_button_cancel.config(command=lambda: _update("popbar"))
-    ui.fr_button_next.config(command=lambda: _update("findnext"))
-    ui.fr_button_replace.config(command=lambda: _update("replace"))
-    ui.fr_from.trace_add("write", lambda *_: _update("find_changed"))
+    initialise_bindings(ui, _update)
     _update("initialise")
     ui.text.focus()
     root.mainloop()
