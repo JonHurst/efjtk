@@ -300,8 +300,6 @@ def modify(model: Model, ui: UI, msg: str) -> None:
           "modify_fo": efjtk.modify.add_fo_role_flag,
           "modify_vfr": efjtk.modify.add_vfr_flag,
           "modify_ins": efjtk.modify.add_ins_flag}
-    ui.root.busy(cursor="watch")
-    ui.root.update()
     text = ui.text.get('1.0', 'end')
     try:
         insert = ui.text.index("insert")
@@ -323,11 +321,7 @@ def modify(model: Model, ui: UI, msg: str) -> None:
         ui.text.mark_set("insert", insert)
         ui.text.see("insert")
     except VE as e:
-        ui.root.busy_forget()
         messagebox.showerror("Parse Error", str(e))
-    finally:
-        if ui.root.busy_status():
-            ui.root.busy_forget()
 
 
 def export(model: Model, ui: UI, msg: str) -> None:
