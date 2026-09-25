@@ -459,10 +459,13 @@ def initialise_ui(root: tk.Tk) -> UI:
     fr_from_val = tk.StringVar()
     fr_to_val = tk.StringVar()
     fr_from = ttk.Entry(fr_bar, textvariable=fr_from_val, width=15)
+    fr_bar.bind("<<FocusChild>>", lambda _: fr_from.focus())
     fr_to = ttk.Entry(fr_bar, textvariable=fr_to_val, width=15)
     fr_next = ttk.Button(fr_bar, text="Next")
     fr_replace = ttk.Button(fr_bar, text="Replace")
     fr_cancel = ttk.Button(fr_bar, text="Close")
+    fr_from.bind("<Escape>", lambda _: fr_cancel.invoke())
+    fr_to.bind("<Escape>", lambda _: fr_cancel.invoke())
     fr_bar.grid_columnconfigure(1, weight=1)
     fr_bar.grid_columnconfigure(3, weight=1)
     ttk.Label(fr_bar, text="Find:").grid(row=0, column=0)
@@ -551,9 +554,6 @@ def initialise_menus(ui: UI, update: UpdateFunc) -> None:
     ui.menus.modify.add_command(label="Instructor", underline=0,
                                 command=lambda: update("modify_ins"))
 
-    ui.menus.export.add_command(label="Restrict Dates", underline=0,
-                                command=lambda: update("daterange_bar"))
-    ui.menus.export.add_separator()
     ui.menus.export.add_command(label="FCL.050 Logbook", underline=0,
                                 command=lambda: update("export_logbook"))
     ui.menus.export.add_command(label="Cumulative Totals", underline=0,
@@ -565,6 +565,9 @@ def initialise_menus(ui: UI, update: UpdateFunc) -> None:
                                command=lambda: webbrowser.open(HELP_URL))
     ui.menus.help_.add_command(label="eFJ Format", underline=0,
                                command=lambda: webbrowser.open(HELP_EFJ))
+    ui.menus.export.add_separator()
+    ui.menus.export.add_command(label="Restrict Dates", underline=0,
+                                command=lambda: update("daterange_bar"))
 
 
 def main():
