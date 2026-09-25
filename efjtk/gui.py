@@ -336,7 +336,7 @@ def initialise_ui(root: tk.Tk) -> UI:
     top.add_cascade(label="File", underline=0, menu=menus.file_)
     top.add_cascade(label="Edit", underline=0, menu=menus.edit)
     top.add_cascade(label="Modify", underline=0, menu=menus.modify)
-    top.add_cascade(label="Export", underline=0, menu=menus.export)
+    top.add_cascade(label="Export", underline=1, menu=menus.export)
     top.add_cascade(label="Help", underline=0, menu=menus.help_)
     root.config(menu=top)
 
@@ -367,8 +367,11 @@ def initialise_ui(root: tk.Tk) -> UI:
     dr_to = ttk.Entry(dr_bar, textvariable=to, justify="center",
                       validate="key", validatecommand=dr_validate)
     dr_ok = ttk.Button(dr_bar, text="OK")
+    dr_from.bind("<Return>", lambda _: dr_ok.invoke())
+    dr_to.bind("<Return>", lambda _: dr_ok.invoke())
     dr_cancel = ttk.Button(dr_bar, text="Cancel")
-    dr_bar.bind("<Escape>", lambda _: dr_cancel.invoke())
+    dr_from.bind("<Escape>", lambda _: dr_cancel.invoke())
+    dr_to.bind("<Escape>", lambda _: dr_cancel.invoke())
     dr_bar.grid_columnconfigure(1, weight=1)
     dr_bar.grid_columnconfigure(3, weight=1)
     ttk.Label(dr_bar, text="From:").grid(row=0, column=0)
