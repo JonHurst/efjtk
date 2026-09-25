@@ -560,7 +560,9 @@ def initialise_menus(ui: UI, update: UpdateFunc) -> None:
                                 command=lambda: update("export_summary"))
 
     ui.menus.help_.add_command(label="Online Help", underline=0,
+                               accelerator="F1",
                                command=lambda: webbrowser.open(HELP_URL))
+    ui.root.bind("<F1>", lambda _: webbrowser.open(HELP_URL))
     ui.menus.help_.add_command(label="eFJ Format", underline=0,
                                command=lambda: webbrowser.open(HELP_EFJ))
     ui.menus.export.add_separator()
