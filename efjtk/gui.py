@@ -506,6 +506,19 @@ def grid_remove_bar(bar: tk.Frame, text: tk.Text) -> None:
     text.focus()
 
 
+def recenter(t: tk.Text) -> None:
+    index_line = int(t.index("insert").split(".")[0])
+    end_line = int(t.index(tk.END).split(".")[0])
+    index_frac = index_line / end_line
+    page = t.yview()
+    page_height = page[1] - page[0]
+    target = max(0, index_frac - page_height / 2)
+    if math.isclose(target, t.yview()[0], abs_tol=page_height / 10):
+        t.yview_moveto(index_frac)
+    else:
+        t.yview_moveto(target)
+
+
 def validate_integer(s: str) -> bool:
     return False if re.search(r"[^\d]", s) else True
 
@@ -543,6 +556,9 @@ def initialise_menus(ui: UI, update: UpdateFunc) -> None:
     ui.menus.edit.add_command(label="Paste", accelerator="Ctrl-V",
                               underline=0, command=lambda: update("paste"))
     ui.menus.edit.add_separator()
+    ui.menus.edit.add_command(label="Recenter", accelerator="Ctrl-L",
+                              underline=0, command=lambda: recenter(ui.text))
+    ui.menus.edit.add_separator()
     ui.menus.edit.add_command(label="Select All", underline=7,
                               command=lambda: update("selectall"))
     ui.menus.edit.add_command(label="Clear", underline=0,
@@ -554,6 +570,7 @@ def initialise_menus(ui: UI, update: UpdateFunc) -> None:
     ui.menus.edit.add_command(label="Find Next", accelerator="F3", underline=5,
                               command=lambda: ui.fr_button_next.invoke())
     ui.root.bind("<F3>", lambda _: ui.fr_button_next.invoke())
+    ui.menus.edit.add_separator()
     ui.menus.edit.add_command(label="Goto", accelerator="Ctrl-G",
                               underline=0, command=lambda: update("goto_bar"))
     ui.root.bind("<Control-Key-g>", lambda _: update("goto_bar"))
@@ -590,6 +607,7 @@ def initialise_menus(ui: UI, update: UpdateFunc) -> None:
 
 def initialise_bindings(ui: UI, update: UpdateFunc) -> None:
     ui.root.protocol("WM_DELETE_WINDOW", lambda: update("quit"))
+    ui.root.bind("<Control-Key-l>", lambda _: recenter(ui.text))
 
     ui.text.bind("<<Modified>>", lambda _: update("modified"))
     ui.text.bind("<<Selection>>", lambda _: update("selection"))
