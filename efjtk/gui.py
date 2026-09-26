@@ -95,9 +95,8 @@ def update(
         ui.text.edit_redo()
     elif msg == "modified":
         if ui.text.edit_modified():
-            if ui.text.index("sh-end") == "1.0":
-                ui.text.event_generate("<<HighlightSyntax>>", when="tail")
             ui.text.mark_set("sh-end", "end")
+            ui.text.event_generate("<<HighlightSyntax>>")
             ui.text.edit_modified(False)
             model.dirty = True
     elif msg == "clear":
@@ -123,7 +122,7 @@ def update(
             ui.text.focus()
     elif msg == "replace":
         replace(ui)
-    if msg in {"open", "insert", "initialise"} or msg.startswith("modify_"):
+    if msg in {"open", "insert"} or msg.startswith("modify_"):
         ui.text.mark_set("sh-end", "end")
         ui.text.event_generate("<<HighlightSyntax>>")
     if (msg in {"quit", "clear", "selectall"} or msg.startswith("export_")):
@@ -234,6 +233,8 @@ def pop_bar(stack: list[tk.Frame | None]) -> None:
 
 def highlight_syntax(t: tk.Text) -> None:
     end = t.index("sh-end")
+    if end == "1.0":
+        return
     start = t.index(end + " - 100 lines linestart")
     for tag in ("keyword", "datetime", "grayed"):
         t.tag_remove(tag, start, end)
@@ -657,8 +658,8 @@ def main():
     _update = partial(update, Model(settings, []), ui, partial(draw, {}, ui))
     initialise_menus(ui, _update)
     initialise_bindings(ui, _update)
-    _update("initialise")
     ui.text.focus()
+    _update("initialise")
     root.mainloop()
 
 
