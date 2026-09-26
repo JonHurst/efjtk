@@ -325,13 +325,14 @@ def modify(model: Model, ui: UI, msg: str) -> None:
         ui.text.edit_separator()
         if range_:
             start = f"{ui.text.index(range_[0])} linestart"
-            end = f"{ui.text.index(range_[1])} lineend"
+            end = f"{ui.text.index(range_[1])} - 1 chars lineend"
             start_line = int(ui.text.index(start).split(".")[0])
             end_line = int(ui.text.index(end).split(".")[0])
             result_lines = result.splitlines()
             result = "\n".join(result_lines[start_line - 1:end_line])
             ui.text.delete(start, end)
             ui.text.insert(start, result)
+            ui.text.tag_add("sel", start, end)
         else:
             ui.text.delete('1.0', tk.END)
             ui.text.insert('1.0', result)
