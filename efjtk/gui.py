@@ -123,7 +123,7 @@ def update(
             ui.text.focus()
     elif msg == "replace":
         replace(ui)
-    if msg in {"open", "initialise"}:
+    if msg in {"open", "insert", "initialise"}:
         ui.text.mark_set("sh-end", "end")
         ui.text.event_generate("<<HighlightSyntax>>")
     if (msg in {"quit", "clear", "selectall"} or msg.startswith("export_")):
@@ -277,12 +277,14 @@ def file_operation(model: Model, ui: UI, msg: str) -> None:
             model.filename = fn
             model.settings['savePath'] = os.path.dirname(fn)
         with open(model.filename, "w", encoding="utf-8") as f:
-            f.write(ui.text.get("1.0", tk.END))
+            f.write(ui.text.get("1.0", tk.END).strip())
             model.dirty = False
     if msg in {"open", "insert"}:
         path = model.settings.get(
             "openPath" if msg == "open" else "insertPath")
-        if fn := filedialog.askopenfilename(initialdir=path):
+        if fn := filedialog.askopenfilename(
+                initialdir=path,
+                filetypes=(("All", "*"), ("Text", "*.txt"), ("eFJ", "*.efj"))):
             with open(fn) as f:
                 newtext = f.read()
                 if msg == "open":
@@ -297,7 +299,10 @@ def file_operation(model: Model, ui: UI, msg: str) -> None:
                 else:
                     model.settings['insertPath'] = os.path.dirname(fn)
                     ui.text.edit_separator()
+                    insert_index = ui.text.index("insert")
                     ui.text.insert(ui.text.index("insert"), newtext)
+                    ui.text.mark_set("insert", insert_index)
+                    ui.text.edit_modified(False)
                     model.dirty = True
     if msg == "quit":
         model.settings["last-search"] = ui.fr_from.get()
@@ -608,6 +613,7 @@ def initialise_menus(ui: UI, update: UpdateFunc) -> None:
 def initialise_bindings(ui: UI, update: UpdateFunc) -> None:
     ui.root.protocol("WM_DELETE_WINDOW", lambda: update("quit"))
     ui.root.bind("<Control-Key-l>", lambda _: recenter(ui.text))
+    ui.root.bind("<Control-Key-L>", lambda _: recenter(ui.text))
 
     ui.text.bind("<<Modified>>", lambda _: update("modified"))
     ui.text.bind("<<Selection>>", lambda _: update("selection"))
