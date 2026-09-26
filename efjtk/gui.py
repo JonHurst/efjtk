@@ -80,7 +80,7 @@ UpdateFunc = Callable[[str], None]
 def update(
         model: Model, ui: UI, draw: Callable[[DrawData], None], msg: str
 ) -> None:
-    if msg in {"open", "save", "saveas", "quit"}:
+    if msg in {"open", "save", "saveas", "insert", "quit"}:
         file_operation(model, ui, msg)
     elif msg.startswith("modify_"):
         modify(model, ui, msg)
@@ -279,24 +279,26 @@ def file_operation(model: Model, ui: UI, msg: str) -> None:
         with open(model.filename, "w", encoding="utf-8") as f:
             f.write(ui.text.get("1.0", tk.END))
             model.dirty = False
-    if msg == "open":
-        fn = filedialog.askopenfilename(
-            filetypes=(("Text", "*.txt"), ("Text", "*.efj"), ("All", "*")),
-            initialdir=model.settings.get("openPath"))
-        if not fn:  # dialog was cancelled
-            return
-        else:
+    if msg in {"open", "insert"}:
+        path = model.settings.get(
+            "openPath" if msg == "open" else "insertPath")
+        if fn := filedialog.askopenfilename(initialdir=path):
             with open(fn) as f:
-                newtext = f.read().strip()
-                model.settings['openPath'] = os.path.dirname(fn)
-                ui.text.delete("1.0", tk.END)
-                ui.text.insert("1.0", newtext)
-                ui.text.edit_reset()
-                ui.text.see("insert")
-                ui.text.edit_reset()
-                ui.text.edit_modified(False)
-                model.dirty = False
-                model.filename = fn
+                newtext = f.read()
+                if msg == "open":
+                    model.settings['openPath'] = os.path.dirname(fn)
+                    ui.text.delete("1.0", tk.END)
+                    ui.text.insert("1.0", newtext)
+                    ui.text.edit_reset()
+                    ui.text.edit_modified(False)
+                    model.dirty = False
+                    model.filename = fn
+                    ui.text.see("insert")
+                else:
+                    model.settings['insertPath'] = os.path.dirname(fn)
+                    ui.text.edit_separator()
+                    ui.text.insert(ui.text.index("insert"), newtext)
+                    model.dirty = True
     if msg == "quit":
         model.settings["last-search"] = ui.fr_from.get()
         with open(SETTINGS_FILE, "w") as f:
@@ -515,6 +517,9 @@ def initialise_menus(ui: UI, update: UpdateFunc) -> None:
     ui.menus.file_.add_command(label="Open", accelerator="Ctrl-O",
                                underline=0, command=lambda: update("open"))
     ui.root.bind("<Control-Key-o>", lambda _: update("open"))
+    ui.menus.file_.add_command(label="Insert",
+                               underline=0, command=lambda: update("insert"))
+    ui.menus.file_.add_separator()
     ui.menus.file_.add_command(label="Save", accelerator="Ctrl-S",
                                underline=0, command=lambda: update("save"))
     ui.root.bind("<Control-Key-s>", lambda _: update("save"))
