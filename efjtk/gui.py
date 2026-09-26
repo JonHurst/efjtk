@@ -470,6 +470,7 @@ def initialise_ui(root: tk.Tk) -> UI:
     fr_next = ttk.Button(fr_bar, text="Next")
     fr_replace = ttk.Button(fr_bar, text="Replace")
     fr_cancel = ttk.Button(fr_bar, text="Close")
+    fr_from.bind("<Return>", lambda _: fr_next.invoke())
     fr_from.bind("<Escape>", lambda _: fr_cancel.invoke())
     fr_to.bind("<Escape>", lambda _: fr_cancel.invoke())
     fr_bar.grid_columnconfigure(1, weight=1)
@@ -550,6 +551,9 @@ def initialise_menus(ui: UI, update: UpdateFunc) -> None:
     ui.menus.edit.add_command(label="Find & Replace", accelerator="Ctrl-F",
                               underline=0, command=lambda: update("far_bar"))
     ui.root.bind("<Control-Key-f>", lambda _: update("far_bar"))
+    ui.menus.edit.add_command(label="Find Next", accelerator="F3", underline=5,
+                              command=lambda: ui.fr_button_next.invoke())
+    ui.root.bind("<F3>", lambda _: ui.fr_button_next.invoke())
     ui.menus.edit.add_command(label="Goto", accelerator="Ctrl-G",
                               underline=0, command=lambda: update("goto_bar"))
     ui.root.bind("<Control-Key-g>", lambda _: update("goto_bar"))
