@@ -95,9 +95,10 @@ def update(
         ui.text.edit_redo()
     elif msg == "modified":
         if ui.text.edit_modified():
-            ui.text.edit_modified(False)
+            if ui.text.index("sh-end") == "1.0":
+                ui.text.event_generate("<<HighlightSyntax>>", when="tail")
             ui.text.mark_set("sh-end", "end")
-            ui.text.event_generate("<<HighlightSyntax>>", when="tail")
+            ui.text.edit_modified(False)
             model.dirty = True
     elif msg == "clear":
         ui.text.delete("1.0", tk.END)
@@ -124,7 +125,7 @@ def update(
         replace(ui)
     if msg in {"open", "initialise"}:
         ui.text.mark_set("sh-end", "end")
-        ui.text.event_generate("<<HighlightSyntax>>", when="tail")
+        ui.text.event_generate("<<HighlightSyntax>>")
     if (msg in {"quit", "clear", "selectall"} or msg.startswith("export_")):
         return
     draw(DrawData(dirty=model.dirty,
@@ -233,7 +234,7 @@ def pop_bar(stack: list[tk.Frame | None]) -> None:
 
 def highlight_syntax(t: tk.Text) -> None:
     end = t.index("sh-end")
-    start = f"{end} - 20 lines"
+    start = t.index(f"{end} - 20 lines linestart")
     for tag in ("keyword", "datetime", "grayed"):
         t.tag_remove(tag, start, end)
     count = tk.IntVar()
@@ -247,8 +248,7 @@ def highlight_syntax(t: tk.Text) -> None:
             t.tag_add(tag, idx, start_idx)
     t.mark_set("sh-end", start)
     if start != "1.0":
-        t.after_idle(lambda: t.event_generate(
-            "<<HighlightSyntax>>", when="tail"))
+        t.after_idle(lambda: t.event_generate("<<HighlightSyntax>>"))
 
 
 def file_operation(model: Model, ui: UI, msg: str) -> None:
