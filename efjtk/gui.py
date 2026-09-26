@@ -537,7 +537,12 @@ def validate_date(s: str) -> bool:
 def initialise_menus(ui: UI, update: UpdateFunc) -> None:
     ui.menus.file_.add_command(label="Open", accelerator="Ctrl-O",
                                underline=0, command=lambda: update("open"))
-    ui.root.bind("<Control-Key-o>", lambda _: update("open"))
+
+    def open_only(_):  # needed to prevent default text "open line" behavior
+        update("open")
+        return "break"
+    ui.text.bind("<Control-Key-o>", open_only)
+    ui.root.bind("<Control-Key-o>", open_only)
     ui.menus.file_.add_command(label="Insert",
                                underline=0, command=lambda: update("insert"))
     ui.menus.file_.add_separator()
