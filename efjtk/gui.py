@@ -393,7 +393,8 @@ def initialise_ui(root: tk.Tk) -> UI:
     root.minsize(em(75), em(40))
 
     text = tk.Text(root, background='white', font=font, wrap="none",
-                   undo=True, autoseparators=False, exportselection=True)
+                   padx=em(0.5), pady=em(0.5), undo=True,
+                   autoseparators=False, exportselection=True)
     text.mark_set("sh-end", "end")
     text.tag_configure("grayed", foreground="#707070")
     text.tag_configure("keyword", foreground="green")
