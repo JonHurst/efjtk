@@ -123,7 +123,7 @@ def update(
             ui.text.focus()
     elif msg == "replace":
         replace(ui)
-    if msg in {"open", "insert", "initialise"}:
+    if msg in {"open", "insert", "initialise"} or msg.startswith("modify_"):
         ui.text.mark_set("sh-end", "end")
         ui.text.event_generate("<<HighlightSyntax>>")
     if (msg in {"quit", "clear", "selectall"} or msg.startswith("export_")):
@@ -335,6 +335,8 @@ def modify(model: Model, ui: UI, msg: str) -> None:
         else:
             ui.text.delete('1.0', tk.END)
             ui.text.insert('1.0', result)
+        ui.text.edit_modified(False)
+        model.dirty = True
         ui.text.mark_set("insert", insert)
         ui.text.see("insert")
     except VE as e:
