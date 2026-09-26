@@ -289,6 +289,7 @@ def file_operation(model: Model, ui: UI, msg: str) -> None:
                 model.dirty = False
                 model.filename = fn
     if msg == "quit":
+        model.settings["last-search"] = ui.fr_from.get()
         with open(SETTINGS_FILE, "w") as f:
             json.dump(model.settings, f, indent=4)
         ui.root.destroy()
@@ -539,10 +540,9 @@ def initialise_menus(ui: UI, update: UpdateFunc) -> None:
                               underline=0, command=lambda: update("goto_bar"))
     ui.root.bind("<Control-Key-g>", lambda _: update("goto_bar"))
 
-    ui.menus.modify.add_command(
-        label="Expand", accelerator="Ctrl-E", underline=0,
-        command=lambda: update("modify_expand"))
-    ui.root.bind("<Control-Key-e>", lambda _: update("modify_expand"))
+    ui.menus.modify.add_command(label="Expand", accelerator="F2", underline=0,
+                                command=lambda: update("modify_expand"))
+    ui.text.bind("<F2>", lambda _: update("modify_expand"))
     ui.menus.modify.add_command(label="Night", underline=0,
                                 command=lambda: update("modify_night"))
     ui.menus.modify.add_command(label="First Officer", underline=0,
@@ -602,6 +602,7 @@ def main():
         settings = {}
     root = tk.Tk()
     ui = initialise_ui(root)
+    ui.fr_from.set(settings.get("last-search", ""))
     _update = partial(update, Model(settings, []), ui, partial(draw, {}, ui))
     initialise_menus(ui, _update)
     initialise_bindings(ui, _update)
