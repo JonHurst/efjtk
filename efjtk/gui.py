@@ -234,18 +234,27 @@ def pop_bar(stack: list[tk.Frame | None]) -> None:
 
 def highlight_syntax(t: tk.Text) -> None:
     end = t.index("sh-end")
-    start = t.index(f"{end} - 20 lines linestart")
+    start = t.index(end + " - 100 lines linestart")
     for tag in ("keyword", "datetime", "grayed"):
         t.tag_remove(tag, start, end)
-    count = tk.IntVar()
-    for r, tag in ((r"(\d{4}-\d{2}-\d{2})|(\d{4}/\d{4})", "datetime"),
-                   (r"CP:|FO:|PU:|FA:", "keyword"),
-                   (r"#.*", "grayed")):
-        start_idx = start
-        while (idx := t.search(r, start_idx, regexp=True,
-                               stopindex=end, count=count)):
-            start_idx = t.index(f"{idx} + {count.get()} chars")
-            t.tag_add(tag, idx, start_idx)
+    start_line, end_line = (int(X.split(".")[0]) for X in (start, end))
+    for line in range(start_line, end_line):
+        line_text = t.get(f"{line}.0", f"{line + 1}.0")
+        split = line_text.split("#")
+        if len(split) == 2:
+            comment_start = f"{line}.{len(split[0])}"
+            comment_end = f"{line}.{len(line_text) - 1}"
+            t.tag_add("grayed", comment_start, comment_end)
+            line_text = split[0]
+        if mo := re.search(r"(\d{4}-\d{2}-\d{2})|(\d{4}/\d{4})", line_text):
+            datetime_start = f"{line}.{mo.start()}"
+            datetime_end = f"{line}.{mo.end()}"
+            t.tag_add("datetime", datetime_start, datetime_end)
+        else:
+            for mo in re.finditer(r"CP:|FO:|PU:|FA:", line_text):
+                keyword_start = f"{line}.{mo.start()}"
+                keyword_end = f"{line}.{mo.end()}"
+                t.tag_add("keyword", keyword_start, keyword_end)
     t.mark_set("sh-end", start)
     if start != "1.0":
         t.after_idle(lambda: t.event_generate("<<HighlightSyntax>>"))
