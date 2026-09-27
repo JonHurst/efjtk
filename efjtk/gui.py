@@ -62,11 +62,9 @@ class Model():
     date_from: dt.date | None = None
     date_to: dt.date | None = None
     filename: str = ""
-    dirty: bool = False
 
 
 class DrawData(NamedTuple):
-    dirty: bool
     cansave: bool
     canreplace: bool
     canreplaceall: bool
@@ -98,7 +96,6 @@ def update(
             ui.text.mark_set("sh-end", "end")
             ui.text.event_generate("<<HighlightSyntax>>")
             ui.text.edit_modified(False)
-            model.dirty = True
     elif msg == "clear":
         ui.text.delete("1.0", tk.END)
     elif msg == "selectall":
@@ -127,8 +124,7 @@ def update(
         ui.text.event_generate("<<HighlightSyntax>>")
     if (msg in {"quit", "clear", "selectall"} or msg.startswith("export_")):
         return
-    draw(DrawData(dirty=model.dirty,
-                  canreplace=canreplace(ui),
+    draw(DrawData(canreplace=canreplace(ui),
                   canreplaceall=bool(ui.fr_from.get()),
                   cansave=bool(model.filename),
                   dates=(model.date_from, model.date_to),
@@ -138,7 +134,8 @@ def update(
 def draw(state: dict[str, Any], ui: UI, data: DrawData) -> None:
     ui.menus.file_.entryconfigure(
         "Save",
-        state="normal" if data.dirty and data.cansave else "disabled")
+        state=("normal" if ui.text.edit("canundo") and data.cansave
+               else "disabled"))
     ui.menus.edit.entryconfigure(
         "Undo",
         state="normal" if ui.text.edit("canundo") else "disabled")
@@ -151,9 +148,8 @@ def draw(state: dict[str, Any], ui: UI, data: DrawData) -> None:
     ui.menus.edit.entryconfigure(
         "Copy",
         state="normal" if ui.text.tag_ranges("sel") else "disabled")
-    modified = " *" if data.dirty else ""
-    ui.root.title(f"efjtk (v{efjtk.version.VERSION}){modified}")
-    ui.status_caretpos.set(ui.text.index('insert'))
+    modified = "**" if ui.text.edit("canundo") else "––"
+    ui.status_caretpos.set(f"{modified} {ui.text.index('insert')}")
     if any(data.dates):
         ui.status_daterange.set(
             f"{data.dates[0] or 'Start'} to {data.dates[1] or 'End'}")
@@ -261,7 +257,7 @@ def highlight_syntax(t: tk.Text) -> None:
 
 def file_operation(model: Model, ui: UI, msg: str) -> None:
     save_before = False
-    if model.dirty and msg in ["open", "quit"]:
+    if ui.text.edit("canundo") and msg in ["open", "quit"]:
         question = {"open": "opening new file",
                     "quit": "quitting"}[msg]
         if messagebox.askyesno("Save", f"Save before {question}?"):
@@ -277,7 +273,7 @@ def file_operation(model: Model, ui: UI, msg: str) -> None:
             model.settings['savePath'] = os.path.dirname(fn)
         with open(model.filename, "w", encoding="utf-8") as f:
             f.write(ui.text.get("1.0", tk.END).strip())
-            model.dirty = False
+            ui.text.edit_reset()
     if msg in {"open", "insert"}:
         path = model.settings.get(
             "openPath" if msg == "open" else "insertPath")
@@ -292,7 +288,6 @@ def file_operation(model: Model, ui: UI, msg: str) -> None:
                     ui.text.insert("1.0", newtext)
                     ui.text.edit_reset()
                     ui.text.edit_modified(False)
-                    model.dirty = False
                     model.filename = fn
                     ui.text.see("insert")
                 else:
@@ -302,7 +297,6 @@ def file_operation(model: Model, ui: UI, msg: str) -> None:
                     ui.text.insert(ui.text.index("insert"), newtext)
                     ui.text.mark_set("insert", insert_index)
                     ui.text.edit_modified(False)
-                    model.dirty = True
     if msg == "quit":
         model.settings["last-search"] = ui.fr_from.get()
         with open(SETTINGS_FILE, "w") as f:
@@ -336,7 +330,6 @@ def modify(model: Model, ui: UI, msg: str) -> None:
             ui.text.delete('1.0', tk.END)
             ui.text.insert('1.0', result)
         ui.text.edit_modified(False)
-        model.dirty = True
         ui.text.mark_set("insert", insert)
         ui.text.see("insert")
     except VE as e:
@@ -409,12 +402,12 @@ def initialise_ui(root: tk.Tk) -> UI:
     statusbar = ttk.Frame(root)
     status_caretpos = tk.StringVar()
     status_daterange = tk.StringVar()
-    ttk.Label(statusbar, text="Cursor Position:").grid(row=0, column=1)
     ttk.Label(statusbar, textvariable=status_caretpos, relief="sunken",
-              padding=(em(1), em(0.25))).grid(row=0, column=2, padx=em(1))
-    ttk.Label(statusbar, text="Date Range for Export:").grid(row=0, column=3)
+              padding=(em(1), em(0.25))).grid(row=0, column=2, padx=em(0.5))
+    ttk.Label(statusbar, text="Export:").grid(row=0, column=3,
+                                              padx=((em(1), 0)))
     ttk.Label(statusbar, textvariable=status_daterange, relief="sunken",
-              padding=(em(1), em(0.25))).grid(row=0, column=4, padx=em(1))
+              padding=(em(1), em(0.25))).grid(row=0, column=4, padx=em(0.5))
     statusbar.grid_columnconfigure(5, weight=1)
     ttk.Frame(statusbar).grid(row=0, column=5)
     ttk.Sizegrip(statusbar).grid(row=0, column=6, sticky=tk.SE)
@@ -495,7 +488,7 @@ def initialise_ui(root: tk.Tk) -> UI:
     sbx.grid(row=3, column=0, sticky=tk.EW)
     sby.grid(row=2, column=1, rowspan=2, sticky=tk.NS)
     statusbar.grid(row=4, column=0, columnspan=2, sticky=tk.EW,
-                   padx=em(0.25), pady=em(0.5))
+                   padx=em(0.25), pady=em(0.25))
 
     return UI(
         root=root, menus=menus, text=text,
@@ -651,6 +644,7 @@ def main():
     except Exception:
         settings = {}
     root = tk.Tk()
+    root.title(f"efjtk (v{efjtk.version.VERSION})")
     ui = initialise_ui(root)
     ui.fr_from.set(settings.get("last-search", ""))
     _update = partial(update, Model(settings, []), ui, partial(draw, {}, ui))
