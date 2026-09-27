@@ -110,6 +110,7 @@ def update(
         if (line := ui.goto_value.get()):
             ui.text.mark_set("insert", f"{line}.0")
             ui.text.see(ui.text.index("insert"))
+            ui.goto_value.set("")
             pop_bar(model.bar_stack)
     elif msg == "capture_daterange":
         capture_daterange(model, ui)
