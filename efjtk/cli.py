@@ -9,6 +9,7 @@ import efj_parser
 import efjtk.convert
 import efjtk.modify
 import efjtk.gec
+import efjtk.gui
 from efjtk.version import VERSION
 
 
@@ -23,7 +24,7 @@ def _args():
     parser.add_argument('format',
                         choices=['expand', 'night', 'vfr', 'ins', 'fo',
                                  'logbook',  'summary', 'cumulative',
-                                 'version', 'gec'])
+                                 'version', 'gec', 'gui'])
     parser.add_argument(
         '-f', '--from', dest='from_', metavar="FROM", default=None,
         help="Restrict output to dates including and after FROM")
@@ -51,6 +52,8 @@ def main() -> int:
     if args.format == "version":
         print(VERSION)
         return 0
+    if args.format == "gui":
+        return efjtk.gui.main()
     try:
         date_from = args.from_ and dt.date.fromisoformat(args.from_)
         date_to = args.to and dt.date.fromisoformat(args.to)
