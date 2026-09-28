@@ -247,6 +247,14 @@ def highlight_syntax(t: tk.Text) -> None:
             datetime_start = f"{line}.{mo.start()}"
             datetime_end = f"{line}.{mo.end()}"
             t.tag_add("datetime", datetime_start, datetime_end)
+        elif mo := re.search(
+                r"""^\s*(?>([-\w]+)       # registration
+                \s*:\s*
+                ([-\w]+))         # type
+                (?:\s*:\s*
+                (mc|spse|spme))?  # optional class""", line_text, re.VERBOSE):
+            t.tag_add("type", f"{line}.{mo.start(2)}", f"{line}.{mo.end(2)}")
+            t.tag_add("type", f"{line}.{mo.start(3)}", f"{line}.{mo.end(3)}")
         else:
             for mo in re.finditer(r"CP:|FO:|PU:|FA:", line_text):
                 keyword_start = f"{line}.{mo.start()}"
@@ -391,6 +399,7 @@ def initialise_ui(root: tk.Tk) -> UI:
     text.mark_set("sh-end", "end")
     text.tag_configure("grayed", foreground="#707070")
     text.tag_configure("keyword", foreground="green")
+    text.tag_configure("type", foreground="green")
     text.tag_configure("datetime", foreground="blue")
 
     sbx = ttk.Scrollbar(root, orient='horizontal')
