@@ -232,7 +232,7 @@ def highlight_syntax(t: tk.Text) -> None:
     if (end := t.index("sh-end")) == "1.0":
         return
     start = t.index(end + " - 100 lines linestart")
-    for tag in ("keyword", "datetime", "grayed"):
+    for tag in ("keyword", "datetime", "grayed", "type"):
         t.tag_remove(tag, start, end)
     start_line, end_line = (int(X.split(".")[0]) for X in (start, end))
     for line in range(start_line, end_line):
