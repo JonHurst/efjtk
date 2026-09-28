@@ -518,7 +518,7 @@ def recenter(t: tk.Text) -> None:
     if math.isclose(target, t.yview()[0], abs_tol=page_height / 10):
         t.yview_moveto(index_frac)
     else:
-        t.yview_moveto(target)
+        t.yview_moveto(target + page_height / 10)
 
 
 def validate_integer(s: str) -> bool:
