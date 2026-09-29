@@ -77,7 +77,7 @@ UpdateFunc = Callable[[str], None]
 
 def update(
         model: Model, ui: UI, draw: Callable[[DrawData], None], msg: str
-) -> None:
+) -> str | None:
     if msg in {"open", "save", "saveas", "insert", "quit"}:
         file_operation(model, ui, msg)
     elif msg.startswith("modify_"):
@@ -120,16 +120,19 @@ def update(
             ui.text.focus()
     elif msg == "replace":
         replace(ui)
+    elif msg == "complete":
+        complete_line(ui.text)
     if msg in {"open", "insert"} or msg.startswith("modify_"):
         ui.text.mark_set("sh-end", "end")
         ui.text.event_generate("<<HighlightSyntax>>")
     if (msg in {"quit", "clear", "selectall"} or msg.startswith("export_")):
-        return
+        return None
     draw(DrawData(canreplace=canreplace(ui),
                   canreplaceall=bool(ui.fr_from.get()),
                   cansave=bool(model.filename),
                   dates=(model.date_from, model.date_to),
                   bar=model.bar_stack[-1] if len(model.bar_stack) else None))
+    return "break"
 
 
 def draw(state: dict[str, Any], ui: UI, data: DrawData) -> None:
@@ -172,6 +175,25 @@ def draw(state: dict[str, Any], ui: UI, data: DrawData) -> None:
         ui.fr_button_replace.config(text="Replace All", state="normal")
     else:
         ui.fr_button_replace.config(text="Replace", state="disabled")
+
+
+def complete_line(t: tk.Text) -> None:
+    text = t.get(t.index("insert linestart"), t.index("insert lineend"))
+    if len(text.strip()) == 0:
+        return
+    candidates = {X for X in t.get("1.0", tk.END).splitlines()
+                  if X.startswith(text)}
+    candidates.remove(text)
+    if len(candidates) == 0:
+        return
+    max_length = min(len(X) for X in candidates)
+    candidates = {X[:max_length] for X in candidates}
+    while len(candidates) > 1:
+        max_length -= 1
+        candidates = {X[:max_length] for X in candidates}
+    t.edit_separator()
+    t.replace(t.index("insert linestart"), t.index("insert lineend"),
+              candidates.pop())
 
 
 def find_next(ui: UI) -> bool:
@@ -587,6 +609,9 @@ def initialise_menus(ui: UI, update: UpdateFunc) -> None:
     ui.menus.edit.add_command(label="Find Next", accelerator="F3", underline=5,
                               command=lambda: ui.fr_button_next.invoke())
     ui.root.bind("<F3>", lambda _: ui.fr_button_next.invoke())
+    ui.menus.edit.add_command(label="Complete Line", accelerator="Tab",
+                              underline=3, command=lambda: update("complete"))
+    ui.text.bind("<Tab>", lambda _: update("complete"))
     ui.menus.edit.add_separator()
     ui.menus.edit.add_command(label="Goto", accelerator="Ctrl-G",
                               underline=0, command=lambda: update("goto_bar"))
