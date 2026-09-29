@@ -518,16 +518,17 @@ def grid_remove_bar(bar: tk.Frame, text: tk.Text) -> None:
 
 
 def recenter(t: tk.Text) -> None:
-    index_line = int(t.index("insert").split(".")[0])
-    end_line = int(t.index(tk.END).split(".")[0])
-    index_frac = index_line / end_line
+    index_line = int(t.index("insert").split(".")[0]) - 1
+    lines = int(t.index(tk.END).split(".")[0]) - 1
+    index_frac = index_line / lines  # pixel at top of index line
+    line_height = 1 / lines
     page = t.yview()
     page_height = page[1] - page[0]
-    target = max(0, index_frac - page_height / 2)
-    if math.isclose(target, t.yview()[0], abs_tol=page_height / 10):
-        t.yview_moveto(index_frac)
+    target = max(0, (index_frac - (page_height - line_height) / 2))
+    if math.isclose(target, t.yview()[0], abs_tol=line_height):
+        t.yview_moveto(max(0, index_frac - 2 * line_height))
     else:
-        t.yview_moveto(target + page_height / 10)
+        t.yview_moveto(target)
 
 
 def validate_integer(s: str) -> bool:
