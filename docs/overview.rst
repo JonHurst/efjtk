@@ -2,25 +2,28 @@ Overview
 ========
 
 This is a set of tools for working with electronic Flight Journal (eFJ) files.
-An eFJ file is just a text file that stores personal flight data using a simple,
-intuitive scheme that is easy to work with for both humans and computers. A
-tutorial detailing how to create files with this scheme can be found at
-https://hursts.org.uk/efj.html and a full description can be found at
-https://hursts.org.uk/efjdocs/format.html.
+An eFJ file is just a text file that stores personal flight data using `a
+simple, intuitive schema <https://hursts.org.uk/efjdocs/format.html>`_ which is
+designed to be quick and easy to work with for both humans and computers.
 
-Three interfaces are provided: a :ref:`web application<webapp>`, a :ref:`Tk
-based graphical user interface<gui>` and a :ref:`command line
-interface<command_line>`.
+Three interfaces are provided: a primary :ref:`Tk based graphical user
+interface<gui>`, providing a one stop shop for working with eFJ files, a
+:ref:`command line interface<command_line>` suitable for simple scripting and/or
+incorporating eFJ processing functionality into your favored text editor, and a
+:ref:`web interface<webapp>`, which, while more limited than the other two
+interfaces, allows the toolkit to be used without needing to install anything
+locally.
 
-The tools fall into two categories: tools to convert an eFJ into other useful
-formats and tools to modify an eFJ.
+Two categories of tools are provided: tools to modify an eFJ in place and tools
+to convert an eFJ into standalone HTML files which can then be opened in any
+browser or imported into any spreadsheet.
 
-The former category includes the ability to generate an `FCL.050 compliant
-logbook
-<https://www.easa.europa.eu/en/document-library/easy-access-rules/online-publications/easy-access-rules-aircrew-regulation-eu-no?page=5#_Toc522628396>`_
-and a set of summary tables, both as simple, standalone HTML files that can be
-viewed in any web browser or processed further using spreadsheets, word
-processors, PDF converters etc.
+The first category includes a tool to calculate regulatory night hours, which is
+very difficult to calculate by hand, and a tool to expand the extremely terse
+format used for minimum effort data entry into the more readable long form.
 
-The latter category provides things like regulatory night flying calculation and
-quick flagging of roles for First Officers.
+The second category includes a tool to export a logbook in a format that is
+`compliant with EASA's acceptable means of compliance
+<https://www.easa.europa.eu/en/document-library/easy-access-rules/online-publications/easy-access-rules-aircrew-regulation-eu-no?page=5#_Toc522628396>`_,
+(which has also been adopted by the UK CAA), and a tool to export a Summary of
+Flying for any desired period.
