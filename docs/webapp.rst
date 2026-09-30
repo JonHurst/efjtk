@@ -12,9 +12,11 @@ Actions
 -------
 
 The "Actions" section allows data to be moved in and out of the application. To
-load an eFJ for processing, either use the "Load" button or use drag and
-drop. The eFJ will then appear in the text area on the right. The "Save" and
-"Copy" buttons can be used to download the text or copy it to the system
+load an eFJ for processing, either use the "Load" button or use drag and drop.
+The eFJ will then appear in the text area on the right. The "Insert" button
+inserts the contents of a file at the position of the cursor, overwriting the
+selection if there is any. The "Clear" button clears the text area. The "Save"
+and "Copy" buttons can be used to download the text or copy it to the system
 clipboard.
 
 Download
@@ -23,7 +25,13 @@ Download
 The "Download" section contains tools that convert the eFJ to various standalone
 HTML files, which are then downloaded by your browser. These files have no
 dependencies, so can be copied and moved around at will. They can be opened in
-any reasonably modern web browser, spreadsheet or word processing program.
+any reasonably modern web browser or imported into any spreadsheet. A "Date
+Range" dialog will open after clicking on any of these buttons, initially set to
+include all records in the text. Restricting the date range will restrict the
+records in the output; in the case of the Summary, this means only those records
+are included in the calculation, whereas in the case of the cumulative totals,
+the calculation includes all records but the output only includes the selected
+records.
 
 FCL.050 Logbook
 ^^^^^^^^^^^^^^^
@@ -54,7 +62,9 @@ Modify
 ------
 
 The tools in the "Modify eFJ" group modify the eFJ in the text area on the right
-in place.
+in place. A "Date Range" dialog opens if any of these buttons are selected,
+initially populated to include all records. Selecting a more restrictive range
+prevents changes to any lines associated with dates outside that range.
 
 Expand
 ^^^^^^

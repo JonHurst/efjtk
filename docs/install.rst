@@ -5,7 +5,7 @@ Web Interface
 -------------
 
 The web interface is available by visiting https://hursts.org.uk/efj with a
-reasonable modern web browser. The application will run on a remote server, so
+reasonably modern web browser. The application will run on a remote server, so
 no installation is required. The interface is somewhat clunky compared to those
 available by installing locally (for security reasons, working with local files
 in a web browser is awkward), but all the important features are available.

@@ -3,14 +3,19 @@
 Graphical User Interface
 ========================
 
-This is a simple, cross platform, Tk based Graphical Interface. A text file with
-an electronic Flight Journal scheme is loaded with the "File|Open" menu item.
-This will be shown with simple syntax highlighting in the basic text editor that
-fills the main area of the window. All menu items will then apply to the text in
-this area.
+This is a simple, cross platform, Tk based Graphical Interface.
 
 The menu bar provides "File", "Edit", "Modify", "Export" and "Help" sub-menus.
-The "File", "Edit" and "Help" sub-menus should hopefully be self-explanatory.
+The "File", and "Help" sub-menus should hopefully be self-explanatory.
+
+The "Edit" sub-menu should also be mostly self-explanatory. "Recenter" scrolls
+so that the cursor is vertically centred in the window, unless that is already
+true in which case it scrolls so that there are two lines of context above the
+cursor. "Complete Line" finds all other lines in the text that start with the
+same characters as the current line, and adds characters to match the common
+characters at the start of those lines — it's particularly useful for completing
+the type of an aircraft you have flown before given the registration.
+
 For the "Modify" and "Export" sub-menus:
 
 Modify
@@ -176,10 +181,16 @@ standalone HTML file.
 When a date range is specified, this only restricts the dates included in the
 output; the calculation still includes all entries.
 
+Restrict Dates
+^^^^^^^^^^^^^^
 
-Help
-----
+This menu item brings up a toolbar with "First" and "Last" fields. Each of these
+fields may be left blank (implying no restriction), or a date with the format
+``2026-09-30`` or ``20260930`` may be entered. If such a date is entered, the
+tools in the export menu will only include records between and including those
+dates. The date range that will be applied to exports is shown on the status
+bar.
 
-The "Help|Online Help" menu item opens this document in your default browser.
-The "Help|eFJ Format" opens the documentation of the eFJ parser library at the
-section where the eFJ scheme is described in full.
+For the Summary, only records with applicable dates are included in the
+calculation. For cummulative totals, all records are included in the
+calculation, but only the applicable dates are included in the output.

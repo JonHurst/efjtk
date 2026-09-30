@@ -3,8 +3,9 @@
 Command Line Interface
 ========================
 
-The command line interface works as a filter program, i.e. input comes from
-STDIN, output goes to STDOUT and error messages are sent to STDERR.
+If invokde with the ``gui`` option, the graphical interface is started.
+Otherwise, the command line interface works as a filter program, i.e. input
+comes from STDIN, output goes to STDOUT and error messages are sent to STDERR.
 
 There are two categories of tools: those that output a modified version of the
 input and those that output a file in a different format. For example, the first
