@@ -1,8 +1,7 @@
 # eFJ Toolkit #
 
 An electronic Flight Journal (eFJ) is just a text file containing personal
-flight data using a simple, intuitive scheme that is easy for both computers
-and humans to work with. It looks something like this:
+flight data using a simple, intuitive, journal-like schema. For example:
 
       2024-02-04
       G-EZBY:A319
@@ -17,13 +16,10 @@ and humans to work with. It looks something like this:
 
 Full details of the format may be found at <https://hursts.org.uk/efjdocs/format.html>.
 
-This is a set of tools for working with text files following this scheme. It
+This is a set of tools for working with text files following this schema. It
 includes the ability to create FCL.050 compliant logbooks and summaries as
 simple, standalone HTML files that can be viewed with any web browser and
-further processed with spreadsheets, word processors, PDF converters etc. Full
-documentation is available at <https://hursts.org.uk/efjtkdocs>.
+further processed with spreadsheets. Full documentation is available at
+<https://hursts.org.uk/efjtkdocs>.
 
-The tools are written as command line filters, but a simple GUI front end is
-also provided for those that prefer. The tools are also available hooked up to
-a web application at <https://hursts.org.uk/efj> if you prefer not to install
-locally.
+GUI, command line and a web interfaces are available.
