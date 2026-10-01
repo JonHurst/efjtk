@@ -21,7 +21,7 @@ import math
 
 SETTINGS_FILE = os.path.expanduser("~/.efjtkguirc")
 HELP_URL = "https://hursts.org.uk/efjtkdocs/gui.html"
-HELP_EFJ = "https://hursts.org.uk/efjdocs/format.html"
+HELP_EFJ = "https://hursts.org.uk/efjdocs/schema.html"
 
 
 class Menus(NamedTuple):
