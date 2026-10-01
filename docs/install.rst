@@ -21,8 +21,8 @@ the downloaded file to somewhere safe. Uninstall is by deleting the file.
 The file is a `Python zipapp <https://docs.python.org/3/library/zipapp.html>`_,
 which behaves exactly like a single file Python script. This means that you need
 to have a Python interpreter (version 3.11 or newer) installed on your system to
-run it. The benefit of distributing the application this way is that it makes
-the it cross platform and future proof: as long as a Python interpreter is
+run it. The benefit of distributing the application in this way is that it makes
+it cross platform and future proof: as long as a Python interpreter is
 available on your platform of choice, you will be able to run the downloaded
 file. With the importance of Python to both academia and industry, it is
 anticipated that support will continue for many decades.
@@ -40,8 +40,8 @@ Mac users should visit https://docs.python.org/3/using/mac.html for
 straightforward instructions on how to install.
 
 For downloading the application file, there are two options. Most users should
-download `efjgui.pyw </shiv/efjgui.pyw>`_, which gives you the graphical
-interface. Advanced users can download `efj.py </shiv/efj.py>`_, which gives you
+`download efjgui.pyw </shiv/efjgui.pyw>`_, which gives you the graphical
+interface. Advanced users can `download efj.py </shiv/efj.py>`_, which gives you
 the command line interface. These links will always point to the most up to date
 version. Note that the ``gui`` command line option allows the graphical
 interface to be started from the command line interface.
