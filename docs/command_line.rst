@@ -3,7 +3,7 @@
 Command Line Interface
 ========================
 
-If invokde with the ``gui`` option, the graphical interface is started.
+If invoked with the ``gui`` option, the graphical interface is started.
 Otherwise, the command line interface works as a filter program, i.e. input
 comes from STDIN, output goes to STDOUT and error messages are sent to STDERR.
 
@@ -36,10 +36,11 @@ results in a future sector preceded by ``G-EFGH:C406`` also being classified as
 single pilot, multi-engine. Where a type has not been classified, it is
 defaulted to multi-crew.
 
-In the examples below, replace ``efj_file`` with the path to your eFJ. It is
-assumed that the toolkit has been installed with ``pip`` or ``pipx`` and as such
-the entry point ``efj`` has been made available in a location that is included
-in your PATH environmental variable.
+In the examples below, replace ``EFJ_FILE`` with the path to your eFJ. It is
+assumed that ``efj.py`` has been placed in a location that is included in your
+PATH environmental variable and that its executable bit has been set; if this is
+not the case, replace ``efj.py`` with ``python efj.py`` or ``python3 efj.py`` as
+appropriate.
 
 Modification
 ------------
@@ -52,7 +53,7 @@ data where no better alternative is available. To support this, a couple of
 short forms are allowed that infer data from previous data. This tool expands
 out these short forms, which makes them more human legible::
 
-  $ efj expand < efj_file
+  $ efj.py expand < EFJ_FILE
 
 The input::
 
@@ -82,7 +83,7 @@ Night
 
 Updates the eFJ with calculated night duration and, where necessary, night landing::
 
-  $ efj night < efj_file
+  $ efj.py night < EFJ_FILE
 
 The input::
 
@@ -108,7 +109,7 @@ VFR
 Adds a flag to every sector to indicate that it was flown under visual flight
 rules::
 
-  $ efj vfr < efj_file
+  $ efj.py vfr < EFJ_FILE
 
 The input::
 
@@ -135,7 +136,7 @@ the landing with ``m``. This tool allows First Officers to also just use ``m``
 and then auto-fill the roles as ``p1s`` or ``p2`` by assuming their role was p1s
 if they landed the aircraft and p2 if they did not. ::
 
-  $ efj fo < efj_file
+  $ efj.py fo < EFJ_FILE
 
 The input::
 
@@ -157,7 +158,7 @@ Instructor
 
 Adds the ``ins`` flag to any sector that does not already have it. ::
 
-  $ efj ins < efj_file
+  $ efj.py ins < EFJ_FILE
 
 The input::
 
@@ -189,7 +190,7 @@ standalone, HTML file.
 
 The command for creating the logbook is::
 
-  $ efj logbook < efj_file
+  $ efj.py logbook < EFJ_FILE
 
 
 Cumulative Totals
@@ -204,7 +205,7 @@ output; the calculation still includes all entries.
 
 The command for the cumulative total tool is::
 
-  $ efj cumulative < efj_file
+  $ efj.py cumulative < EFJ_FILE
 
 
 Summary
@@ -218,7 +219,7 @@ and landings by aircraft type, and all relevant totals.
 
 The command for the summary tool is::
 
-  $ efj summary < efj_file
+  $ efj.py summary < EFJ_FILE
 
 
 Gross Error Check
@@ -244,4 +245,4 @@ are tabulated.
 
 The command for the gross error check tool is::
 
-  $ efj gec < efj_file
+  $ efj.py gec < EFJ_FILE

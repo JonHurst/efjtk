@@ -21,17 +21,16 @@ the downloaded file to somewhere safe. Uninstall is by deleting the file.
 The file is a `Python zipapp <https://docs.python.org/3/library/zipapp.html>`_,
 which behaves exactly like a single file Python script. This means that you need
 to have a Python interpreter (version 3.11 or newer) installed on your system to
-run it. The benefit of this complication is that it makes the application cross
-platform and future proof: you will continue being able to run the file you
-downloaded for as long as a Python interpreter is available on your platform of
-choice. With the prevalence of Python in academia and industry, this is about as
-future proof as it is possible to get.
+run it. The benefit of distributing the application this way is that it makes
+the it cross platform and future proof: as long as a Python interpreter is
+available on your platform of choice, you will be able to run the downloaded
+file. With the importance of Python to both academia and industry, it is
+anticipated that support will continue for many decades.
 
-For Linux users, version 3.11 or newer of the Python interpreter will almost
-certainly be pre-installed. The graphical interface uses the tkinter module,
-which some distributions don't install by default; if you wish to use it, you
-may need to install the module with your package manager (it is ``python3-tk``
-on Debian/Ubuntu).
+For Linux users, a suitable Python interpreter will almost certainly already be
+installed. The graphical interface uses the optional tkinter module, which some
+distributions package separately and don't install by default; you may need to
+install this manually (it is ``python3-tk`` on Debian/Ubuntu).
 
 Windows users can install a suitable Python Interpreter using the Microsoft
 Store -- just search for "Python" and ensure the provider is the Python Software
@@ -48,10 +47,11 @@ version. Note that the ``gui`` command line option allows the graphical
 interface to be started from the command line interface.
 
 Move the downloaded file to wherever you feel is appropriate — it can be run
-from anywhere. Windows users can just double click it to run it. Linux users
-need to set the executable permission on the file and can then run it as they
-would any other executable. Mac users can do the same as Linux users, or they
-can look at the instructions mentioned above to use the Finder.
+from anywhere. Somewhere referenced by your PATH variable would be sensible for
+the command line version. Windows users can just double click it to run it.
+Linux users need to set the executable permission on the file and can then run
+it as they would any other executable. Mac users can do the same as Linux users,
+or they can look at the instructions mentioned above to use the Finder.
 
 The first time the application is run it will create a directory named ``.shiv``
 in your home directory. This is just a cache that improves startup times, so
