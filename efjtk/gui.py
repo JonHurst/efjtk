@@ -640,7 +640,7 @@ def initialise_menus(ui: UI, update: UpdateFunc) -> None:
                                accelerator="F1",
                                command=lambda: webbrowser.open(HELP_URL))
     ui.root.bind("<F1>", lambda _: webbrowser.open(HELP_URL))
-    ui.menus.help_.add_command(label="eFJ Format", underline=0,
+    ui.menus.help_.add_command(label="eFJ Schema", underline=0,
                                command=lambda: webbrowser.open(HELP_EFJ))
     ui.menus.export.add_separator()
     ui.menus.export.add_command(label="Restrict Dates", underline=0,
