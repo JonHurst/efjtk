@@ -4,11 +4,12 @@ Installation
 Web Interface
 -------------
 
-The web interface is available by visiting https://hursts.org.uk/efj with a
-reasonably modern web browser. The application will run on a remote server, so
-no installation is required. The interface is somewhat clunky compared to those
-available by installing locally (for security reasons, working with local files
-in a web browser is awkward), but all the important features are available.
+The web interface is available by visiting `https://hursts.org.uk/efj </efj/>`_
+with a reasonably modern web browser. The application will run on a remote
+server, so no installation is required. The interface is somewhat clunky
+compared to those available by installing locally (for security reasons, working
+with local files in a web browser is awkward), but all the important features
+are available.
 
 Local Install
 -------------
@@ -40,11 +41,11 @@ Mac users should visit https://docs.python.org/3/using/mac.html for
 straightforward instructions on how to install.
 
 For downloading the application file, there are two options. Most users should
-download https://hursts.org.uk/shiv/efjgui.pyw, which gives you the graphical
-interface. Advanced users can download https://hursts.org.uk/shiv/efj.py, which
-gives you the command line interface. These links will always point to the most
-up to date version. Note that the ``gui`` command line option allows the
-graphical interface to be started from the command line interface.
+download `efjgui.pyw </shiv/efjgui.pyw>`_, which gives you the graphical
+interface. Advanced users can download `efj.py </shiv/efj.py>`_, which gives you
+the command line interface. These links will always point to the most up to date
+version. Note that the ``gui`` command line option allows the graphical
+interface to be started from the command line interface.
 
 Move the downloaded file to wherever you feel is appropriate — it can be run
 from anywhere. Windows users can just double click it to run it. Linux users
