@@ -18,13 +18,12 @@ def _args():
         description=(
             """Process an electronic Flight Journal (eFJ) file. Tools to aid in
             manual creation of eFJ files (expand, night, vfr, ins, fo) and
-            tools to convert to useful formats (logbook, summary, cumulative)
-            are included. Also included is a tool to help create a config file,
-            which is required for generation of the FCL.050 logbook."""))
+            tools to convert to useful formats (logbook, summary, cumulative,
+            ftl) are included. A gross error checker is also included."""))
     parser.add_argument('format',
                         choices=['expand', 'night', 'vfr', 'ins', 'fo',
                                  'logbook',  'summary', 'cumulative',
-                                 'version', 'gec', 'gui'])
+                                 'version', 'gec', 'gui', 'ftl'])
     parser.add_argument(
         '-f', '--from', dest='from_', metavar="FROM", default=None,
         help="Restrict output to dates including and after FROM")
@@ -44,6 +43,7 @@ _func_map: dict[str, Callable[[str, tuple[dt.date, dt.date]], str]] = {
     "logbook": efjtk.convert.build_logbook,
     "cumulative": efjtk.convert.build_cumulative,
     "summary": efjtk.convert.build_summary,
+    "ftl": efjtk.convert.build_ftl,
 }
 
 

@@ -3,6 +3,7 @@ import datetime as dt
 
 from typing import Optional
 from html import escape
+import itertools
 
 import efj_parser as ep
 
@@ -263,3 +264,38 @@ def build_cumulative(efj: str, daterange: DateRange = (None, None)) -> str:
         ))
     return (_get_template("cumulative-template.html")
             .format(rows="\n".join(rows)))
+
+
+def build_ftl(efj: str, daterange: DateRange = (None, None)) -> str:
+    """Build FTL tables as standalone HTML
+
+    :param efj: The efj as a string
+
+    :param daterange: A tuple of two optional datetime.date objects specifying
+        a half-open interval (right hand excluded) of dates to include in the
+        output.
+
+    :returns: A string containing FTL tables as standalone HTML
+
+    """
+    parse = ep.Parser().parse(efj)
+    duty_times = [(X.start, X.start + dt.timedelta(minutes=X.duration))
+                  for X in parse[0]]
+    start = min(duty_times)[0].date()
+    days = [0] * ((max(duty_times)[1].date() - start).days + 1)
+    for duty_start, duty_end in duty_times:
+        midnight = (duty_start + dt.timedelta(days=1)
+                    ).replace(hour=0, minute=0)
+        index = int((duty_start.date() - start).days)
+        if duty_end <= midnight:
+            days[index] += int((duty_end - duty_start)
+                               / dt.timedelta(minutes=1))
+        else:
+            days[index] += int((midnight - duty_start) /
+                               dt.timedelta(minutes=1))
+            days[index + 1] += int((duty_end - midnight) /
+                                   dt.timedelta(minutes=1))
+    cum_days = itertools.accumulate(days)
+    for c, d in enumerate(cum_days):
+        print(start + dt.timedelta(c), d)
+    return ""
