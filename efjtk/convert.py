@@ -2,7 +2,9 @@ import importlib.resources as res
 import datetime as dt
 
 from typing import Optional
+from collections.abc import Iterable
 from html import escape
+import itertools
 
 import efj_parser as ep
 
@@ -263,3 +265,127 @@ def build_cumulative(efj: str, daterange: DateRange = (None, None)) -> str:
         ))
     return (_get_template("cumulative-template.html")
             .format(rows="\n".join(rows)))
+
+
+class DateAccumulator():
+    """Accumulate durations split on date boundaries"""
+
+    def __init__(
+            self,
+            utc_times: Iterable[dt.datetime],
+            durations: Iterable[int]
+    ) -> None:
+        """Initialise accumulator.
+
+        :param utc_times: An iterable of the start times in UTC.
+
+        :param durations: An iterable of the same length as utc_times
+            giving the durations to accumulate.
+
+        """
+        local_times = [X.replace(tzinfo=dt.timezone.utc).astimezone()
+                       for X in utc_times]
+        self.first_date = min(local_times).date()
+        self.last_date = (max(local_times) + dt.timedelta(1)).date()
+        days = [0] * ((self.last_date - self.first_date).days + 1)
+        for time, duration in zip(local_times, durations):
+            local_midnight = ((time + dt.timedelta(days=1))
+                              .replace(hour=0, minute=0))
+            midnight_duration = int(
+                (local_midnight - time) / dt.timedelta(minutes=1))
+            index = int((time.date() - self.first_date).days)
+            if duration > midnight_duration:
+                days[index] += midnight_duration
+                days[index + 1] += duration - midnight_duration
+            else:
+                days[index] += duration
+        self.accumulated = tuple(itertools.accumulate(days))
+
+    def get(self, date: dt.date) -> int:
+        """Get accumulated durations.
+
+        :param date: The date to get the accumulated duration for.
+
+        :returns: The accumulated durations for the date as an integer number
+            of minutes.
+
+        """
+        index = int((date - self.first_date).days)
+        if index < 0:
+            return 0
+        elif index > len(self.accumulated) - 1:
+            return self.accumulated[-1]
+        return self.accumulated[index]
+
+    def get_range(self) -> tuple[dt.date, dt.date]:
+        """Get the range of dates in the provided data.
+
+        :returns: A tuple where the first entry is the starting date of the
+            data and the second is the day after the last date that may be
+            affected by the data.
+
+        """
+        return (self.first_date, self.last_date + dt.timedelta(1))
+
+
+def build_ftl(
+        efj: str,
+        daterange: DateRange = (None, None)
+) -> str:
+    """Build FTL tables as standalone HTML
+
+    :param efj: The efj as a string
+
+    :param daterange: A tuple of two optional datetime.date objects specifying
+        a half-open interval (right hand excluded) of dates to include in the
+        output.
+
+    :returns: A string containing FTL tables as standalone HTML
+
+    """
+    parse = ep.Parser().parse(efj)
+    cumulative_duties = DateAccumulator(
+        (X.start for X in parse[0]),
+        (X.duration - X.ftl_correction for X in parse[0]))
+    cumulative_sectors = DateAccumulator(
+        (X.start for X in parse[1]),
+        (X.total for X in parse[1]))
+    start = daterange[0] or min(
+        cumulative_duties.get_range()[0],
+        cumulative_sectors.get_range()[0])
+    end = daterange[1] or max(
+        cumulative_duties.get_range()[1],
+        cumulative_sectors.get_range()[1])
+    current = start
+    rows: list[str] = []
+    while current < end:
+        cy = current.replace(month=1, day=1)
+        cm_6, cm_9, cm_12 = (
+            calendar_months_ago(current, X) for X in (6, 9, 12))
+        d_7, d_14, d_28, d_84, d_365 = (
+            current - dt.timedelta(days=X) for X in (6, 13, 27, 83, 364))
+        current_duties = cumulative_duties.get(current)
+        duty_7, duty_14, duty_28, duty_84, duty_365, duty_12m = (
+            current_duties - cumulative_duties.get(X - dt.timedelta(days=1))
+            for X in (d_7, d_14, d_28, d_84, d_365, cm_12))
+        current_block = cumulative_sectors.get(current)
+        blk_28, blk_84, blk_365, blk_6m, blk_9m, blk_12m, blk_cy = (
+            current_block - cumulative_sectors.get(X - dt.timedelta(days=1))
+            for X in (d_28, d_84, d_365, cm_6, cm_9, cm_12, cy))
+        rows.append(_row(tuple([current.isoformat()] + [
+            _duration(X) for X in
+            (duty_7, duty_14, duty_28, duty_84, duty_365, duty_12m,
+             blk_28, blk_84, blk_365, blk_6m, blk_9m, blk_12m, blk_cy)])))
+        current = current + dt.timedelta(1)
+    return (_get_template("ftl-template.html")
+            .format(rows="\n".join(rows)))
+
+
+def calendar_months_ago(date: dt.date, n: int) -> dt.date:
+    """Get the first dayof the month that is n months before date"""
+    month = date.month - (n - 1)
+    year = date.year
+    if month < 1:
+        month += 12
+        year -= 1
+    return dt.date(year, month, 1)

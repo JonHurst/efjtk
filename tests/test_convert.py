@@ -114,3 +114,50 @@ class TestSummary(unittest.TestCase):
         with open("expected_summary_fromto.html") as f:
             expected = f.read()
             self.assertEqual(output.strip(), expected.strip())
+
+
+class TestDateAccumulator(unittest.TestCase):
+
+    def test_basic(self):
+        # test requires system timezone to be Europe/London
+        test = efjtk.convert.DateAccumulator(
+            (dt.datetime(2026, 10, 9, 12),
+             dt.datetime(2026, 10, 11, 23),
+             dt.datetime(2026, 10, 12, 14)),
+            (60, 120, 45))
+        self.assertEqual(test.get(dt.date(2026, 10 , 8)), 0)
+        self.assertEqual(test.get(dt.date(2026, 10 , 9)), 60)
+        self.assertEqual(test.get(dt.date(2026, 10 , 10)), 60)
+        self.assertEqual(test.get(dt.date(2026, 10 , 11)), 60)
+        self.assertEqual(test.get(dt.date(2026, 10 , 12)), 225)
+        self.assertEqual(test.get(dt.date(2026, 10 , 13)), 225)
+        self.assertEqual(
+            test.get_range(),
+            (dt.date(2026, 10, 9), dt.date(2026, 10, 14)))
+
+    def test_hour_change(self):
+        # test requires system timezone to be Europe/London
+        test = efjtk.convert.DateAccumulator(
+            (dt.datetime(2026, 10, 23, 22, 30),
+             dt.datetime(2026, 10, 25, 0)),
+            (120, 180))
+        self.assertEqual(test.get(dt.date(2026, 3 , 22)), 0)
+        self.assertEqual(test.get(dt.date(2026, 10 , 22)), 0)
+        self.assertEqual(test.get(dt.date(2026, 10 , 23)), 30)
+        self.assertEqual(test.get(dt.date(2026, 10 , 24)), 120)
+        self.assertEqual(test.get(dt.date(2026, 10 , 25)), 300)
+        self.assertEqual(test.get(dt.date(2026, 10 , 30)), 300)
+
+
+class TestFTL(unittest.TestCase):
+
+    def setUp(self):
+        with open("ftl-test.efj") as f:
+            self.test_input = f.read()
+
+    def test_standard(self):
+        output = efjtk.convert.build_ftl(
+                self.test_input, (None, dt.date(2027, 2, 1)))
+        with open("ftl-test-result.html") as f:
+            expected = f.read()
+            self.assertEqual(output.strip(), expected.strip())
