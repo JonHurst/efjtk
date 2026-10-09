@@ -279,23 +279,36 @@ def build_ftl(efj: str, daterange: DateRange = (None, None)) -> str:
 
     """
     parse = ep.Parser().parse(efj)
-    duty_times = [(X.start, X.start + dt.timedelta(minutes=X.duration))
-                  for X in parse[0]]
-    start = min(duty_times)[0].date()
-    days = [0] * ((max(duty_times)[1].date() - start).days + 1)
-    for duty_start, duty_end in duty_times:
-        midnight = (duty_start + dt.timedelta(days=1)
-                    ).replace(hour=0, minute=0)
-        index = int((duty_start.date() - start).days)
-        if duty_end <= midnight:
-            days[index] += int((duty_end - duty_start)
-                               / dt.timedelta(minutes=1))
-        else:
-            days[index] += int((midnight - duty_start) /
-                               dt.timedelta(minutes=1))
-            days[index + 1] += int((duty_end - midnight) /
-                                   dt.timedelta(minutes=1))
-    cum_days = itertools.accumulate(days)
-    for c, d in enumerate(cum_days):
-        print(start + dt.timedelta(c), d)
+    d_start, d_days = day_accumulate(
+        tuple((X.start, X.start + dt.timedelta(minutes=X.duration))
+              for X in parse[0]))
+    for c, d in enumerate(d_days):
+        print(d_start + dt.timedelta(c), d)
     return ""
+
+
+def day_accumulate(
+        times: tuple[tuple[dt.datetime, dt.datetime], ...]
+) -> tuple[dt.date, tuple[int, ...]]:
+    """Accumulate minutes for days.
+
+    :param times: A tuple of datetime pairs, each pair being an open range
+        of datetimes representing the start and end times of a time period.
+
+    :return: A tuple containing the starting date and an array of accumulated
+        minutes.
+
+    """
+    start = min(times)[0].date()
+    days = [0] * ((max(times)[1].date() - start).days + 1)
+    for t_start, t_end in times:
+        midnight = (t_start + dt.timedelta(days=1)
+                    ).replace(hour=0, minute=0)
+        index = int((t_start.date() - start).days)
+        if t_end <= midnight:
+            days[index] += int((t_end - t_start) / dt.timedelta(minutes=1))
+        else:
+            days[index] += int((midnight - t_start) / dt.timedelta(minutes=1))
+            days[index + 1] += int((t_end - midnight) /
+                                   dt.timedelta(minutes=1))
+    return start, tuple(itertools.accumulate(days))
