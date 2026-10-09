@@ -266,7 +266,41 @@ def build_cumulative(efj: str, daterange: DateRange = (None, None)) -> str:
             .format(rows="\n".join(rows)))
 
 
-def build_ftl(efj: str, daterange: DateRange = (None, None)) -> str:
+class DateAccumulator():
+
+    def __init__(self, times: tuple[tuple[dt.datetime, int], ...]):
+        self.first_date = min(times)[0].date()
+        self.last_date = (max(times)[0] + dt.timedelta(1)).date()
+        days = [0] * ((self.last_date - self.first_date).days + 1)
+        for time, duration in times:
+            local_midnight = ((time + dt.timedelta(days=1))
+                              .astimezone()
+                              .replace(hour=0, minute=0))
+            utc_midnight = (local_midnight.astimezone(dt.timezone.utc)
+                            .replace(tzinfo=None))
+            midnight_duration = int(
+                (utc_midnight - time) / dt.timedelta(minutes=1))
+            index = int((time.date() - self.first_date).days)
+            if duration > midnight_duration:
+                days[index] += midnight_duration
+                days[index + 1] += duration - midnight_duration
+            else:
+                days[index] += duration
+        self.accumulated = tuple(itertools.accumulate(days))
+
+    def get(self, date: dt.date) -> int:
+        index = int((date - self.first_date).days)
+        if index < 0:
+            return 0
+        elif index > len(self.accumulated) - 1:
+            return self.accumulated[-1]
+        return self.accumulated[index]
+
+
+def build_ftl(
+        efj: str,
+        daterange: DateRange = (None, None)
+) -> str:
     """Build FTL tables as standalone HTML
 
     :param efj: The efj as a string
@@ -279,36 +313,11 @@ def build_ftl(efj: str, daterange: DateRange = (None, None)) -> str:
 
     """
     parse = ep.Parser().parse(efj)
-    d_start, d_days = day_accumulate(
-        tuple((X.start, X.start + dt.timedelta(minutes=X.duration))
-              for X in parse[0]))
-    for c, d in enumerate(d_days):
-        print(d_start + dt.timedelta(c), d)
+    cumulative_duties = DateAccumulator(
+        tuple((X.start, X.duration) for X in parse[0]))
+    for c in range(40):
+        date = dt.date.today() - dt.timedelta(c)
+        start = date - dt.timedelta(28)
+        print(date, (
+            cumulative_duties.get(date) - cumulative_duties.get(start)) // 60)
     return ""
-
-
-def day_accumulate(
-        times: tuple[tuple[dt.datetime, dt.datetime], ...]
-) -> tuple[dt.date, tuple[int, ...]]:
-    """Accumulate minutes for days.
-
-    :param times: A tuple of datetime pairs, each pair being an open range
-        of datetimes representing the start and end times of a time period.
-
-    :return: A tuple containing the starting date and an array of accumulated
-        minutes.
-
-    """
-    start = min(times)[0].date()
-    days = [0] * ((max(times)[1].date() - start).days + 1)
-    for t_start, t_end in times:
-        midnight = (t_start + dt.timedelta(days=1)
-                    ).replace(hour=0, minute=0)
-        index = int((t_start.date() - start).days)
-        if t_end <= midnight:
-            days[index] += int((t_end - t_start) / dt.timedelta(minutes=1))
-        else:
-            days[index] += int((midnight - t_start) / dt.timedelta(minutes=1))
-            days[index + 1] += int((t_end - midnight) /
-                                   dt.timedelta(minutes=1))
-    return start, tuple(itertools.accumulate(days))
