@@ -2,6 +2,7 @@ import importlib.resources as res
 import datetime as dt
 
 from typing import Optional
+from collections.abc import Iterable
 from html import escape
 import itertools
 
@@ -268,18 +269,21 @@ def build_cumulative(efj: str, daterange: DateRange = (None, None)) -> str:
 
 class DateAccumulator():
 
-    def __init__(self, times: tuple[tuple[dt.datetime, int], ...]):
-        self.first_date = min(times)[0].date()
-        self.last_date = (max(times)[0] + dt.timedelta(1)).date()
+    def __init__(
+            self,
+            utc_times: Iterable[dt.datetime],
+            durations: Iterable[int]
+    ) -> None:
+        local_times = [X.replace(tzinfo=dt.timezone.utc).astimezone()
+                       for X in utc_times]
+        self.first_date = min(local_times).date()
+        self.last_date = (max(local_times) + dt.timedelta(1)).date()
         days = [0] * ((self.last_date - self.first_date).days + 1)
-        for time, duration in times:
+        for time, duration in zip(local_times, durations):
             local_midnight = ((time + dt.timedelta(days=1))
-                              .astimezone()
                               .replace(hour=0, minute=0))
-            utc_midnight = (local_midnight.astimezone(dt.timezone.utc)
-                            .replace(tzinfo=None))
             midnight_duration = int(
-                (utc_midnight - time) / dt.timedelta(minutes=1))
+                (local_midnight - time) / dt.timedelta(minutes=1))
             index = int((time.date() - self.first_date).days)
             if duration > midnight_duration:
                 days[index] += midnight_duration
@@ -314,7 +318,8 @@ def build_ftl(
     """
     parse = ep.Parser().parse(efj)
     cumulative_duties = DateAccumulator(
-        tuple((X.start, X.duration) for X in parse[0]))
+        (X.start for X in parse[0]),
+        (X.duration for X in parse[0]))
     for c in range(40):
         date = dt.date.today() - dt.timedelta(c)
         start = date - dt.timedelta(28)
