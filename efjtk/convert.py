@@ -335,22 +335,32 @@ def build_ftl(
     current = start
     rows: list[str] = []
     while current < end:
-        duty_7, duty_14, duty_28, duty_84, duty_365 = (
-            cumulative_duties.get(current) -
-            cumulative_duties.get(current - dt.timedelta(days=X))
-            for X in (7, 14, 28, 84, 365))
-        block_28 = (cumulative_sectors.get(current) -
-                    cumulative_sectors.get(current - dt.timedelta(days=28)))
-        try:  # watch out for 29th Feb!
-            last_year = current.replace(year=current.year - 1)
-        except ValueError:
-            last_year = (current - dt.timedelta(1)).replace(
-                year=current.year - 1)
-        block_year = (cumulative_sectors.get(current) -
-                      cumulative_sectors.get(last_year))
+        cy = current.replace(month=1, day=1)
+        cm_6, cm_9, cm_12 = (
+            calendar_months_ago(current, X) for X in (6, 9, 12))
+        d_7, d_14, d_28, d_84, d_365 = (
+            current - dt.timedelta(days=X) for X in (7, 14, 28, 84, 365))
+        current_duties = cumulative_duties.get(current)
+        duty_7, duty_14, duty_28, duty_84, duty_365, duty_12m = (
+            current_duties - cumulative_duties.get(X)
+            for X in (d_7, d_14, d_28, d_84, d_365, cm_12))
+        current_block = cumulative_sectors.get(current)
+        blk_28, blk_84, blk_365, blk_6m, blk_9m, blk_12m, blk_cy = (
+            current_block - cumulative_sectors.get(X)
+            for X in (d_28, d_84, d_365, cm_6, cm_9, cm_12, cy))
         rows.append(_row(tuple([current.isoformat()] + [
-            _duration(X) for X in (duty_7, duty_14, duty_28, duty_84, duty_365,
-                                   block_28, block_year)])))
+            _duration(X) for X in
+            (duty_7, duty_14, duty_28, duty_84, duty_365, duty_12m,
+             blk_28, blk_84, blk_365, blk_6m, blk_9m, blk_12m, blk_cy)])))
         current = current + dt.timedelta(1)
     return (_get_template("ftl-template.html")
             .format(rows="\n".join(rows)))
+
+
+def calendar_months_ago(date: dt.date, n: int) -> dt.date:
+    month = date.month - (n - 1)
+    year = date.year
+    if month < 1:
+        month += 12
+        year -= 1
+    return dt.date(year, month, 1)
