@@ -300,6 +300,9 @@ class DateAccumulator():
             return self.accumulated[-1]
         return self.accumulated[index]
 
+    def get_range(self) -> tuple[dt.date, dt.date]:
+        return (self.first_date, self.last_date + dt.timedelta(1))
+
 
 def build_ftl(
         efj: str,

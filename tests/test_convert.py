@@ -131,6 +131,9 @@ class TestDateAccumulator(unittest.TestCase):
         self.assertEqual(test.get(dt.date(2026, 10 , 11)), 60)
         self.assertEqual(test.get(dt.date(2026, 10 , 12)), 225)
         self.assertEqual(test.get(dt.date(2026, 10 , 13)), 225)
+        self.assertEqual(
+            test.get_range(),
+            (dt.date(2026, 10, 9), dt.date(2026, 10, 14)))
 
     def test_hour_change(self):
         # test requires system timezone to be Europe/London
