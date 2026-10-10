@@ -323,9 +323,34 @@ def build_ftl(
     cumulative_duties = DateAccumulator(
         (X.start for X in parse[0]),
         (X.duration for X in parse[0]))
-    for c in range(40):
-        date = dt.date.today() - dt.timedelta(c)
-        start = date - dt.timedelta(28)
-        print(date, (
-            cumulative_duties.get(date) - cumulative_duties.get(start)) // 60)
-    return ""
+    cumulative_sectors = DateAccumulator(
+        (X.start for X in parse[1]),
+        (X.total for X in parse[1]))
+    start = daterange[0] or min(
+        cumulative_duties.get_range()[0],
+        cumulative_sectors.get_range()[0])
+    end = daterange[1] or max(
+        cumulative_duties.get_range()[1],
+        cumulative_sectors.get_range()[1])
+    current = start
+    rows: list[str] = []
+    while current < end:
+        duty_7, duty_14, duty_28, duty_84, duty_365 = (
+            cumulative_duties.get(current) -
+            cumulative_duties.get(current - dt.timedelta(days=X))
+            for X in (7, 14, 28, 84, 365))
+        block_28 = (cumulative_sectors.get(current) -
+                    cumulative_sectors.get(current - dt.timedelta(days=28)))
+        try:  # watch out for 29th Feb!
+            last_year = current.replace(year=current.year - 1)
+        except ValueError:
+            last_year = (current - dt.timedelta(1)).replace(
+                year=current.year - 1)
+        block_year = (cumulative_sectors.get(current) -
+                      cumulative_sectors.get(last_year))
+        rows.append(_row(tuple([current.isoformat()] + [
+            _duration(X) for X in (duty_7, duty_14, duty_28, duty_84, duty_365,
+                                   block_28, block_year)])))
+        current = current + dt.timedelta(1)
+    return (_get_template("ftl-template.html")
+            .format(rows="\n".join(rows)))

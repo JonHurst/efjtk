@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+   <meta charset='UTF-8'>
+    <title>Flight Time Limitations</title>
+    <style>
+     :root {
+         --thin-border: 0.0625rem solid black;
+         --thick-border: 0.125rem solid black;
+         --stripe: #E0FFE0;
+         background-color: white;
+         color: black;
+         font-family: arial, sans-serif;
+     }
+
+     table {
+         margin: auto;
+         text-align: center;
+         table-layout: fixed;
+         width: 50rem;
+         border: var(--thick-border);
+         border-collapse: collapse;
+     }
+
+     thead {
+         background-color: white;
+         font-weight: bold;
+         border-bottom: var(--thick-border);
+     }
+
+     tbody tr:nth-child(even) {
+         background-color: var(--stripe);
+     }
+
+     .j-col-date {
+         width: 8rem;
+     }
+
+     .j-col-duration {
+         width: 6rem;
+     }
+
+     .j-col-new-section {
+         border-left: var(--thick-border);
+     }
+
+     tr {
+         height: 2rem;
+     }
+
+     td, th {
+         border: var(--thin-border);
+     }
+
+    </style>
+  </head>
+  <body>
+    <table class='j-ftl-table'>
+      <colgroup>
+        <col class="j-col-date">
+        <col class="j-col-duration j-col-new-section">
+        <col class="j-col-duration">
+        <col class="j-col-duration">
+        <col class="j-col-duration">
+        <col class="j-col-duration">
+        <col class="j-col-duration j-col-new-section">
+        <col class="j-col-duration">
+      </colgroup>
+      <thead>
+        <tr><th rowspan="2">Date</th><th colspan="5">Duty</th><th colspan="2">Block</th></tr>
+        <tr><th>7 Days</th><th>14 Days</th><th>28 days</th><th>84 days</th><th>365 days</th>
+          <th>28 Days</th><th>1 Year</th></tr>
+      </thead>
+      <tbody>
+<!--{rows}-->
+      </tbody>
+    </table>
+  </body>
+</html>
