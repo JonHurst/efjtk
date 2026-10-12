@@ -29,7 +29,7 @@ setuptools.setup(
     package_data={
         "efjtk": ["summary-template.html",
                   "logbook-template.html",
-                  "cumulative-template.html"
+                  "cumulative-template.html",
                   "ftl-template.html"]
     },
     entry_points={
