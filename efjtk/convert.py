@@ -268,12 +268,21 @@ def build_cumulative(efj: str, daterange: DateRange = (None, None)) -> str:
 
 
 class DateAccumulator():
+    """Accumulate durations split on date boundaries"""
 
     def __init__(
             self,
             utc_times: Iterable[dt.datetime],
             durations: Iterable[int]
     ) -> None:
+        """Initialise accumulator.
+
+        :param utc_times: An iterable of the start times in UTC.
+
+        :param durations: An iterable of the same length as utc_times
+            giving the durations to accumulate.
+
+        """
         local_times = [X.replace(tzinfo=dt.timezone.utc).astimezone()
                        for X in utc_times]
         self.first_date = min(local_times).date()
@@ -293,6 +302,14 @@ class DateAccumulator():
         self.accumulated = tuple(itertools.accumulate(days))
 
     def get(self, date: dt.date) -> int:
+        """Get accumulated durations.
+
+        :param date: The date to get the accumulated duration for.
+
+        :returns: The accumulated durations for the date as an integer number
+            of minutes.
+
+        """
         index = int((date - self.first_date).days)
         if index < 0:
             return 0
@@ -301,6 +318,13 @@ class DateAccumulator():
         return self.accumulated[index]
 
     def get_range(self) -> tuple[dt.date, dt.date]:
+        """Get the range of dates in the provided data.
+
+        :returns: A tuple where the first entry is the starting date of the
+            data and the second is the day after the last date that may be
+            affected by the data.
+
+        """
         return (self.first_date, self.last_date + dt.timedelta(1))
 
 
@@ -358,6 +382,7 @@ def build_ftl(
 
 
 def calendar_months_ago(date: dt.date, n: int) -> dt.date:
+    """Get the first dayof the month that is n months before date"""
     month = date.month - (n - 1)
     year = date.year
     if month < 1:
