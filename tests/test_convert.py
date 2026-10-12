@@ -147,3 +147,17 @@ class TestDateAccumulator(unittest.TestCase):
         self.assertEqual(test.get(dt.date(2026, 10 , 24)), 120)
         self.assertEqual(test.get(dt.date(2026, 10 , 25)), 300)
         self.assertEqual(test.get(dt.date(2026, 10 , 30)), 300)
+
+
+class TestFTL(unittest.TestCase):
+
+    def setUp(self):
+        with open("ftl-test.efj") as f:
+            self.test_input = f.read()
+
+    def test_standard(self):
+        output = efjtk.convert.build_ftl(
+                self.test_input, (None, dt.date(2027, 2, 1)))
+        with open("ftl-test-result.html") as f:
+            expected = f.read()
+            self.assertEqual(output.strip(), expected.strip())
