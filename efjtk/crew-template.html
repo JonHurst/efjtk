@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+   <meta charset='UTF-8'>
+    <title>Crew</title>
+<style>
+ :root {
+     --thin-border: 0.0625rem solid black;
+     --thick-border: 0.125rem solid black;
+     --stripe: #E0FFE0;
+     background-color: white;
+     color: black;
+     font-family: arial, sans-serif;
+ }
+
+ body {
+     position: relative;
+     margin: 0;
+     padding: 0;
+ }
+
+ .hidden {
+     display: none;
+ }
+
+ .stripe {
+     background-color: var(--stripe);
+ }
+
+ .filter {
+     padding: 1rem;
+     text-align: center;
+     position: sticky;
+     top: 0;
+     background-color: white;
+     margin-bottom: 1rem;
+     border-bottom: var(--thin-border);
+ }
+
+ .j-table {
+     margin: auto;
+     border-collapse: collapse;
+     text-align: center;
+     table-layout: fixed;
+     border: var(--thick-border);
+ }
+
+ .j-table thead {
+     background-color: white;
+     font-weight: bold;
+     border: var(--thick-border);
+ }
+
+ thead tr, tbody tr {
+     height: 2rem;
+ }
+
+ tbody td:first-child {
+     text-align: left;
+     opacity: 0;
+ }
+
+ tbody tr.first td:first-child {
+     opacity: 1;
+ }
+
+ tr.first {
+     border-top: var(--thin-border);
+ }
+
+ .j-col-name {
+     width: 15rem;
+ }
+ .j-col-date {
+     width: 7rem;
+ }
+ .j-col-place {
+     width: 6rem;
+ }
+ .j-col-time {
+     width: 5rem;
+ }
+ .j-col-role {
+     width: 5rem;
+ }
+
+ @media print {
+     @page {
+         size: A4;
+         margin: 1cm;
+     }
+     :root {
+         font-size: 2.763mm;
+         --thick-border: 0.15rem solid black;
+     }
+     body {
+         margin: 0;
+         padding: 0;
+     }
+     .filter {
+         display: none;
+     }
+ }
+
+</style>
+<script>
+ document.addEventListener("DOMContentLoaded", (e) => {
+     document.getElementById("filter_box").addEventListener("input", filter);
+     filter();
+ });
+
+ function filter() {
+     let text = document.getElementById("filter_box").value.toLowerCase();
+     let rows = document.getElementsByTagName("tbody")[0].getElementsByTagName("tr");
+     if(!text) {
+         for(let row of rows) {
+             row.classList.remove("hidden");
+         }
+     } else {
+         for(let row of rows) {
+             row.classList.add("hidden");
+             let name = row.getElementsByTagName("td")[0].innerText.toLowerCase();
+             for(let word of name.split(" ")) {
+                 if(word.startsWith(text)) {
+                     row.classList.remove("hidden");
+                     break;
+                 }
+             }
+         }
+     }
+     let stripe = false
+     for(let row of rows) {
+         if(row.classList.contains("hidden")) continue;
+         if(row.classList.contains("first")){
+             stripe = stripe ? false : true;
+         }
+         if(stripe) {
+             row.classList.add("stripe");
+         } else {
+             row.classList.remove("stripe");
+         }
+     }
+ }
+</script>
+  </head>
+  <body>
+    <div class="filter">
+      <label for="filter_box">Filter:</label>
+      <input id="filter_box" type="text">
+    </div>
+    <table class='j-table'>
+      <colgroup>
+        <col class="j-col-name">
+        <col class="j-col-role">
+        <col class="j-col-date">
+        <col class="j-col-time">
+        <col class="j-col-place">
+        <col class="j-col-place">
+      </colgroup>
+      <thead>
+        <tr><th>Name</th><th>Role</th><th>Date</th><th>Time</th>
+          <th>Origin</th><th>Destination</th></tr>
+      </thead>
+      <tbody>
+<!--{rows}-->
+      </tbody>
+      <tfoot>
+        <tr><td class="j-footer" colspan="6"></td></tr>
+      </tfoot>
+    </table>
+  </body>
+</html>

@@ -30,7 +30,8 @@ setuptools.setup(
         "efjtk": ["summary-template.html",
                   "logbook-template.html",
                   "cumulative-template.html",
-                  "ftl-template.html"]
+                  "ftl-template.html",
+                  "crew-template.html"]
     },
     entry_points={
         "console_scripts": ["efj = efjtk.cli:main"],

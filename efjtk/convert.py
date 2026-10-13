@@ -389,3 +389,26 @@ def calendar_months_ago(date: dt.date, n: int) -> dt.date:
         month += 12
         year -= 1
     return dt.date(year, month, 1)
+
+
+def build_crew(efj: str, daterange: tuple[dt.date, dt.date]) -> str:
+    _, sectors = ep.Parser().parse(efj)
+    crew_members: dict[str, list[tuple[ep.Sector, str]]] = {}
+    for s in sectors:
+        if ((daterange[0] and s.start.date() < daterange[0]) or
+                (daterange[1] and s.start.date() >= daterange[1])):
+            continue
+        for c in s.crew:
+            crew_members.setdefault(c.name, []).append((s, c.role))
+    rows: list[str] = []
+    for k in sorted(crew_members.keys()):
+        first = "first"
+        for m in crew_members[k]:
+            rows.append(_row((
+                k, m[1], m[0].start.date().isoformat(),
+                m[0].start.time().isoformat(timespec="minutes"),
+                m[0].airports.origin, m[0].airports.dest),
+                             first))
+            first = ""
+    return (_get_template("crew-template.html")
+            .format(rows="\n".join(rows)))

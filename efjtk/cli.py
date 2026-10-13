@@ -23,7 +23,7 @@ def _args():
     parser.add_argument('format',
                         choices=['expand', 'night', 'vfr', 'ins', 'fo',
                                  'logbook',  'summary', 'cumulative',
-                                 'version', 'gec', 'gui', 'ftl'])
+                                 'version', 'gec', 'gui', 'ftl', 'crew'])
     parser.add_argument(
         '-f', '--from', dest='from_', metavar="FROM", default=None,
         help="Restrict output to dates including and after FROM")
@@ -44,6 +44,7 @@ _func_map: dict[str, Callable[[str, tuple[dt.date, dt.date]], str]] = {
     "cumulative": efjtk.convert.build_cumulative,
     "summary": efjtk.convert.build_summary,
     "ftl": efjtk.convert.build_ftl,
+    "crew": efjtk.convert.build_crew,
 }
 
 
