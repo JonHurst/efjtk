@@ -37,7 +37,7 @@
      border-bottom: var(--thin-border);
  }
 
- .j-table {
+ table {
      margin: auto;
      border-collapse: collapse;
      text-align: center;
@@ -45,22 +45,22 @@
      border: var(--thick-border);
  }
 
- .j-table thead {
+ thead {
      background-color: white;
      font-weight: bold;
      border: var(--thick-border);
  }
 
- thead tr, tbody tr {
+ tr {
      height: 2rem;
  }
 
- tbody td:first-child {
+ td:first-child {
      text-align: left;
      opacity: 0;
  }
 
- tbody tr.first td:first-child {
+ tr.first td:first-child {
      opacity: 1;
  }
 
@@ -93,10 +93,6 @@
          font-size: 2.763mm;
          --thick-border: 0.15rem solid black;
      }
-     body {
-         margin: 0;
-         padding: 0;
-     }
      .filter {
          display: none;
      }
@@ -104,8 +100,9 @@
 
 </style>
 <script>
- document.addEventListener("DOMContentLoaded", (e) => {
-     document.getElementById("filter_box").addEventListener("input", filter);
+ document.addEventListener("DOMContentLoaded", () => {
+     document.getElementById("do_filter").addEventListener("click", filter);
+     document.getElementById("filter_box").addEventListener("change", filter);
      filter();
  });
 
@@ -145,8 +142,8 @@
   </head>
   <body>
     <div class="filter">
-      <label for="filter_box">Filter:</label>
       <input id="filter_box" type="text">
+      <button id="do_filter">Filter</button>
     </div>
     <table class='j-table'>
       <colgroup>
@@ -164,9 +161,6 @@
       <tbody>
 <!--{rows}-->
       </tbody>
-      <tfoot>
-        <tr><td class="j-footer" colspan="6"></td></tr>
-      </tfoot>
     </table>
   </body>
 </html>
