@@ -3,122 +3,123 @@
   <head>
    <meta charset='UTF-8'>
    <title>Crew</title>
-   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>
- :root {
-     --thin-border: 0.0625rem solid black;
-     --thick-border: 0.125rem solid black;
-     --stripe: #E0FFE0;
- }
+   <meta name="viewport"
+         content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+   <style>
+    :root {
+        --thin-border: 0.0625rem solid black;
+        --thick-border: 0.125rem solid black;
+        --stripe: #E0FFE0;
+    }
 
- body {
-     background-color: white;
-     color: black;
-     font-family: helvetica, arial, sans-serif;
-     position: relative;
-     margin: 0;
-     padding: 0;
- }
+    body {
+        background-color: white;
+        color: black;
+        font-family: helvetica, arial, sans-serif;
+        position: relative;
+        margin: 0;
+        padding: 0;
+    }
 
- input {
-     padding: 0.25rem 0.5rem;
-     font-size: 1rem;
-     border: var(--thin-border);
- }
+    input {
+        padding: 0.25rem 0.5rem;
+        font-size: 1rem;
+        border: var(--thin-border);
+    }
 
- button {
-     background-color: white;
-     color: black;
-     font-size: 1rem;
-     border: var(--thin-border);
-     padding: 0.25rem 0.5rem;
-     width: 5rem;
- }
+    button {
+        background-color: white;
+        color: black;
+        font-size: 1rem;
+        border: var(--thin-border);
+        padding: 0.25rem 0.5rem;
+        width: 5rem;
+    }
 
- @media (hover: hover) and (pointer: fine) {
-     button:hover {
-         background-color: var(--stripe);
-     }
- }
+    @media (hover: hover) and (pointer: fine) {
+        button:hover {
+            background-color: var(--stripe);
+        }
+    }
 
- table {
-     margin: auto;
-     border-collapse: collapse;
-     text-align: center;
-     table-layout: fixed;
-     border: var(--thick-border);
-     width: 45rem;
- }
+    table {
+        margin: auto;
+        border-collapse: collapse;
+        text-align: center;
+        table-layout: fixed;
+        border: var(--thick-border);
+        width: 45rem;
+    }
 
- td {
-     border-left:var(--thin-border);
-     border-right:var(--thin-border);
-     padding: 0.5rem;
- }
+    td {
+        border-left:var(--thin-border);
+        border-right:var(--thin-border);
+        padding: 0.5rem;
+    }
 
- td:first-child {
-     text-align: left;
-     opacity: 0;
- }
+    td:first-child {
+        text-align: left;
+        opacity: 0;
+    }
 
- td:last-child {
-     text-align: left;
- }
+    td:last-child {
+        text-align: left;
+    }
 
- tr.first td:first-child {
-     opacity: 1;
- }
+    tr.first td:first-child {
+        opacity: 1;
+    }
 
- tr.first {
-     border-top: var(--thin-border);
- }
+    tr.first {
+        border-top: var(--thin-border);
+    }
 
- .hidden {
-     display: none;
- }
+    .hidden {
+        display: none;
+    }
 
- .stripe {
-     background-color: var(--stripe);
- }
+    .stripe {
+        background-color: var(--stripe);
+    }
 
- .filter {
-     padding: 1rem;
-     position: sticky;
-     top: 0;
-     background-color: white;
-     margin-bottom: 1rem;
-     border-bottom: var(--thin-border);
-     display: flex;
-     justify-content: center;
-     align-items: center;
-     gap: 1rem;
- }
+    .filter {
+        padding: 1rem;
+        position: sticky;
+        top: 0;
+        background-color: white;
+        margin-bottom: 1rem;
+        border-bottom: var(--thin-border);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 1rem;
+    }
 
- .j-col-name {
-     width: 15rem;
- }
- .j-col-date {
-     width: 7rem;
- }
- .j-col-role {
-     width: 3rem;
- }
+    .j-col-name {
+        width: 15rem;
+    }
+    .j-col-date {
+        width: 7rem;
+    }
+    .j-col-role {
+        width: 3rem;
+    }
 
- @media print {
-     @page {
-         size: A4;
-         margin: 1cm;
-     }
-     :root {
-         font-size: 2.763mm;
-         --thick-border: 0.15rem solid black;
-     }
-     .filter {
-         display: none;
-     }
- }
+    @media print {
+        @page {
+            size: A4;
+            margin: 1cm;
+        }
+        :root {
+            font-size: 2.763mm;
+            --thick-border: 0.15rem solid black;
+        }
+        .filter {
+            display: none;
+        }
+    }
 
-</style>
+   </style>
 <script>
  let WORD_CACHE;
 
