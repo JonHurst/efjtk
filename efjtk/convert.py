@@ -403,12 +403,18 @@ def build_crew(efj: str, daterange: tuple[dt.date, dt.date]) -> str:
     rows: list[str] = []
     for k in sorted(crew_members.keys()):
         first = "first"
+        grouped_by_date: dict[dt.date, list[tuple[ep.Sector, str]]] = {}
         for m in crew_members[k]:
-            rows.append(_row((
-                k, m[1], m[0].start.date().isoformat(),
-                m[0].start.time().isoformat(timespec="minutes"),
-                m[0].airports.origin, m[0].airports.dest),
-                             first))
+            date = m[0].start.date()
+            grouped_by_date.setdefault(date, []).append(m)
+        first = "first"
+        for d in sorted(grouped_by_date.keys()):
+            airports = [grouped_by_date[d][0][0].airports.origin] + [
+                X[0].airports.dest for X in grouped_by_date[d]]
+            role = grouped_by_date[d][0][1]
+            rows.append(_row(
+                (k, role, d.isoformat(), " – ".join(airports)),
+                first))
             first = ""
     return (_get_template("crew-template.html")
             .format(rows="\n".join(rows)))
