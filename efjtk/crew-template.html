@@ -2,39 +2,43 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en">
   <head>
    <meta charset='UTF-8'>
-    <title>Crew</title>
+   <title>Crew</title>
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
  :root {
      --thin-border: 0.0625rem solid black;
      --thick-border: 0.125rem solid black;
      --stripe: #E0FFE0;
-     background-color: white;
-     color: black;
-     font-family: arial, sans-serif;
  }
 
  body {
+     background-color: white;
+     color: black;
+     font-family: helvetica, arial, sans-serif;
      position: relative;
      margin: 0;
      padding: 0;
  }
 
- .hidden {
-     display: none;
+ input {
+     padding: 0.25rem 0.5rem;
+     font-size: 1rem;
+     border: var(--thin-border);
  }
 
- .stripe {
-     background-color: var(--stripe);
- }
-
- .filter {
-     padding: 1rem;
-     text-align: center;
-     position: sticky;
-     top: 0;
+ button {
      background-color: white;
-     margin-bottom: 1rem;
-     border-bottom: var(--thin-border);
+     color: black;
+     font-size: 1rem;
+     border: var(--thin-border);
+     padding: 0.25rem 0.5rem;
+     width: 5rem;
+ }
+
+ @media (hover: hover) and (pointer: fine) {
+     button:hover {
+         background-color: var(--stripe);
+     }
  }
 
  table {
@@ -46,13 +50,7 @@
      width: 45rem;
  }
 
- thead {
-     background-color: white;
-     font-weight: bold;
-     border: var(--thick-border);
- }
-
- td, th {
+ td {
      border-left:var(--thin-border);
      border-right:var(--thin-border);
      padding: 0.5rem;
@@ -73,6 +71,27 @@
 
  tr.first {
      border-top: var(--thin-border);
+ }
+
+ .hidden {
+     display: none;
+ }
+
+ .stripe {
+     background-color: var(--stripe);
+ }
+
+ .filter {
+     padding: 1rem;
+     position: sticky;
+     top: 0;
+     background-color: white;
+     margin-bottom: 1rem;
+     border-bottom: var(--thin-border);
+     display: flex;
+     justify-content: center;
+     align-items: center;
+     gap: 1rem;
  }
 
  .j-col-name {
@@ -101,41 +120,52 @@
 
 </style>
 <script>
+ let WORD_CACHE;
+
  document.addEventListener("DOMContentLoaded", () => {
      document.getElementById("do_filter").addEventListener("click", filter);
-     document.getElementById("filter_box").addEventListener("change", filter);
+     document.getElementById("filter_box").addEventListener("keyup", e => {
+         if(e.key == "Enter") filter();});
+     let rows = document.getElementsByTagName("tr");
+     WORD_CACHE = new Array(rows.length)
+     for(let c = 0; c < rows.length; c++) {
+         WORD_CACHE[c] = rows[c].getElementsByTagName("td")[0].innerText
+                                .toLowerCase().split(" ");
+     }
      filter();
  });
 
  function filter() {
      let text = document.getElementById("filter_box").value.toLowerCase();
-     let rows = document.getElementsByTagName("tbody")[0].getElementsByTagName("tr");
+     let rows = document.getElementsByTagName("tr");
+     let hidden = new Array(rows.length);
      if(!text) {
-         for(let row of rows) {
-             row.classList.remove("hidden");
-         }
+         hidden.fill(false);
      } else {
-         for(let row of rows) {
-             row.classList.add("hidden");
-             let name = row.getElementsByTagName("td")[0].innerText.toLowerCase();
-             for(let word of name.split(" ")) {
+         hidden.fill(true);
+         for(let c = 0; c < rows.length; c++) {
+             for(let word of WORD_CACHE[c]) {
                  if(word.startsWith(text)) {
-                     row.classList.remove("hidden");
+                     hidden[c] = false;
                      break;
                  }
              }
          }
      }
      let stripe = false
-     for(let row of rows) {
-         if(row.classList.contains("hidden")) continue;
-         if(row.classList.contains("first")){
-             stripe = stripe ? false : true;
-         }
-         if(stripe) {
-             row.classList.add("stripe");
+     for(let c = 0; c < rows.length; c++) {
+         if(hidden[c]) {
+             rows[c].classList.add("hidden");
          } else {
-             row.classList.remove("stripe");
+             rows[c].classList.remove("hidden");
+             if(rows[c].classList.contains("first")){
+                 stripe = stripe ? false : true;
+             }
+             if(stripe) {
+                 rows[c].classList.add("stripe");
+             } else {
+                 rows[c].classList.remove("stripe");
+             }
          }
      }
  }
@@ -153,9 +183,6 @@
         <col class="j-col-date">
         <col class="j-col-route">
       </colgroup>
-      <thead>
-        <tr><th>Name</th><th>Role</th><th>Date</th><th>Route</th></tr>
-      </thead>
       <tbody>
 <!--{rows}-->
       </tbody>
