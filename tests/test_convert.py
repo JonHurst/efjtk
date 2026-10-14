@@ -158,6 +158,6 @@ class TestFTL(unittest.TestCase):
     def test_standard(self):
         output = efjtk.convert.build_ftl(
                 self.test_input, (None, dt.date(2027, 2, 1)))
-        with open("ftl-test-result.html") as f:
+        with open("expected_ftl-test-result.html") as f:
             expected = f.read()
             self.assertEqual(output.strip(), expected.strip())

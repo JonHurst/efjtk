@@ -22,6 +22,8 @@ efj summary -f 20240103 < convert_test_input > expected_summary_from.html
 efj summary -t 20240103 < convert_test_input > expected_summary_to.html
 efj summary -f 20240102 -t 20240103 < convert_test_input > expected_summary_fromto.html
 
+efj ftl -t 20270201 < ftl-test.efj > expected_ftl-test-result.html
+
 for FILE in expected_*.html
 do
     OLD=${FILE%.html}.old
