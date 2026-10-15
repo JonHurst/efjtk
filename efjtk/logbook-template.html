@@ -18,7 +18,7 @@
   body {
       width: 102rem;
       margin: 0 auto;
-      padding: 1rem 0 2rem;
+      padding: 1rem 0 0;
   }
 
   table {
@@ -33,16 +33,20 @@
   thead {
       background-color: white;
       font-weight: bold;
-      position: sticky;
-      top: 0;
-      z-index: 2;
   }
 
-  tbody td:first-child,
-  thead tr:first-child th:first-child {
-      position: sticky;
-      left: 0;
-      z-index: 1;
+  @media screen {
+      thead {
+          position: sticky;
+          top: 0;
+          z-index: 2;
+      }
+      tbody td:first-child,
+      thead tr:first-child th:first-child {
+          position: sticky;
+          left: 0;
+          z-index: 1;
+      }
   }
 
   tbody tr:nth-child(even) td {
@@ -98,10 +102,6 @@
      height: 2rem;
   }
 
-  tfoot tr {
-      height: 0;
-  }
-
   thead th,
   tbody td {
       border-right: var(--thin-border);
@@ -150,6 +150,8 @@
   }
   tfoot td {
       border-top: var(--thin-border);
+      height: 1rem;
+      padding: 0;
   }
 
   @media print {
@@ -164,11 +166,6 @@
       }
       body {
           padding: 0;
-      }
-      thead,
-      tbody td:first-child,
-      thead tr:first-child th:first-child {
-          position: static;
       }
   }
 
@@ -230,7 +227,7 @@
 <!--{rows}-->
       </tbody>
       <tfoot>
-        <tr><td class="j-lb-footer" colspan="21"></td></tr>
+        <tr><td colspan="21"> </td></tr>
       </tfoot>
     </table>
   </body>
