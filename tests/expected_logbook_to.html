@@ -49,6 +49,14 @@
       background-color: var(--stripe);
   }
 
+  tbody tr.highlight td {
+      background-color: yellow;
+  }
+
+  tbody {
+      cursor: pointer;
+  }
+
   td, th {
       overflow: hidden;
       text-overflow: ellipsis;
@@ -167,6 +175,15 @@
   }
 
 </style>
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+      for(let row of document.getElementsByTagName("tr")) {
+          row.addEventListener("click", function () {
+              this.classList.toggle("highlight");
+          });
+      }
+  });
+</script>
   </head>
   <body>
     <table>

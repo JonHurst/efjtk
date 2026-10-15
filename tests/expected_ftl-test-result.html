@@ -49,6 +49,14 @@
          background-color: var(--stripe);
      }
 
+     tbody tr.highlight td {
+         background-color: yellow;
+     }
+
+     tbody {
+         cursor: pointer;
+     }
+
      .j-col-date {
          width: 8rem;
      }
@@ -118,6 +126,16 @@
      }
 
     </style>
+    <script>
+     document.addEventListener("DOMContentLoaded", () => {
+         for(let row of document.getElementsByTagName("tr")) {
+             row.addEventListener("click", function () {
+                 this.classList.toggle("highlight");
+             });
+         }
+     });
+    </script>
+
   </head>
   <body>
     <table class='j-ftl-table'>

@@ -37,6 +37,10 @@
          z-index: 2;
      }
 
+     tbody {
+         cursor: pointer;
+     }
+
      tbody td:first-child,
      thead tr:first-child th:first-child {
          position: sticky;
@@ -46,6 +50,10 @@
 
      tbody tr:nth-child(even) td {
          background-color: var(--stripe);
+     }
+
+     tbody tr.highlight td {
+         background-color: yellow;
      }
 
      .j-col-datetime {
@@ -122,6 +130,15 @@
          }
      }
     </style>
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+          for(let row of document.getElementsByTagName("tr")) {
+              row.addEventListener("click", function () {
+                  this.classList.toggle("highlight");
+              });
+          }
+      });
+    </script>
   </head>
   <body>
     <table>
