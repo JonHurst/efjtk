@@ -257,8 +257,7 @@ def build_cumulative(efj: str, daterange: DateRange = (None, None)) -> str:
         if daterange[0] and end.date() < daterange[0]:
             continue
         rows.append(_row((
-            f"{end:%d/%m/%Y}",
-            f"{end:%H:%M}",
+            f"{end:%d/%m/%Y %H:%M}",
             *(_duration(X) for X in cumulative_totals[:4]),
             *(str(X) for X in cumulative_totals[4:6]),
             *(_duration(X) for X in cumulative_totals[6:]))
