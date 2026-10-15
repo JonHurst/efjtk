@@ -12,7 +12,7 @@
       --stripe: #E0FFE0;
       background-color: white;
       color: black;
-      font-family: arial, sans-serif;
+      font-family: helvetica, arial, sans-serif;
   }
 
   body {
@@ -21,112 +21,45 @@
       padding: 1rem 0 2rem;
   }
 
-  .j-lb-table {
+  table {
       margin: auto;
       border-collapse: separate;
       border-spacing: 0;
       text-align: center;
-      position: relative;
       table-layout: fixed;
       width: 100rem;
   }
 
-  .j-lb-table thead {
+  thead {
       background-color: white;
       font-weight: bold;
       position: sticky;
       top: 0;
+      z-index: 2;
   }
 
- .j-lb-footer {
-     border-top: var(--thick-border);
- }
+  tbody td:first-child,
+  thead tr:first-child th:first-child {
+      position: sticky;
+      left: 0;
+      z-index: 1;
+  }
 
- /* Table borders */
- /* thead borders */
- .j-lb-table thead tr:first-child th {
-     border-top: var(--thick-border);
-     border-right: var(--thick-border);
- }
-  .j-lb-table thead tr:first-child th:first-child {
-      border-left: var(--thick-border);
-  }
-  .j-lb-table thead tr:first-child th:nth-child(1),
-  .j-lb-table thead tr:first-child th:nth-child(6),
-  .j-lb-table thead tr:first-child th:nth-child(7),
-  .j-lb-table thead tr:first-child th:nth-child(8),
-  .j-lb-table thead tr:first-child th:nth-child(12) {
-      border-bottom: var(--thick-border);
-  }
-  .j-lb-table thead tr:first-child th:nth-child(2),
-  .j-lb-table thead tr:first-child th:nth-child(3),
-  .j-lb-table thead tr:first-child th:nth-child(4),
-  .j-lb-table thead tr:first-child th:nth-child(5),
-  .j-lb-table thead tr:first-child th:nth-child(9),
-  .j-lb-table thead tr:first-child th:nth-child(10),
-  .j-lb-table thead tr:first-child th:nth-child(11) {
-      border-bottom: var(--thin-border);
-  }
-  .j-lb-table thead tr:first-child th:nth-child(5) {
-      border-right: var(--thin-border);
-  }
-  .j-lb-table thead tr:last-child th {
-      border-right: var(--thin-border);
-      border-bottom: var(--thick-border);
-  }
-  .j-lb-table thead tr:last-child th:nth-child(2),
-  .j-lb-table thead tr:last-child th:nth-child(4),
-  .j-lb-table thead tr:last-child th:nth-child(6),
-  .j-lb-table thead tr:last-child th:nth-child(10),
-  .j-lb-table thead tr:last-child th:nth-child(12),
-  .j-lb-table thead tr:last-child th:nth-child(16) {
-      border-right: var(--thick-border);
-  }
-  /* tbody borders */
-  .j-lb-table tbody td,
-  .j-lb-table tbody th {
-      border-top: var(--thin-border);
-      border-right: var(--thin-border);
-  }
-  .j-lb-table tbody tr:first-child td {
-      border-top: none;
-  }
-  .j-lb-table tbody td:first-child {
-      border-left: var(--thick-border);
-  }
-  .j-lb-table tbody td:last-child {
-      border-right: var(--thick-border);
-  }
-  .j-lb-table tbody td:nth-child(1),
-  .j-lb-table tbody td:nth-child(3),
-  .j-lb-table tbody td:nth-child(5),
-  .j-lb-table tbody td:nth-child(7),
-  .j-lb-table tbody td:nth-child(10),
-  .j-lb-table tbody td:nth-child(11),
-  .j-lb-table tbody td:nth-child(12),
-  .j-lb-table tbody td:nth-child(14),
-  .j-lb-table tbody td:nth-child(16),
-  .j-lb-table tbody td:nth-child(20) {
-      border-right: var(--thick-border);
-  }
-  /* end: table borders */
-
-  .j-lb-table tbody tr:nth-child(even) {
+  tbody tr:nth-child(even) td {
       background-color: var(--stripe);
   }
 
-  .j-lb-table tbody td,
-  .j-lb-table tbody th {
+  td, th {
       overflow: hidden;
       text-overflow: ellipsis;
       padding: 0.2rem;
+      background-color: white;
   }
 
-  .j-lb-table td:last-child,
-  .j-lb-table td:nth-child(12) {
+  td:last-child,
+  td:nth-child(12) {
       text-align: left;
   }
-
 
   .j-col-date {
       width: 7rem;
@@ -157,6 +90,62 @@
      height: 2rem;
   }
 
+  tfoot tr {
+      height: 0;
+  }
+
+  thead th,
+  tbody td {
+      border-right: var(--thin-border);
+      border-bottom: var(--thin-border);
+  }
+
+  tbody td:nth-child(1),
+  tbody td:nth-child(3),
+  tbody td:nth-child(5),
+  tbody td:nth-child(7),
+  tbody td:nth-child(9),
+  tbody td:nth-child(10),
+  tbody td:nth-child(11),
+  tbody td:nth-child(12),
+  tbody td:nth-child(14),
+  tbody td:nth-child(16),
+  tbody td:nth-child(20),
+  tbody td:nth-child(21),
+  thead tr:first-child th,
+  thead tr:nth-child(2) th:nth-child(2),
+  thead tr:nth-child(2) th:nth-child(4),
+  thead tr:nth-child(2) th:nth-child(6),
+  thead tr:nth-child(2) th:nth-child(8),
+  thead tr:nth-child(2) th:nth-child(10),
+  thead tr:nth-child(2) th:nth-child(12),
+  thead tr:nth-child(2) th:nth-child(16)  {
+      border-right: var(--thick-border);
+  }
+
+  thead tr:nth-child(2) th,
+  thead tr:first-child th:nth-child(1),
+  thead tr:first-child th:nth-child(6),
+  thead tr:first-child th:nth-child(7),
+  thead tr:first-child th:nth-child(8),
+  thead tr:first-child th:nth-child(12) {
+      border-bottom: var(--thick-border);
+  }
+
+  tbody tr:last-child td {
+      border-bottom: unset;
+  }
+
+  tbody td:first-child,
+  thead tr:first-child th:first-child {
+      border-left: var(--thick-border);
+  }
+
+  thead tr:first-child th,
+  tfoot td {
+      border-top: var(--thick-border);
+  }
+
   @media print {
      @page {
          size: A4 landscape;
@@ -170,12 +159,17 @@
           margin: 0;
           padding: 0;
       }
+      thead,
+      tbody td:first-child,
+      thead tr:first-child th:first-child {
+          position: relative;
+      }
   }
 
 </style>
   </head>
   <body>
-    <table class='j-lb-table'>
+    <table>
 <colgroup>
 <col class="j-col-date">
 <col class="j-col-place">
