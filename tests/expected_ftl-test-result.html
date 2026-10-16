@@ -7,8 +7,8 @@
           content="width=device-width, minimum-scale=1.0, shrink-to-fit=no">
     <style>
      :root {
-         --thin-border: 0.0625rem solid black;
-         --thick-border: 0.125rem solid black;
+         --thin-border: 1px solid black;
+         --thick-border: 2px solid black;
          --stripe: #E0FFE0;
          background-color: white;
          color: black;
@@ -17,7 +17,7 @@
 
      body {
          width:102rem;
-         padding-bottom: 2rem;
+         padding: 1rem 0;
          margin: 0 auto;
      }
 
@@ -33,18 +33,21 @@
      thead {
          background-color: white;
          font-weight: bold;
-         position: sticky;
-         top: 0;
-         z-index: 2;
      }
 
-     td:first-child, thead tr:first-child th:first-child {
-         position: sticky;
-         left: 0;
-         z-index: 1;
-         background-color: white;
+     @media screen {
+         thead {
+             position: sticky;
+             top: 0;
+             z-index: 2;
+         }
+         tbody td:first-child,
+         thead tr:first-child th:first-child {
+             position: sticky;
+             left: 0;
+             z-index: 1;
+         }
      }
-
 
      tbody tr:nth-child(even) td {
          background-color: var(--stripe);
@@ -66,15 +69,9 @@
          width: 7rem;
      }
 
-     thead tr, tbody tr {
-         height: 2rem;
-     }
-
-     tfoot tr {
-         height:0;
-     }
-
      tbody td, thead th {
+         background-color: white;
+         padding: 0.5rem 0.25rem;
          border-bottom: var(--thin-border);
          border-right: var(--thin-border);
      }
@@ -93,18 +90,19 @@
          border-bottom: var(--thick-border);
      }
 
-     tbody tr:last-child td {
-         border-bottom: unset;
-     }
-
      thead tr:first-child th:first-child,
      tbody td:first-child {
          border-left: var(--thick-border);
      }
 
-     thead tr:first-child th,
-     tfoot td {
+     thead tr:first-child th {
          border-top: var(--thick-border);
+     }
+
+     tfoot td {
+         border-top: var(--thin-border);
+         height: 0.1rem;
+         padding: 0;
      }
 
      @media print {
@@ -114,17 +112,11 @@
          }
          :root {
              font-size: 2.763mm;
-             --thick-border: 0.15rem solid black;
          }
          body {
              padding: 0;
          }
-         thead,
-         td:first-child, thead tr:first-child th:first-child {
-             position: relative;
-         }
      }
-
     </style>
     <script>
      document.addEventListener("DOMContentLoaded", () => {
