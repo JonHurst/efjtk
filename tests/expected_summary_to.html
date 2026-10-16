@@ -4,11 +4,11 @@
    <meta charset='UTF-8'>
     <title>Summary</title>
     <meta name="viewport"
-         content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
+         content="width=device-width, minimum-scale=1.0, shrink-to-fit=no">
     <style>
      :root {
-         --thin-border: 0.0625rem solid black;
-         --thick-border: 0.125rem solid black;
+         --thin-border: 1px solid black;
+         --thick-border: 2px solid black;
          --stripe: #E0FFE0;
          color: black;
          font-family: arial, sans-serif;
@@ -30,10 +30,6 @@
          margin: 0 0 2rem;
      }
 
-     tr {
-         height: 2rem;
-     }
-
      thead {
          border: var(--thick-border);
      }
@@ -45,6 +41,7 @@
      td, th {
          text-align: center;
          border: var(--thin-border);
+         padding: 0.5rem 0.25rem;
      }
 
      tbody td:first-child,
@@ -75,7 +72,6 @@
          }
          :root {
              font-size: 2.763mm;
-             --thick-border: 0.15rem solid black;
          }
          body {
              margin: 0 auto;
