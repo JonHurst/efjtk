@@ -224,11 +224,16 @@ The command for the summary tool is::
 FTL Totals
 ^^^^^^^^^^
 
-Totals for the various date ranges necessary to monitor the cumulative duty and
-block hour restrictions specified in easyJet core FTLs, easyJet Roster Variation
-B and the easyJet BALPA CSA. There are thirteen of these, so they likely
-include most, if not all, of totals specified in equivalent documents for other
-airlines.
+Provides totals for various date ranges as required to monitor the cumulative
+duty and block hour restrictions specified in easyJet core FTLs, easyJet Roster
+Variation B and the easyJet BALPA CSA. There are thirteen of these, so they
+likely include most, if not all, of totals specified in equivalent documents for
+other airlines.
+
+Correctly splitting duties that stradle midnight requires your acclimatised
+timezone. To ensure that future timezone changes can be incorportated without
+requiring an update of the toolkit, your operating system's local timezone is
+used for this purpose.
 
 A date range can be specified that includes future dates to enable prediction of
 potential violations.
