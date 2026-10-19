@@ -58,6 +58,23 @@ file.
 The results include a breakdown of flying roles, aircraft classes, conditions
 and landings by aircraft type, and all relevant totals.
 
+
+Crew Listing
+^^^^^^^^^^^^
+
+The eFJ schema requires recording of the Captain's name for p1s, p2 and put
+sectors. It also allows for the optional recording of additional crew names and
+roles. This tool gives a filterable listing of recorded crew, along with the
+dates and trips involved.
+
+The filter is a very simple mechanism. The characters entered in the filter box
+are compared (case insensitively) against the start of each part of each crew
+name, and if they match that crew member is included in the filtered listing.
+This means that you generally only have to type two or three characters to
+achieve a short listing containing the crew member you are interested in. If
+printed, only the filtered list is included.
+
+
 Modify
 ------
 

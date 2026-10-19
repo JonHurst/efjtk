@@ -1,10 +1,9 @@
 import json
 import datetime as dt
 
-from efjtk.convert import build_logbook, build_summary, build_cumulative
 from efj_parser import ValidationError
 import efjtk.modify
-
+import efjtk.convert
 
 
 _func_map = {
@@ -13,9 +12,10 @@ _func_map = {
     "vfr": efjtk.modify.add_vfr_flag,
     "fo": efjtk.modify.add_fo_role_flag,
     "ins": efjtk.modify.add_ins_flag,
-    "logbook": build_logbook,
-    "summary": build_summary,
-    "cumulative": build_cumulative,
+    "logbook": efjtk.convert.build_logbook,
+    "summary": efjtk.convert.build_summary,
+    "cumulative": efjtk.convert.build_cumulative,
+    "crew": efjtk.convert.build_crew,
 }
 
 
