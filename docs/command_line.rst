@@ -221,6 +221,41 @@ The command for the summary tool is::
 
   $ efj.py summary < EFJ_FILE
 
+FTL Totals
+^^^^^^^^^^
+
+Totals for the various date ranges necessary to monitor the cumulative duty and
+block hour restrictions specified in easyJet core FTLs, easyJet Roster Variation
+B and the easyJet BALPA CSA. There are thirteen of these, so they likely
+include most, if not all, of totals specified in equivalent documents for other
+airlines.
+
+A date range can be specified that includes future dates to enable prediction of
+potential violations.
+
+The command for the FTL totals tool is::
+
+  $ efj.py ftl < EFJ_FILE
+
+Crew Listing
+^^^^^^^^^^^^
+
+The eFJ schema requires recording of the Captain's name for p1s, p2 and put
+sectors. It also allows for the optional recording of additional crew names and
+roles. This tool gives a filterable listing of recorded crew, along with the
+dates and trips involved.
+
+The filter is a very simple mechanism. The characters entered in the filter box
+are compared (case insensitively) against the start of each part of each crew
+name, and if they match that crew member is included in the filtered listing.
+This means that you generally only have to type two or three characters to
+achieve a short listing containing the crew member you are interested in. If
+printed, only the filtered list is included.
+
+The command for the Crew Listing tool is::
+
+  $ efj.py crew < EFJ_FILE
+
 
 Gross Error Check
 ^^^^^^^^^^^^^^^^^
