@@ -400,7 +400,10 @@ def calendar_months_ago(date: dt.date, n: int) -> dt.date:
     return dt.date(year, month, 1)
 
 
-def build_crew(efj: str, daterange: tuple[dt.date, dt.date]) -> str:
+def build_crew(
+        efj: str,
+        daterange: DateRange = (None, None)
+) -> str:
     _, sectors = ep.Parser().parse(efj)
     crew_members: dict[str, list[tuple[ep.Sector, str]]] = {}
     for s in sectors:

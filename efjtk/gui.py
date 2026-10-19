@@ -371,7 +371,9 @@ def export(model: Model, ui: UI, msg: str) -> None:
     text = ui.text.get("1.0", tk.END)
     fn = {"export_logbook": efjtk.convert.build_logbook,
           "export_cumulative": efjtk.convert.build_cumulative,
-          "export_summary": efjtk.convert.build_summary}
+          "export_summary": efjtk.convert.build_summary,
+          "export_ftl": efjtk.convert.build_ftl,
+          "export_crew": efjtk.convert.build_crew}
     try:
         to = model.date_to + dt.timedelta(days=1) if model.date_to else None
         result = fn[msg](text, (model.date_from, to))
@@ -635,6 +637,10 @@ def initialise_menus(ui: UI, update: UpdateFunc) -> None:
                                 command=lambda: update("export_cumulative"))
     ui.menus.export.add_command(label="Summary", underline=0,
                                 command=lambda: update("export_summary"))
+    ui.menus.export.add_command(label="FTL Totals", underline=1,
+                                command=lambda: update("export_ftl"))
+    ui.menus.export.add_command(label="Crew Listing", underline=1,
+                                command=lambda: update("export_crew"))
 
     ui.menus.help_.add_command(label="Online Help", underline=0,
                                accelerator="F1",
