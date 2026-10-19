@@ -181,6 +181,37 @@ standalone HTML file.
 When a date range is specified, this only restricts the dates included in the
 output; the calculation still includes all entries.
 
+FTL Totals
+^^^^^^^^^^
+
+Provides totals for various date ranges as required to monitor the cumulative
+duty and block hour restrictions specified in easyJet core FTLs, easyJet Roster
+Variation B and the easyJet BALPA CSA. There are thirteen of these, so they
+likely include most, if not all, of totals specified in equivalent documents for
+other airlines.
+
+Correctly splitting duties that stradle midnight requires your acclimatised
+timezone. To ensure that future timezone changes can be incorportated without
+requiring an update of the toolkit, your operating system's local timezone is
+used for this purpose.
+
+
+Crew Listing
+^^^^^^^^^^^^
+
+The eFJ schema requires recording of the Captain's name for p1s, p2 and put
+sectors. It also allows for the optional recording of additional crew names and
+roles. This tool gives a filterable listing of recorded crew, along with the
+dates and trips involved.
+
+The filter is a very simple mechanism. The characters entered in the filter box
+are compared (case insensitively) against the start of each part of each crew
+name, and if they match that crew member is included in the filtered listing.
+This means that you generally only have to type two or three characters to
+achieve a short listing containing the crew member you are interested in. If
+printed, only the filtered list is included.
+
+
 Restrict Dates
 ^^^^^^^^^^^^^^
 
@@ -194,3 +225,6 @@ bar.
 For the Summary, only records with applicable dates are included in the
 calculation. For cummulative totals, all records are included in the
 calculation, but only the applicable dates are included in the output.
+
+For the FTL Totals report, a date range can be specified that includes dates in
+the future, enabling prediction of potential violations.
