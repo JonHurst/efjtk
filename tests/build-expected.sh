@@ -23,6 +23,9 @@ efj summary -t 20240103 < convert_test_input > expected_summary_to.html
 efj summary -f 20240102 -t 20240103 < convert_test_input > expected_summary_fromto.html
 
 efj ftl -t 20270201 < ftl-test.efj > expected_ftl-test-result.html
+echo "" | efj ftl > expected_ftl-empty.html
+echo -e "2026-10-19\n1000/1100" | efj ftl > expected_ftl-only-duty.html
+echo -e "2026-10-19\nG-ABCD:A320\nBRS/BFS 1000/1100" | efj ftl > expected_ftl-only-sector.html
 
 for FILE in expected_*.html
 do

@@ -161,3 +161,25 @@ class TestFTL(unittest.TestCase):
         with open("expected_ftl-test-result.html") as f:
             expected = f.read()
             self.assertEqual(output.strip(), expected.strip())
+
+    def test_empty(self):
+        output = efjtk.convert.build_ftl("", (None, None))
+        with open("expected_ftl-empty.html") as f:
+            expected = f.read()
+            self.assertEqual(output.strip(), expected.strip())
+
+    def test_only_duty(self):
+        output = efjtk.convert.build_ftl(
+            "2026-10-19\n1000/1100",
+            (None, None))
+        with open("expected_ftl-only-duty.html") as f:
+            expected = f.read()
+            self.assertEqual(output.strip(), expected.strip())
+
+    def test_only_sector(self):
+        output = efjtk.convert.build_ftl(
+            "2026-10-19\nG-ABCD:A320\nBRS/BFS 1000/1100",
+            (None, None))
+        with open("expected_ftl-only-sector.html") as f:
+            expected = f.read()
+            self.assertEqual(output.strip(), expected.strip())

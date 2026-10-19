@@ -276,7 +276,8 @@ class DateAccumulator():
     ) -> None:
         """Initialise accumulator.
 
-        :param utc_times: An iterable of the start times in UTC.
+        :param utc_times: An iterable of the start times in UTC. There must
+            be at least one entry.
 
         :param durations: An iterable of the same length as utc_times
             giving the durations to accumulate.
@@ -284,6 +285,7 @@ class DateAccumulator():
         """
         local_times = [X.replace(tzinfo=dt.timezone.utc).astimezone()
                        for X in utc_times]
+        assert len(local_times) > 0
         self.first_date = min(local_times).date()
         self.last_date = (max(local_times) + dt.timedelta(1)).date()
         days = [0] * ((self.last_date - self.first_date).days + 1)
@@ -321,7 +323,7 @@ class DateAccumulator():
 
         :returns: A tuple where the first entry is the starting date of the
             data and the second is the day after the last date that may be
-            affected by the data.
+            affected by the data. Returns None if no dates are included
 
         """
         return (self.first_date, self.last_date + dt.timedelta(1))
@@ -343,19 +345,21 @@ def build_ftl(
 
     """
     parse = ep.Parser().parse(efj)
-    cumulative_duties = DateAccumulator(
-        (X.start for X in parse[0]),
-        (X.duration - X.ftl_correction for X in parse[0]))
-    cumulative_sectors = DateAccumulator(
-        (X.start for X in parse[1]),
-        (X.total for X in parse[1]))
-    start = daterange[0] or min(
-        cumulative_duties.get_range()[0],
-        cumulative_sectors.get_range()[0])
-    end = daterange[1] or max(
-        cumulative_duties.get_range()[1],
-        cumulative_sectors.get_range()[1])
-    current = start
+    cumulative_duties, cumulative_sectors = None, None
+    date_ranges: list[tuple[dt.date, dt.date]] = []
+    if parse[0]:
+        cumulative_duties = DateAccumulator(
+            (X.start for X in parse[0]),
+            (X.duration - X.ftl_correction for X in parse[0]))
+        date_ranges.append(cumulative_duties.get_range())
+    if parse[1]:
+        cumulative_sectors = DateAccumulator(
+            (X.start for X in parse[1]), (X.total for X in parse[1]))
+        date_ranges.append(cumulative_sectors.get_range())
+    if not date_ranges:  # no data found, return empty table
+        return _get_template("ftl-template.html").format(rows="")
+    current = daterange[0] or min(X[0] for X in date_ranges)
+    end = daterange[1] or max(X[1] for X in date_ranges)
     rows: list[str] = []
     while current < end:
         cy = current.replace(month=1, day=1)
@@ -363,14 +367,20 @@ def build_ftl(
             calendar_months_ago(current, X) for X in (6, 9, 12))
         d_7, d_14, d_28, d_84, d_365 = (
             current - dt.timedelta(days=X) for X in (6, 13, 27, 83, 364))
-        current_duties = cumulative_duties.get(current)
-        duty_7, duty_14, duty_28, duty_84, duty_365, duty_12m = (
-            current_duties - cumulative_duties.get(X - dt.timedelta(days=1))
-            for X in (d_7, d_14, d_28, d_84, d_365, cm_12))
-        current_block = cumulative_sectors.get(current)
-        blk_28, blk_84, blk_365, blk_6m, blk_9m, blk_12m, blk_cy = (
-            current_block - cumulative_sectors.get(X - dt.timedelta(days=1))
-            for X in (d_28, d_84, d_365, cm_6, cm_9, cm_12, cy))
+        if cumulative_duties:
+            duty_7, duty_14, duty_28, duty_84, duty_365, duty_12m = (
+                cumulative_duties.get(current) -
+                cumulative_duties.get(X - dt.timedelta(days=1))
+                for X in (d_7, d_14, d_28, d_84, d_365, cm_12))
+        else:
+            duty_7, duty_14, duty_28, duty_84, duty_365, duty_12m = [0] * 6
+        if cumulative_sectors:
+            blk_28, blk_84, blk_365, blk_6m, blk_9m, blk_12m, blk_cy = (
+                cumulative_sectors.get(current) -
+                cumulative_sectors.get(X - dt.timedelta(days=1))
+                for X in (d_28, d_84, d_365, cm_6, cm_9, cm_12, cy))
+        else:
+            blk_28, blk_84, blk_365, blk_6m, blk_9m, blk_12m, blk_cy = [0] * 7
         rows.append(_row(tuple([current.isoformat()] + [
             _duration(X) for X in
             (duty_7, duty_14, duty_28, duty_84, duty_365, duty_12m,
