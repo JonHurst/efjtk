@@ -25,6 +25,7 @@
         padding: 0.25rem 0.5rem;
         font-size: 1rem;
         border: var(--thin-border);
+        background-color: white;
     }
 
     button {
@@ -124,8 +125,9 @@
 
  document.addEventListener("DOMContentLoaded", () => {
      document.getElementById("do_filter").addEventListener("click", filter);
-     document.getElementById("filter_box").addEventListener("keyup", e => {
-         if(e.key == "Enter") filter();});
+     document.getElementById("filter_box").addEventListener("keyup", function(e) {
+         if(e.key == "Enter") filter();
+         if(e.key == "Escape") this.value = "";});
      let rows = document.getElementsByTagName("tr");
      WORD_CACHE = new Array(rows.length)
      for(let c = 0; c < rows.length; c++) {
@@ -173,7 +175,7 @@
   </head>
   <body>
     <div class="filter">
-      <input id="filter_box" type="text">
+      <input id="filter_box" type="search">
       <button id="do_filter">Filter</button>
     </div>
     <table class='j-table'>
