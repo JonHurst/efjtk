@@ -303,7 +303,7 @@ def file_operation(model: Model, ui: UI, msg: str) -> None:
             model.filename = fn
             model.settings['savePath'] = os.path.dirname(fn)
         with open(model.filename, "w", encoding="utf-8") as f:
-            f.write(ui.text.get("1.0", tk.END).strip())
+            f.write(ui.text.get("1.0", tk.END).strip() + "\n")
             ui.text.edit_reset()
     if msg in {"open", "insert"}:
         path = model.settings.get(
